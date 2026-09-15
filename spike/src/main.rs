@@ -130,13 +130,18 @@ fn snippets(lang: Lang) -> &'static [(&'static str, bool)] {
 }
 
 fn coverage() {
-	println!("\n== compiling `kind: comment` to every language\n");
+	survey("comment-earns-nothing", "  any: [{kind: comment}]\n");
+	survey("conditions-compose-into-a-value", COMPOSED);
+	false_positives();
+}
+
+fn survey(label: &str, body: &str) {
+	println!("\n== compiling `{label}` to every language\n");
 	let langs = Lang::all();
 	let mut gaps = vec![];
 	for lang in &langs {
 		let name = lang.name();
-		let yaml =
-			format!("id: probe\nlanguage: {name}\nseverity: warning\nmessage: m\nrule:\n  any: [{{kind: comment}}]\n");
+		let yaml = format!("id: probe\nlanguage: {name}\nseverity: warning\nmessage: m\nrule:\n{body}");
 		match from_yaml_string::<Lang>(&yaml, &GlobalRules::default()) {
 			Ok(_) => println!("ok   {name}"),
 			Err(error) => {
@@ -147,6 +152,34 @@ fn coverage() {
 	}
 	println!("\n{} of {} languages need an override: {}", gaps.len(), langs.len(), gaps.join(", "));
 }
+
+fn false_positives() {
+	println!("\n== does the pattern rule match anything real in Markdown/Yaml?\n");
+	let docs = [
+		("Markdown", "# Title\n\nSome prose with `return x;` inline.\n"),
+		("Yaml", "key: value\nlist:\n  - return $V;\n"),
+		("Markdown", "just prose, nothing like code at all\n"),
+		("Yaml", "a: 1\nb: 2\n"),
+	];
+	for (name, src) in docs {
+		let yaml = format!("id: probe\nlanguage: {name}\nseverity: warning\nmessage: m\nrule:\n{COMPOSED}");
+		let rules = from_yaml_string::<Lang>(&yaml, &GlobalRules::default()).expect("compiles");
+		let rule = &rules[0];
+		let hit = rule.language.ast_grep(src).root().find(&rule.matcher).is_some();
+		println!("{name:<9} matches={hit:<6} {:?}", src.lines().next().unwrap_or(""));
+	}
+}
+
+const COMPOSED: &str = r#"  pattern: return $V;
+  follows:
+    any:
+      - pattern: "if ($C) { $V = $B; }"
+      - pattern: "if ($C) { $V = $B; } else { $V = $D; }"
+    follows:
+      any:
+        - pattern: let $V = $A;
+        - pattern: let $V;
+"#;
 
 fn waiver() {
 	println!("\n== candidate no-op markers, compiled against Json\n");

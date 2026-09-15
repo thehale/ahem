@@ -58,11 +58,15 @@ lines.
 
 ### Can ast-grep's rule semantics be reused?
 
-`rules/comment.yml` today uses `any`, `kind`, `regex` and `not`. The rule
-language it is written in also has `pattern` with metavariables, `inside`,
-`has`, `precedes`, `follows` with `stopBy`, `matches` with utility rules,
-`constraints`, `transform`, and four strictness levels. Reimplementing that
-is not a distribution project. It is a second product.
+This stopped being hypothetical while the proposal was being written.
+`rules/comment.yml` uses `any`, `kind`, `regex` and `not`.
+`rules/composed-conditions.yml`, added in 20e6c78, uses `pattern` with
+metavariables, `follows` nested inside `follows`, and `has` with
+`stopBy: end`. The rule language also has `inside`, `precedes`, `matches` with
+utility rules, `constraints`, `transform`, and four strictness levels, and the
+rules are moving toward it rather than away.
+
+Reimplementing that is not a distribution project. It is a second product.
 
 **Any candidate that cannot reuse ast-grep's rule engine is disqualified.**
 That is the whole evaluation in one sentence, and it eliminates Go, Ruby and
@@ -163,10 +167,14 @@ buys.
 
 ## Rule compilation
 
+Written against `main` at 20e6c78, which moved tests out of the rule file into
+a matching path under `rule-tests/` and added a second rule.
+
 deconfuse is a generic code matcher, so **a rule compiles to every language
-ast-grep supports**, not to the languages it happens to have tests for.
-`tests:` is coverage. `languages:` is where a rule adapts. Neither one decides
-scope.
+ast-grep supports**, not to the languages it happens to have tests for. Tests
+are coverage. `languages:` is where a rule adapts. Neither one decides scope.
+`src/lib/compile` still derives scope from the keys of the test file, so this
+is a proposed change, and the section below costs it out.
 
 `src/lib/compile` becomes a fold over typed values rather than yq expressions
 over YAML text. `ast-grep-config` exports `SerializableRule` publicly, so
@@ -178,9 +186,17 @@ struct Deconfused {
     rule: SerializableRule,
     except: Option<SerializableRule>,
     languages: HashMap<Lang, Override>,
-    tests: HashMap<Lang, Snippets>,
+}
+
+struct Snippets {          // rule-tests/<name>.yml, keyed by language
+    valid: Vec<String>,
+    invalid: Vec<String>,
 }
 ```
+
+The split costs the Rust version nothing. `rule-tests/<name>.yml` is a
+`HashMap<Lang, Snippets>` read from a second path, and the id the runner
+reports comes from the rule file rather than the test file.
 
 Compilation keeps today's three decisions and changes only how they are
 expressed:
@@ -216,25 +232,59 @@ fails when a rule does not compile for a language, and the error names the
 language, so adding a rule tells you immediately which `languages:` overrides
 it still owes.
 
-### A waiver marker is probably not needed
+### The checklist is cheap for `kind` rules and expensive for `pattern` rules
 
-The obvious worry is a rule that genuinely does not apply to a language, which
-would make the checklist noise rather than work. It turns out to be rarer than
-it sounds, because **a rule that does not apply still compiles and matches
-nothing**. Only a rule whose `kind` names no node at all is rejected.
+`conditions-compose-into-a-value`, added in 20e6c78, changes this picture and
+is the reason to decide it deliberately. Its default body is a `pattern` with
+metavariables, nested `follows`, and a `has` with `stopBy: end` in the Python
+override. Surveyed the same way:
 
-Json is the case that looks like it needs a waiver and does not.
-`tree-sitter-json` has a `comment` node, so `kind: comment` compiles there and
-finds comments in the files that have them. All four real failures, Java,
-Kotlin, Markdown and Rust, are languages that *do* have comments under a
-different node name. Every one of them is work, not a waiver.
+```text
+4 of 29 languages need an override: comment-earns-nothing
+18 of 29 languages need an override: conditions-compose-into-a-value
+```
 
-ast-grep has no conventional no-op marker; `SerializableRule` is atomic,
-relational and composite fields only. If one is ever needed, `any: []`
-compiles and matches nothing, an emergent property of an empty kind union
-rather than a documented idiom. `all: []` and `not: {any: []}` are both
-rejected. Treat `any: []` as available but unblessed, and do not build the
-format around it until a rule actually needs it.
+A `kind` rule names a node that most grammars happen to share. A `pattern`
+rule is written in one language's syntax, so it fails to parse everywhere that
+syntax does not hold. Its 18 gaps include Go and Python, which the rule file
+already overrides, leaving 16 languages genuinely unwritten.
+
+That is the real cost of compiling to every language, and it is a judgement
+call rather than a technical obstacle:
+
+- **Accept it**, and a pattern rule is not finished until it has been thought
+  about in 29 languages. Thorough, and slow enough to discourage new rules.
+- **Let a rule declare a family**, so `conditions-compose-into-a-value` claims
+  the C-like languages and is silent elsewhere. Keeps the checklist meaningful
+  without pretending every rule is universal.
+
+Whichever way it goes, nothing about the Rust recommendation changes. Both are
+a predicate over `Lang::all()`.
+
+### Loud failure has one hole
+
+Markdown and Yaml accept the pattern rule. They compile it and then match
+nothing in real Markdown or YAML, verified in the spike, so the rule is inert
+rather than wrong. But nothing complains, which means the checklist reports a
+language as covered when the rule is meaningless there. Silence is not the
+same as fit, and only tests close that gap.
+
+### A waiver marker, reconsidered
+
+An earlier draft concluded a waiver was unnecessary, on the evidence of
+`comment-earns-nothing` alone. That was too narrow. A rule that does not apply
+often still compiles and matches nothing, which is why Json needs no waiver
+for the comment rule: `tree-sitter-json` has a `comment` node. But a rule that
+genuinely belongs to one language family, like the new one, makes a waiver or
+a family declaration look necessary rather than optional.
+
+ast-grep offers nothing here. `SerializableRule` is atomic, relational and
+composite fields only, with no no-op. `any: []` compiles and matches nothing,
+an emergent property of an empty kind union rather than a documented idiom,
+while `all: []` and `not: {any: []}` are both rejected. Treat `any: []` as
+available and unblessed. The waiver belongs in deconfuse's own format, where
+it can say something meaningful, rather than being smuggled in as a rule body
+that does nothing.
 
 ## Releasing
 

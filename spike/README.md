@@ -12,6 +12,9 @@ It answers the four questions that decide the Rust option:
    fit **fail loudly**?
 4. Does a rule that does not apply to a language need a **waiver marker**?
 
+Questions 3 and 4 are answered against `main` at 20e6c78, which split tests
+into `rule-tests/` and added a `pattern`-based rule.
+
 ## Run it
 
 ```bash
@@ -39,25 +42,32 @@ small enum over `SupportLang` plus `GoTmpl`; because ast-grep is generic over
 The seven matched snippets are `rules/comment.yml`'s own `valid`/`invalid`
 cases, run against rule bodies in the shape `src/lib/compile` produces today.
 
-**Gaps fail loudly.** `coverage()` compiles a bare `kind: comment` rule
-against all 29 languages. Four are rejected outright:
+**Gaps fail loudly, and cost far more for `pattern` rules.** `coverage()`
+compiles both of `main`'s rules against all 29 languages:
 
 ```text
-4 of 29 languages need an override: Java, Kotlin, Markdown, Rust
+4 of 29 languages need an override: comment-earns-nothing
+18 of 29 languages need an override: conditions-compose-into-a-value
 ```
 
 `RuleConfig::try_from` returns `MissingPotentialKinds` when a rule's `kind`
-resolves to no node in that grammar, so a rule that cannot work in a language
-is a compile error rather than a rule that silently matches nothing. Rust is
-on the list, which is why `rules/comment.yml` already overrides it. The other
-three are the work that compiling to every language surfaces.
+resolves to no node in that grammar, and a `pattern` that does not parse is
+rejected outright. A `kind` rule names a node most grammars share. A `pattern`
+rule is written in one language's syntax and fails everywhere that syntax does
+not hold. Both bodies are copied from `main` at 20e6c78.
 
-**A waiver marker is probably unnecessary.** `waiver()` compiles four
-candidate no-ops against Json. A rule that does not apply still compiles and
-matches nothing, so only a rule naming no node at all is rejected. Json has a
-`comment` node, so it needs no waiver. ast-grep has no conventional no-op:
-`any: []` compiles and matches nothing as an emergent property of an empty
-kind union, while `all: []` and `not: {any: []}` are both rejected.
+**Loud failure has one hole.** `false_positives()` shows Markdown and Yaml
+accepting the pattern rule and then matching nothing in real documents. The
+rule is inert rather than wrong, but nothing complains, so the checklist calls
+those languages covered when the rule is meaningless there.
+
+**A waiver marker is not settled.** `waiver()` compiles four candidate no-ops
+against Json. A rule that does not apply often still compiles and matches
+nothing, which is why Json needs no waiver for the comment rule: it has a
+`comment` node. A rule that belongs to one language family, like the new one,
+is the case that may need one. ast-grep offers no conventional no-op: `any: []`
+compiles and matches nothing as an emergent property of an empty kind union,
+while `all: []` and `not: {any: []}` are both rejected.
 
 ## Measurements
 
