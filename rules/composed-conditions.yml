@@ -24,6 +24,30 @@ languages:
       has:
         stopBy: end
         pattern: $V = $B
+  Rust:
+    kind: expression_statement
+    has:
+      stopBy: end
+      pattern: return $V
+    follows:
+      kind: expression_statement
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Kotlin:
+    pattern: return $V
+    follows:
+      kind: if_expression
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Ruby:
+    pattern: return $V
+    follows:
+      kind: if
+      has:
+        stopBy: end
+        pattern: $V = $B
   Go:
     pattern: return $V
     follows:

@@ -112,3 +112,48 @@ Go:
       func f(a int, b int) bool {
       	return a != b
       }
+Rust:
+  invalid:
+    - |
+      fn f(a: i32, b: i32) -> bool {
+          let mut result = false;
+          if a != b {
+              result = true;
+          }
+          return result;
+      }
+  valid:
+    - |
+      fn f(a: i32, b: i32) -> bool {
+          return a != b;
+      }
+Kotlin:
+  invalid:
+    - |
+      fun f(a: Int, b: Int): Boolean {
+          var result = false
+          if (a != b) {
+              result = true
+          }
+          return result
+      }
+  valid:
+    - |
+      fun f(a: Int, b: Int): Boolean {
+          return a != b
+      }
+Ruby:
+  invalid:
+    - |
+      def f(a, b)
+        result = false
+        if a != b
+          result = true
+        end
+        return result
+      end
+  valid:
+    - |
+      def f(a, b)
+        return a != b
+      end
