@@ -1,0 +1,101 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      if (!ready) {
+        wait();
+      } else {
+        go();
+      }
+    - |
+      if (state !== "done") {
+        wait();
+      } else {
+        go();
+      }
+  valid:
+    - |
+      if (ready) {
+        go();
+      } else {
+        wait();
+      }
+    - |
+      if (!ready) {
+        wait();
+      }
+Python:
+  invalid:
+    - |
+      if not ready:
+          wait()
+      else:
+          go()
+  valid:
+    - |
+      if ready:
+          go()
+      else:
+          wait()
+Go:
+  invalid:
+    - |
+      if !ready {
+      	wait()
+      } else {
+      	go()
+      }
+  valid:
+    - |
+      if ready {
+      	go()
+      } else {
+      	wait()
+      }
+Rust:
+  invalid:
+    - |
+      if !ready {
+          wait();
+      } else {
+          go();
+      }
+  valid:
+    - |
+      if ready {
+          go();
+      } else {
+          wait();
+      }
+Kotlin:
+  invalid:
+    - |
+      if (!ready) {
+          wait()
+      } else {
+          go()
+      }
+  valid:
+    - |
+      if (ready) {
+          go()
+      } else {
+          wait()
+      }
+Ruby:
+  invalid:
+    - |
+      if !ready
+        wait
+      else
+        go
+      end
+  valid:
+    - |
+      if ready
+        go
+      else
+        wait
+      end

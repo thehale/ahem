@@ -1,0 +1,89 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: branch-leads-with-a-negation
+severity: hint
+message: >-
+  Reading a negated condition first asks for the inverse to be held in mind
+  through both branches. Leading with the positive case puts them in the order
+  they read.
+rule:
+  all:
+    - kind: if_statement
+    - has:
+        field: condition
+        has:
+          any:
+            - kind: unary_expression
+              regex: ^!
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^!=
+    - has:
+        kind: else_clause
+languages:
+  Python:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          any:
+            - kind: not_operator
+            - kind: comparison_operator
+              has:
+                regex: ^(!=|is not|not in)$
+      - has:
+          kind: else_clause
+  Go:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          any:
+            - kind: unary_expression
+              regex: ^!
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^!=
+      - has:
+          field: alternative
+          kind: block
+  Rust:
+    all:
+      - kind: if_expression
+      - has:
+          field: condition
+          any:
+            - kind: unary_expression
+              regex: ^!
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^!=
+      - has:
+          kind: else_clause
+  Kotlin:
+    all:
+      - kind: if_expression
+      - has:
+          any:
+            - kind: prefix_expression
+              regex: ^!
+            - kind: equality_expression
+              regex: "!="
+      - has:
+          regex: ^else$
+  Ruby:
+    all:
+      - kind: if
+      - has:
+          field: condition
+          any:
+            - kind: unary
+              regex: ^!
+            - kind: binary
+              regex: "!="
+      - has:
+          kind: else
