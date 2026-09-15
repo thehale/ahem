@@ -22,3 +22,9 @@ Rust:
 gotmpl:
   invalid: ["{{- /* a thing */ -}}"]
   valid: ["<p>{{ .Title }}</p>"]
+Kotlin:
+  invalid: ["// a thing"]
+  valid: ["fun f() {}", "// SPDX-License-Identifier: MPL-2.0"]
+Ruby:
+  invalid: ["# a thing"]
+  valid: ["def f; end", "# Copyright (c) Someone, 2026"]

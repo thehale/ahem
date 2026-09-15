@@ -18,6 +18,10 @@ languages:
     any:
       - kind: line_comment
       - kind: block_comment
+  Kotlin:
+    any:
+      - kind: line_comment
+      - kind: multiline_comment
   Bash:
     except:
       regex: "^#!"

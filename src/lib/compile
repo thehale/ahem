@@ -34,21 +34,13 @@ function matcher() {
 }
 
 function body() {
-	local default
-	default="$(query "$1")"
-	if [[ "$(LANGUAGE="$2" "$YQ" '.languages[strenv(LANGUAGE)].except // ""' "$1")" == "" ]]; then
-		LANGUAGE="$2" DEFAULT="$default" "$YQ" -o=json -I=0 '.languages[strenv(LANGUAGE)] // (strenv(DEFAULT) | from_json)' "$1"
-	else
-		LANGUAGE="$2" DEFAULT="$default" "$YQ" -o=json -I=0 '{"all": [(strenv(DEFAULT) | from_json), {"not": .languages[strenv(LANGUAGE)].except}]}' "$1"
-	fi
-}
-
-function query() {
-	if [[ "$("$YQ" '.except // ""' "$1")" == "" ]]; then
-		"$YQ" -o=json -I=0 '.rule' "$1"
-	else
-		"$YQ" -o=json -I=0 '{"all": [.rule, {"not": .except}]}' "$1"
-	fi
+	LANGUAGE="$2" "$YQ" -o=json "$1" | LANGUAGE="$2" "$JQ" -c '
+		[ if ((.languages[env.LANGUAGE] // {}) | has("except"))
+		  then .rule
+		  else (.languages[env.LANGUAGE] // .rule) end ]
+		+ ([.except, .languages[env.LANGUAGE].except] | map(select(. != null)) | map({not: .}))
+		| if length == 1 then .[0] else {all: .} end
+	'
 }
 
 function snippets() {
