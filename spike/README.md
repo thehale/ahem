@@ -56,16 +56,21 @@ not as a plugin.
 Taken on this machine, `rustc 1.98.1`, `--release` with `strip = true`,
 x86_64-unknown-linux-gnu.
 
-| Build | Grammars | Binary | Clean build |
-| --- | --- | --- | --- |
-| `--features all-languages` (default) | 27 builtin + gotmpl | 43 MB | 15 s |
-| `--no-default-features --features rule-languages` | 6 + gotmpl | 7.3 MB | 3 s |
+| Build | Grammars | Binary | gzip -9 | Clean |
+| --- | --- | --- | --- | --- |
+| `all-languages` (default) | 27 builtin + gotmpl | 43 MB | 4.9 MB | 15 s |
+| `rule-languages` | 6 + gotmpl | 7.3 MB | 1.8 MB | 3 s |
+
+Select the second with
+`cargo build --release --no-default-features --features rule-languages`.
 
 `rule-languages` is the set `rules/comment.yml` actually targets: Bash, Css,
-Go, JavaScript, Python, Rust. Both builds pass all seven cases.
+Go, JavaScript, Python, Rust. Both builds pass all seven cases. Parser tables
+compress well, so the download is a fraction of the file on disk.
 
-For comparison, today's four mise-resolved dependencies are 84 MB on this
-machine: ast-grep 50 MB, scc 18 MB, yq 14 MB, jq 2.2 MB.
+For comparison, today's four mise-resolved dependencies are 83 MB on this
+machine, 21 MB as a `tar czf` bundle: ast-grep 50 MB, scc 18 MB, yq 14 MB,
+jq 2.2 MB.
 
 ## Known holes
 
