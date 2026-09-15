@@ -161,6 +161,63 @@ binary is 50 MB for the same reason.
 Reusing ast-grep through Python buys a worse version of what linking it
 buys.
 
+## Rule compilation
+
+deconfuse is a generic code matcher, so **a rule compiles to every language
+ast-grep supports**, not to the languages it happens to have tests for.
+`tests:` is coverage. `languages:` is where a rule adapts. Neither one decides
+scope.
+
+`src/lib/compile` becomes a fold over typed values rather than yq expressions
+over YAML text. `ast-grep-config` exports `SerializableRule` publicly, so
+deconfuse's own format nests ast-grep's rule syntax as a typed field:
+
+```rust
+struct Deconfused {
+    id: String, severity: Severity, message: String,
+    rule: SerializableRule,
+    except: Option<SerializableRule>,
+    languages: HashMap<Lang, Override>,
+    tests: HashMap<Lang, Snippets>,
+}
+```
+
+Compilation keeps today's three decisions and changes only how they are
+expressed:
+
+- **Scope** is `Lang::all()`, not `tests` keys.
+- **`except` folding** builds `all: [rule, not: except]` as a value. Today it
+  is assembled as JSON text and re-parsed through yq's `from_json`. That
+  round-trip disappears.
+- **Per-language override** keeps the current semantics exactly. A
+  `languages[L]` body replaces the default; a `languages[L].except` narrows
+  it.
+
+Output is `SerializableRuleConfig<Lang>` through `RuleConfig::try_from`.
+
+### Gaps are compile errors, not silent holes
+
+Compiling to every language means rules meet grammars they do not fit.
+`comment` is not a node kind in every language, which is why
+`rules/comment.yml` already overrides Rust with `line_comment`/`block_comment`.
+
+ast-grep already complains loudly about this, which is the best news in the
+evaluation. `RuleConfig::try_from` returns `MissingPotentialKinds` when a
+rule's `kind` resolves to no node in a grammar, so an ill-fitting rule fails
+to build rather than matching nothing. The spike compiles a bare
+`kind: comment` rule against all 29 languages and gets:
+
+```text
+4 of 29 languages need an override: Java, Kotlin, Markdown, Rust
+```
+
+That output is a coverage checklist. deconfuse should surface it as one: `test`
+fails when a rule does not compile for a language, and the error names the
+language, so adding a rule tells you immediately which `languages:` overrides
+it still owes. The only design choice left is whether an author can waive a
+language explicitly, which they will need for cases like a comment rule
+against Json.
+
 ## Releasing
 
 Five targets, each on a runner that builds natively, so nothing
@@ -195,10 +252,11 @@ the interface and it does not change. Each stage ships behind `bin/ci`
 running both implementations, so divergence shows up as a failing check
 rather than a surprise.
 
-1. **`deconfuse test`.** Rule self-testing only: read `rules/*.yml`, expand
-   per language, run `valid` and `invalid`. No file walking, no detection.
-   The spike is most of this. `bin/ci` runs the Rust one and the bash one and
-   compares.
+1. **`deconfuse test`.** Rule self-testing only: read `rules/*.yml`, expand to
+   every language, fail on any that does not compile, then run `valid` and
+   `invalid`. No file walking, no detection. This stage also has to resolve
+   the Haskell abort described below. `bin/ci` runs the Rust one and the bash
+   one and compares.
 2. **`deconfuse check PATH...`** on explicit paths, extension-based detection.
    Diff its output against the bash version over this repo and a Go template
    project.
@@ -228,6 +286,22 @@ day old.
 - deconfuse takes on ast-grep's library crates as a versioned dependency
   rather than a pinned binary. They are published, versioned together with
   the CLI, and currently at 0.45.3, matching the pin in `mise.toml`.
+- Compiling to every language means deconfuse owns every grammar's bugs. The
+  spike found one immediately.
+
+## The one open risk
+
+Matching a rule against Haskell aborts the spike with
+`corrupted size vs. prev_size`, reproducibly. It is not the vendored grammar,
+not `tree-sitter-haskell` on its own, and not ast-grep, all of which the
+spike's README rules out individually. It is somewhere in using
+`ast-grep-core` as a library, and it is not root-caused.
+
+This matters more under compile-to-every-language than it would have under
+compile-to-tested-languages, because every scanned file now meets every
+grammar. Resolve it in stage 1, before the rewrite is committed to. It is
+plausibly a small fix, a `TSLanguage` handed out per call where ast-grep's own
+CLI hands out one, but that is a guess until someone runs it under a sanitizer.
 
 ## Decision
 

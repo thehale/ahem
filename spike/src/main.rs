@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use ast_grep_config::{GlobalRules, RuleConfig, from_yaml_string};
+use ast_grep_core::Language;
 use ast_grep_core::matcher::{Pattern, PatternBuilder, PatternError};
 use ast_grep_core::tree_sitter::{LanguageExt, StrDoc, TSLanguage};
-use ast_grep_core::Language;
 use ast_grep_language::SupportLang;
 use serde::Deserialize;
-use std::str::FromStr;
 use std::path::Path;
+use std::str::FromStr;
 use tree_sitter_language::LanguageFn;
 
 unsafe extern "C" {
@@ -21,6 +21,21 @@ const GOTMPL: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_gotmpl) };
 enum Lang {
 	Builtin(SupportLang),
 	GoTmpl,
+}
+
+impl Lang {
+	fn all() -> Vec<Lang> {
+		let mut langs: Vec<Lang> = SupportLang::all_langs().iter().copied().map(Lang::Builtin).collect();
+		langs.push(Lang::GoTmpl);
+		langs
+	}
+
+	fn name(&self) -> String {
+		match self {
+			Lang::Builtin(lang) => format!("{lang:?}"),
+			Lang::GoTmpl => "gotmpl".to_string(),
+		}
+	}
 }
 
 impl<'de> Deserialize<'de> for Lang {
@@ -79,7 +94,13 @@ impl LanguageExt for Lang {
 }
 
 fn main() {
-	let rules = from_yaml_string::<Lang>(RULES, &GlobalRules::default()).expect("rules parse");
+	matching();
+	coverage();
+}
+
+fn matching() {
+	println!("== rule semantics reused, gotmpl grammar linked in\n");
+	let rules = from_yaml_string::<Lang>(COMPILED, &GlobalRules::default()).expect("rules parse");
 	for rule in &rules {
 		report(rule, snippets(rule.language));
 	}
@@ -107,7 +128,26 @@ fn snippets(lang: Lang) -> &'static [(&'static str, bool)] {
 	}
 }
 
-const RULES: &str = r#"
+fn coverage() {
+	println!("\n== compiling `kind: comment` to every language\n");
+	let langs = Lang::all();
+	let mut gaps = vec![];
+	for lang in &langs {
+		let name = lang.name();
+		let yaml =
+			format!("id: probe\nlanguage: {name}\nseverity: warning\nmessage: m\nrule:\n  any: [{{kind: comment}}]\n");
+		match from_yaml_string::<Lang>(&yaml, &GlobalRules::default()) {
+			Ok(_) => println!("ok   {name}"),
+			Err(error) => {
+				println!("GAP  {name}: {error}");
+				gaps.push(name);
+			}
+		}
+	}
+	println!("\n{} of {} languages need an override: {}", gaps.len(), langs.len(), gaps.join(", "));
+}
+
+const COMPILED: &str = r#"
 id: comment-earns-nothing.gotmpl
 language: gotmpl
 severity: warning

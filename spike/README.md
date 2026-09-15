@@ -4,11 +4,12 @@ This directory is throwaway. It exists to make
 [the distribution proposal](../docs/single-file-executable.md) checkable, and
 it should be deleted once the proposal is accepted or rejected.
 
-It answers the two questions that decide the Rust option:
+It answers the three questions that decide the Rust option:
 
 1. Can a Rust binary parse Go templates with **no `cc` at install or run time**?
-2. Can it reuse **ast-grep's own rule semantics** rather than reimplementing
-   them?
+2. Can it reuse **ast-grep's rule semantics** rather than reimplementing them?
+3. When a rule is compiled to **every** language, do the languages it does not
+   fit **fail loudly**?
 
 ## Run it
 
@@ -17,22 +18,6 @@ mise install rust@latest
 cd spike
 mise x rust@latest -- cargo run --release
 ```
-
-Expected output, seven cases, all `ok`:
-
-```text
-ok   comment-earns-nothing.gotmpl true  "{{- /* a thing */ -}}"
-ok   comment-earns-nothing.gotmpl false "<p>{{ .Title }}</p>"
-ok   comment-earns-nothing.Bash true  "# a thing"
-ok   comment-earns-nothing.Bash false "#!/usr/bin/env bash"
-ok   comment-earns-nothing.Bash false "# SPDX-License-Identifier: MPL-2.0"
-ok   comment-earns-nothing.Rust true  "// a thing"
-ok   comment-earns-nothing.Rust false "fn main() {}"
-```
-
-Those are `rules/comment.yml`'s own `valid`/`invalid` snippets, run against
-rule bodies copied verbatim out of the compiled cache shape that `src/lib/compile`
-produces today.
 
 ## What each answer rests on
 
@@ -47,9 +32,24 @@ links only `libc` and `libgcc_s`.
 deserializer from the `ast-grep-config` crate. Nothing here re-implements
 `all`/`any`/`not`/`kind`/`regex`, and nothing would need to re-implement
 `pattern`, `inside`, `has`, `matches` or `constraints` either. `Lang` is a
-20-line enum over `SupportLang` plus `GoTmpl`; because it is generic over
-`L: Language`, ast-grep treats the custom grammar as a first-class language,
-not as a plugin.
+small enum over `SupportLang` plus `GoTmpl`; because ast-grep is generic over
+`L: Language`, the custom grammar is a first-class language, not a plugin.
+
+The seven matched snippets are `rules/comment.yml`'s own `valid`/`invalid`
+cases, run against rule bodies in the shape `src/lib/compile` produces today.
+
+**Gaps fail loudly.** `coverage()` compiles a bare `kind: comment` rule
+against all 29 languages. Four are rejected outright:
+
+```text
+4 of 29 languages need an override: Java, Kotlin, Markdown, Rust
+```
+
+`RuleConfig::try_from` returns `MissingPotentialKinds` when a rule's `kind`
+resolves to no node in that grammar, so a rule that cannot work in a language
+is a compile error rather than a rule that silently matches nothing. Rust is
+on the list, which is why `rules/comment.yml` already overrides it. The other
+three are the work that compiling to every language surfaces.
 
 ## Measurements
 
@@ -63,25 +63,43 @@ x86_64-unknown-linux-gnu.
 
 Select the second with
 `cargo build --release --no-default-features --features rule-languages`.
-
-`rule-languages` is the set `rules/comment.yml` actually targets: Bash, Css,
-Go, JavaScript, Python, Rust. Both builds pass all seven cases. Parser tables
-compress well, so the download is a fraction of the file on disk.
+Parser tables compress well, so the download is a fraction of the file on
+disk. Compiling to every language argues for the first build regardless.
 
 For comparison, today's four mise-resolved dependencies are 83 MB on this
 machine, 21 MB as a `tar czf` bundle: ast-grep 50 MB, scc 18 MB, yq 14 MB,
 jq 2.2 MB.
 
+## Open risk: an abort when matching Haskell
+
+Matching, rather than compiling, a rule against Haskell source aborts the
+process with `corrupted size vs. prev_size`. It reproduces every run.
+
+What is known:
+
+- Compiling rules for all 29 languages is clean. Only matching aborts.
+- It is not the vendored grammar. The abort happens with the `gotmpl` object
+  unlinked.
+- It is not the grammar alone. `tree_sitter::Parser` with the same
+  `tree-sitter-haskell` 0.23.1 parses all the same snippets without aborting,
+  including with one parser reused across parses.
+- It is not ast-grep. `ast-grep run --lang haskell` on the same snippets is
+  clean, and `src/deconfuse check` over a `.hs` file exits 0.
+
+So it sits somewhere in this spike's use of `ast-grep-core` as a library, most
+likely in how `Lang::get_ts_language` hands out a `TSLanguage` per call. Not
+root-caused. It is stage-1 work for the migration, and the proposal lists it
+as the one thing to resolve before committing to the rewrite.
+
 ## Known holes
 
 Deliberate, because they do not change the decision:
 
-- No file walking, no CLI, no language detection, no `ast-grep test` runner.
-  The proposal costs those out; the spike does not build them.
+- No file walking, no CLI, no language detection, no test runner. The proposal
+  costs those out; the spike does not build them.
 - Rules are inlined in `main.rs` as post-compilation YAML. The spike does not
   reproduce `src/lib/compile`'s per-language expansion.
 - Only linux-x64 was built. Cross-compilation is argued in the proposal from
   ast-grep's own release workflow, not measured here.
 - `--no-default-features` makes an unselected language `unimplemented!()` at
-  runtime rather than a compile error. A real build would gate that in the
-  `Lang` enum.
+  runtime rather than a compile error. A real build would gate that in `Lang`.
