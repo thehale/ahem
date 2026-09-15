@@ -11,6 +11,8 @@ It answers the four questions that decide the Rust option:
 3. When a rule is compiled to **every** language, do the languages it does not
    fit **fail loudly**?
 4. Does a rule that does not apply to a language need a **waiver marker**?
+5. Can a project **add its own rules** to a binary that ships with rules
+   built in?
 
 Questions 3 and 4 are answered against `main` at 4059242, which split tests
 into `rule-tests/` and grew the rule set to four.
@@ -71,6 +73,13 @@ nothing, which is why Json needs no waiver for the comment rule: it has a
 is the case that may need one. ast-grep offers no conventional no-op: `any: []`
 compiles and matches nothing as an emergent property of an empty kind union,
 while `all: []` and `not: {any: []}` are both rejected.
+
+**User rules are not second-class.** `user_rules()` writes a rule to a file,
+reads it back at run time, and loads it beside the embedded set through the
+same `from_yaml_string::<Lang>` call. It matches, and the merged set is
+checked for id collisions. Nothing about a rule loaded from disk is weaker
+than one compiled in, so there is no plugin API to design. Adding a
+*language* is the thing a user cannot do, because grammars link at build time.
 
 ## Measurements
 

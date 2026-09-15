@@ -97,6 +97,7 @@ fn main() {
 	matching();
 	coverage();
 	waiver();
+	user_rules();
 }
 
 fn matching() {
@@ -225,6 +226,41 @@ fn waiver() {
 		}
 	}
 }
+
+fn user_rules() {
+	println!("\n== a rule read from disk at run time\n");
+	let path = std::env::temp_dir().join("deconfuse-spike-user-rule.yml");
+	std::fs::write(&path, USER).expect("write user rule");
+	let text = std::fs::read_to_string(&path).expect("read user rule");
+
+	let embedded = from_yaml_string::<Lang>(COMPILED, &GlobalRules::default()).expect("embedded");
+	let user = from_yaml_string::<Lang>(&text, &GlobalRules::default()).expect("user");
+	println!("ok   embedded rules: {}", embedded.len());
+	println!("ok   user rules from {}: {}", path.display(), user.len());
+
+	let rule = &user[0];
+	let source = "let x = 1; // TODO: fix";
+	let matched = rule.language.ast_grep(source).root().find(&rule.matcher).is_some();
+	println!("ok   user rule {} matches {source:?}: {matched}", rule.id);
+
+	let mut ids: Vec<&str> = embedded.iter().chain(user.iter()).map(|r| r.id.as_str()).collect();
+	let total = ids.len();
+	ids.sort_unstable();
+	ids.dedup();
+	println!("ok   {} rules loaded, {} distinct ids", total, ids.len());
+	std::fs::remove_file(&path).ok();
+}
+
+const USER: &str = r#"
+id: no-todo-comments
+language: JavaScript
+severity: hint
+message: A TODO is a comment that outlived its author's memory.
+rule:
+  all:
+    - kind: comment
+    - regex: "TODO"
+"#;
 
 const COMPILED: &str = r#"
 id: comment-earns-nothing.gotmpl

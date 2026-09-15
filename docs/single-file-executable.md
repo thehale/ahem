@@ -204,14 +204,12 @@ The split costs the Rust version nothing. `rule-tests/<name>.yml` is a
 `HashMap<Lang, Snippets>` read from a second path, and the id the runner
 reports comes from the rule file rather than the test file.
 
-### The rules ship inside the binary
+### The rules ship inside the binary, and users add to them
 
-The proposal missed this until the coordinator named it. Today
-`src/deconfuse` reads `$ROOT/rules/*.yml` relative to its own path, and writes
-compiled output to `$ROOT/.cache/`. A single downloaded executable has no
-`$ROOT`, no checkout beside it, and nowhere it should be writing.
-
-Both halves come along at build time:
+Today `src/deconfuse` reads `$ROOT/rules/*.yml` relative to its own path and
+writes compiled output to `$ROOT/.cache/`. A single downloaded executable has
+no `$ROOT`, no checkout beside it, and nowhere it should be writing. So the
+built-in rules come along at build time:
 
 ```rust
 static RULES: Dir = include_dir!("$CARGO_MANIFEST_DIR/rules");
@@ -219,7 +217,8 @@ static TESTS: Dir = include_dir!("$CARGO_MANIFEST_DIR/rule-tests");
 ```
 
 Four rules and their tests are a few kilobytes against a 43 MB binary, so size
-is not a consideration. Two consequences worth stating:
+is not a consideration. Two consequences worth stating, before the section on
+how a project overrides and extends this set:
 
 - **The pairing invariant becomes a build-time check.** A rule whose
   `rule-tests/` file is missing is a failed build rather than a rule that
@@ -229,8 +228,59 @@ is not a consideration. Two consequences worth stating:
   there is no cache to invalidate, no `sgconfig.yml` to generate, and no
   per-(rule, language) file to name.
 
-Whether users can supply their own rule directory is a separate feature and
-not required for distribution. Embedding does not preclude it.
+### Shipped, toggleable, and extensible, like eslint
+
+Embedding is what makes `curl` and run work with no config. It is not a
+closed set. The eslint shape applies directly: built-in rules ship with the
+tool, each one can be turned off or have its severity changed, and a project
+can add its own on top.
+
+```yaml
+# deconfuse.yml, discovered upward from the working directory
+rules:
+  comment-earns-nothing: off
+  branches-read-as-one-shape: warning
+ruleDirs:
+  - .deconfuse/rules
+```
+
+Three things make this cheap rather than a feature in its own right.
+
+**Disabling is already in the model.** `ast_grep_config::Severity` has an
+`Off` variant alongside `Hint`, `Info`, `Warning` and `Error`, and deconfuse
+passes `severity` through verbatim today. Turning a rule off and promoting a
+hint to a warning are the same operation on a field that already exists, not
+a new concept.
+
+**User rules are not second-class.** A rule read from `ruleDirs` goes through
+the same `from_yaml_string::<Lang>` call as an embedded one, so it gets the
+whole rule language, the custom `gotmpl` grammar, and the same `languages:`
+override machinery. The spike loads a rule from a file at run time beside the
+embedded set and matches with it. There is no plugin API to design, because
+there is no plugin.
+
+**Rule ids stay flat and unique.** The spike checks the merged set for
+collisions. A user rule reusing a built-in id should be an error naming both
+sources rather than a silent override, since silent shadowing is how people
+lose a rule they thought was running.
+
+Precedence: embedded rules load first, `ruleDirs` extend them, `rules:`
+applies severity last, so a project can turn off a built-in and ship its own
+stricter replacement.
+
+### What a user cannot add
+
+Languages. Grammars are linked at build time, which is the whole point of
+dropping `dlopen`, so a rule targeting a language deconfuse did not compile in
+has nothing to parse with. Shipping all 27 of ast-grep's languages plus
+`gotmpl` keeps that surface wide, at 4.9 MB gzipped, and is the reason to
+prefer the all-languages build over the slim one.
+
+If someone genuinely needs a language deconfuse does not embed, the honest
+answers are a pull request or an opt-in `customLanguages` escape hatch that
+reintroduces `libraryPath` and `dlopen` for that user only. The second keeps
+the default install clean while admitting the capability exists. Neither needs
+deciding now, and neither blocks the rewrite.
 
 Compilation keeps today's three decisions and changes only how they are
 expressed:
