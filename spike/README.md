@@ -12,8 +12,8 @@ It answers the four questions that decide the Rust option:
    fit **fail loudly**?
 4. Does a rule that does not apply to a language need a **waiver marker**?
 
-Questions 3 and 4 are answered against `main` at 20e6c78, which split tests
-into `rule-tests/` and added a `pattern`-based rule.
+Questions 3 and 4 are answered against `main` at 4059242, which split tests
+into `rule-tests/` and grew the rule set to four.
 
 ## Run it
 
@@ -42,19 +42,22 @@ small enum over `SupportLang` plus `GoTmpl`; because ast-grep is generic over
 The seven matched snippets are `rules/comment.yml`'s own `valid`/`invalid`
 cases, run against rule bodies in the shape `src/lib/compile` produces today.
 
-**Gaps fail loudly, and cost far more for `pattern` rules.** `coverage()`
-compiles both of `main`'s rules against all 29 languages:
+**Gaps fail loudly, and cost more the more structure a rule names.**
+`coverage()` compiles all four of `main`'s rule bodies against all 29
+languages:
 
 ```text
-4 of 29 languages need an override: comment-earns-nothing
+ 4 of 29 languages need an override: comment-earns-nothing
+ 7 of 29 languages need an override: name-carries-no-content
 18 of 29 languages need an override: conditions-compose-into-a-value
+26 of 29 languages need an override: branches-read-as-one-shape
 ```
 
 `RuleConfig::try_from` returns `MissingPotentialKinds` when a rule's `kind`
 resolves to no node in that grammar, and a `pattern` that does not parse is
-rejected outright. A `kind` rule names a node most grammars share. A `pattern`
-rule is written in one language's syntax and fails everywhere that syntax does
-not hold. Both bodies are copied from `main` at 20e6c78.
+rejected outright. `branches-read-as-one-shape` names four node kinds at once
+and only JavaScript, TypeScript and Tsx have all four under those names. All
+four bodies are copied from `main` at 4059242.
 
 **Loud failure has one hole.** `false_positives()` shows Markdown and Yaml
 accepting the pattern rule and then matching nothing in real documents. The

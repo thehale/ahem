@@ -106,7 +106,10 @@ first.
   Nothing is reimplemented, and future ast-grep rule features arrive with a
   version bump.
 - **yq:** `serde_yaml`, already a transitive dependency.
-- **jq:** gone with scc.
+- **jq:** `serde_yaml` too. As of 440cfe0 jq is no longer only scc's JSON
+  reader; `src/lib/compile:body` uses it to compose the top-level `except`
+  with a language's own. That is a fold over two `Option<SerializableRule>`
+  values in Rust.
 - **scc:** `SupportLang::from_path` covers extensions. Shebang detection is
   the one thing genuinely lost, and it matters here, because `bin/ci` and
   `src/deconfuse` have no extension and scc classifies them by `#!` today.
@@ -167,8 +170,11 @@ buys.
 
 ## Rule compilation
 
-Written against `main` at 20e6c78, which moved tests out of the rule file into
-a matching path under `rule-tests/` and added a second rule.
+Written against `main` at 4059242, confirmed with the coordinator. Since
+948e4bf: tests moved out of the rule file into `rule-tests/<same-basename>.yml`
+keyed by ast-grep language name (872b4c6); the top-level `except` now always
+composes, including where a language replaces the matcher (440cfe0); and the
+rule set grew to four.
 
 deconfuse is a generic code matcher, so **a rule compiles to every language
 ast-grep supports**, not to the languages it happens to have tests for. Tests
@@ -198,18 +204,54 @@ The split costs the Rust version nothing. `rule-tests/<name>.yml` is a
 `HashMap<Lang, Snippets>` read from a second path, and the id the runner
 reports comes from the rule file rather than the test file.
 
+### The rules ship inside the binary
+
+The proposal missed this until the coordinator named it. Today
+`src/deconfuse` reads `$ROOT/rules/*.yml` relative to its own path, and writes
+compiled output to `$ROOT/.cache/`. A single downloaded executable has no
+`$ROOT`, no checkout beside it, and nowhere it should be writing.
+
+Both halves come along at build time:
+
+```rust
+static RULES: Dir = include_dir!("$CARGO_MANIFEST_DIR/rules");
+static TESTS: Dir = include_dir!("$CARGO_MANIFEST_DIR/rule-tests");
+```
+
+Four rules and their tests are a few kilobytes against a 43 MB binary, so size
+is not a consideration. Two consequences worth stating:
+
+- **The pairing invariant becomes a build-time check.** A rule whose
+  `rule-tests/` file is missing is a failed build rather than a rule that
+  silently compiles for no languages.
+- **`.cache/` disappears entirely.** Compilation produces
+  `HashMap<Lang, Vec<RuleConfig>>` in memory. Nothing is written to disk, so
+  there is no cache to invalidate, no `sgconfig.yml` to generate, and no
+  per-(rule, language) file to name.
+
+Whether users can supply their own rule directory is a separate feature and
+not required for distribution. Embedding does not preclude it.
+
 Compilation keeps today's three decisions and changes only how they are
 expressed:
 
-- **Scope** is `Lang::all()`, not `tests` keys.
-- **`except` folding** builds `all: [rule, not: except]` as a value. Today it
-  is assembled as JSON text and re-parsed through yq's `from_json`. That
-  round-trip disappears.
-- **Per-language override** keeps the current semantics exactly. A
-  `languages[L]` body replaces the default; a `languages[L].except` narrows
-  it.
+- **Scope** is `Lang::all()`, not the test file's keys. This is the one
+  proposed change, and the section below prices it.
+- **Matcher selection.** A `languages[L]` body replaces the top-level `rule`.
+- **`except` composition** keeps 440cfe0's semantics. The top-level `except`
+  is always ANDed in as `not:`, including for a language that replaced the
+  matcher, and a language's own `except` composes with it rather than
+  replacing it.
 
 Output is `SerializableRuleConfig<Lang>` through `RuleConfig::try_from`.
+
+Those last two are one expression over two `Option<SerializableRule>` values
+and an `Option<Override>`, which is worth doing in types because the current
+jq drops a case. `body` branches on whether `languages[L]` has an `except`
+key, so a language block carrying both a matcher and an `except` loses its
+matcher and silently falls back to the top-level `rule`. No rule does this
+today, and the coordinator documents the combination as supported, so it is a
+latent bug rather than a live one. A struct with two fields cannot express it.
 
 ### Gaps are compile errors, not silent holes
 
@@ -232,42 +274,61 @@ fails when a rule does not compile for a language, and the error names the
 language, so adding a rule tells you immediately which `languages:` overrides
 it still owes.
 
-### The checklist is cheap for `kind` rules and expensive for `pattern` rules
+### What compiling to every language actually costs
 
-`conditions-compose-into-a-value`, added in 20e6c78, changes this picture and
-is the reason to decide it deliberately. Its default body is a `pattern` with
-metavariables, nested `follows`, and a `has` with `stopBy: end` in the Python
-override. Surveyed the same way:
+One rule made it look nearly free. Four do not. The spike surveys each rule's
+default body against all 29 languages:
 
-```text
-4 of 29 languages need an override: comment-earns-nothing
-18 of 29 languages need an override: conditions-compose-into-a-value
-```
+| Rule | Body is built on | Gaps |
+| --- | --- | --- |
+| `comment-earns-nothing` | `kind: comment` | 4 of 29 |
+| `name-carries-no-content` | `kind: identifier` + `regex` | 7 of 29 |
+| `conditions-compose-into-a-value` | `pattern` + `follows` | 18 of 29 |
+| `branches-read-as-one-shape` | `if_statement` + `has`/`precedes` | 26 of 29 |
 
-A `kind` rule names a node that most grammars happen to share. A `pattern`
-rule is written in one language's syntax, so it fails to parse everywhere that
-syntax does not hold. Its 18 gaps include Go and Python, which the rule file
-already overrides, leaving 16 languages genuinely unwritten.
+The pattern is clear and it is not about `kind` versus `pattern`. It is how
+much structure the rule names. `kind: comment` names one node most grammars
+share. `branches-read-as-one-shape` names `if_statement`, `else_clause`,
+`return_statement` and `lexical_declaration` in one breath, and only
+JavaScript, TypeScript and Tsx have all four under those names. It passes
+three languages and needs an override for the rest.
 
-That is the real cost of compiling to every language, and it is a judgement
-call rather than a technical obstacle:
+Averaged over the four rules, **about half of all languages need bespoke work
+per rule**, and the current four rules would owe roughly 55 overrides between
+them.
 
-- **Accept it**, and a pattern rule is not finished until it has been thought
-  about in 29 languages. Thorough, and slow enough to discourage new rules.
-- **Let a rule declare a family**, so `conditions-compose-into-a-value` claims
-  the C-like languages and is silent elsewhere. Keeps the checklist meaningful
-  without pretending every rule is universal.
+This is the number to decide on, and it is a judgement call rather than a
+technical obstacle:
+
+- **Accept it**, and a rule is not finished until it has been thought about in
+  29 languages. Thorough, and slow enough to discourage new rules.
+- **Let a rule declare a family**, so `branches-read-as-one-shape` claims the
+  languages with C-like statement structure and stays silent elsewhere. Keeps
+  the checklist meaningful without pretending every rule is universal.
 
 Whichever way it goes, nothing about the Rust recommendation changes. Both are
 a predicate over `Lang::all()`.
 
+### This conflicts with how `main` works today
+
+`src/lib/compile:languages()` reads the top-level keys of
+`rule-tests/<name>.yml`, so a language with no test snippets is never
+compiled, even when `languages:` has a block for it. Scope comes from the
+tests. That is the opposite of compiling to every language, and the table
+above is why the two have not been reconciled by accident.
+
+The proposal describes the target. `main` describes today. The gap between
+them is a decision someone has to make, not something the packaging work
+should quietly settle in either direction.
+
 ### Loud failure has one hole
 
-Markdown and Yaml accept the pattern rule. They compile it and then match
-nothing in real Markdown or YAML, verified in the spike, so the rule is inert
-rather than wrong. But nothing complains, which means the checklist reports a
-language as covered when the rule is meaningless there. Silence is not the
-same as fit, and only tests close that gap.
+Markdown and Yaml accept `conditions-compose-into-a-value`. They compile it
+and then match nothing in real Markdown or YAML, verified in the spike, so the
+rule is inert rather than wrong. But nothing complains, which means the
+checklist reports a language as covered when the rule is meaningless there.
+Silence is not the same as fit, and only tests close that gap. That is an
+argument for keeping tests central even once they stop deciding scope.
 
 ### A waiver marker, reconsidered
 

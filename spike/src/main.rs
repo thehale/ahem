@@ -130,8 +130,10 @@ fn snippets(lang: Lang) -> &'static [(&'static str, bool)] {
 }
 
 fn coverage() {
-	survey("comment-earns-nothing", "  any: [{kind: comment}]\n");
+	survey("comment-earns-nothing", COMMENT);
 	survey("conditions-compose-into-a-value", COMPOSED);
+	survey("name-carries-no-content", CONTENTLESS);
+	survey("branches-read-as-one-shape", GUARD);
 	false_positives();
 }
 
@@ -169,6 +171,26 @@ fn false_positives() {
 		println!("{name:<9} matches={hit:<6} {:?}", src.lines().next().unwrap_or(""));
 	}
 }
+
+const COMMENT: &str = "  any: [{kind: comment}]\n";
+
+const CONTENTLESS: &str = r#"  kind: identifier
+  regex: "^(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
+"#;
+
+const GUARD: &str = r#"  kind: if_statement
+  not:
+    has:
+      kind: else_clause
+  has:
+    stopBy: end
+    kind: return_statement
+  precedes:
+    any:
+      - kind: expression_statement
+      - kind: return_statement
+      - kind: lexical_declaration
+"#;
 
 const COMPOSED: &str = r#"  pattern: return $V;
   follows:
