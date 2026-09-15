@@ -99,6 +99,10 @@ likely in how `Lang::get_ts_language` hands out a `TSLanguage` per call. Not
 root-caused. It is stage-1 work for the migration, and the proposal lists it
 as the one thing to resolve before committing to the rewrite.
 
+It is reached by scanning a Haskell file. Compiling rules for every language
+resolves `kind` names against static tables and never parses anything, which
+is why `coverage()` touches all 29 grammars and stays clean.
+
 ## Known holes
 
 Deliberate, because they do not change the decision:

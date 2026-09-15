@@ -304,8 +304,21 @@ day old.
 - deconfuse takes on ast-grep's library crates as a versioned dependency
   rather than a pinned binary. They are published, versioned together with
   the CLI, and currently at 0.45.3, matching the pin in `mise.toml`.
-- Compiling to every language means deconfuse owns every grammar's bugs. The
-  spike found one immediately.
+- Shipping every grammar means deconfuse owns every grammar's bugs for the
+  languages it scans. The spike found one immediately.
+
+### Compiling to every language is not scanning with every grammar
+
+Two separate things, worth keeping apart.
+
+**Compilation** happens once at startup and builds a `Lang -> Vec<RuleConfig>`
+map. It touches every grammar, but only to resolve `kind` names to node ids,
+which is a lookup against static tables. The spike does this for all 29
+languages with no trouble.
+
+**Scanning** detects each file's language once and matches it against that
+language's rules only. A `.py` file meets the Python grammar and nothing else.
+That does not change.
 
 ## The one open risk
 
@@ -315,11 +328,11 @@ not `tree-sitter-haskell` on its own, and not ast-grep, all of which the
 spike's README rules out individually. It is somewhere in using
 `ast-grep-core` as a library, and it is not root-caused.
 
-This matters more under compile-to-every-language than it would have under
-compile-to-tested-languages, because every scanned file now meets every
-grammar. Resolve it in stage 1, before the rewrite is committed to. It is
-plausibly a small fix, a `TSLanguage` handed out per call where ast-grep's own
-CLI hands out one, but that is a guess until someone runs it under a sanitizer.
+It is reached by scanning a Haskell file, so compiling to every language
+neither causes nor worsens it. Resolve it in stage 1, before the rewrite is
+committed to. It is plausibly a small fix, a `TSLanguage` handed out per call
+where ast-grep's own CLI hands out one, but that is a guess until someone runs
+it under a sanitizer.
 
 ## Decision
 
