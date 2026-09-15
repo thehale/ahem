@@ -1,0 +1,54 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: argument-names-nothing
+severity: hint
+message: >-
+  A bare true or false at a call site leaves the reader to open the function to
+  learn what it selects. A named value, or two functions, carries the meaning
+  to the call.
+rule:
+  all:
+    - any:
+        - pattern: "true"
+        - pattern: "false"
+    - inside:
+        kind: arguments
+languages:
+  Python:
+    all:
+      - any:
+          - pattern: "True"
+          - pattern: "False"
+      - inside:
+          kind: argument_list
+  Go:
+    all:
+      - any:
+          - pattern: "true"
+          - pattern: "false"
+      - inside:
+          kind: argument_list
+  Rust:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: arguments
+          inside:
+            kind: call_expression
+            not:
+              has:
+                field: function
+                regex: ^(Ok|Err|Some)$
+  Kotlin:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: value_argument
+  Ruby:
+    all:
+      - any:
+          - pattern: "true"
+          - pattern: "false"
+      - inside:
+          kind: argument_list

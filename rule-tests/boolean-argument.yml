@@ -1,0 +1,73 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      render(page, true);
+    - |
+      render(page, false);
+  valid:
+    - |
+      render(page, { draft: true });
+    - |
+      const draft = true;
+Python:
+  invalid:
+    - |
+      render(page, True)
+  valid:
+    - |
+      draft = True
+Go:
+  invalid:
+    - |
+      package m
+
+      func x() {
+      	render(page, true)
+      }
+  valid:
+    - |
+      package m
+
+      func x() {
+      	draft := true
+      }
+Rust:
+  invalid:
+    - |
+      fn x() {
+          render(page, true);
+      }
+  valid:
+    - |
+      fn x() {
+          let draft = true;
+      }
+    - |
+      fn x() -> Result<bool, E> {
+          Ok(false)
+      }
+    - |
+      fn x() -> Option<bool> {
+          Some(true)
+      }
+Kotlin:
+  invalid:
+    - |
+      fun x() {
+          render(page, true)
+      }
+  valid:
+    - |
+      fun x() {
+          val draft = true
+      }
+Ruby:
+  invalid:
+    - |
+      render(page, true)
+  valid:
+    - |
+      draft = true
