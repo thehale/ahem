@@ -1,0 +1,114 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      function f(a, b) {
+        let result = false;
+        if (a !== b) {
+          result = true;
+        }
+        return result;
+      }
+    - |
+      function f(a, b) {
+        let result = true;
+        if (a !== b) {
+          result = false;
+        }
+        return result;
+      }
+    - |
+      function f(a, b) {
+        let count = 0;
+        if (a !== b) {
+          count = 1;
+        }
+        return count;
+      }
+    - |
+      function f(a, b) {
+        let label;
+        if (a !== b) {
+          label = "differs";
+        } else {
+          label = "matches";
+        }
+        return label;
+      }
+  valid:
+    - |
+      function f(a, b) {
+        return a !== b;
+      }
+    - |
+      function f(a, b) {
+        let total = 0;
+        for (const x of a) {
+          total = total + x;
+        }
+        return total;
+      }
+Python:
+  invalid:
+    - |
+      def f(a, b):
+          result = False
+          if a != b:
+              result = True
+          return result
+    - |
+      def f(a, b):
+          result = True
+          if a != b:
+              result = False
+          return result
+    - |
+      def f(a, b):
+          count = 0
+          if a != b:
+              count = 1
+          return count
+    - |
+      def f(a, b):
+          if a != b:
+              label = "differs"
+          else:
+              label = "matches"
+          return label
+  valid:
+    - |
+      def f(a, b):
+          return a != b
+Go:
+  invalid:
+    - |
+      func f(a int, b int) bool {
+      	result := false
+      	if a != b {
+      		result = true
+      	}
+      	return result
+      }
+    - |
+      func f(a int, b int) bool {
+      	result := true
+      	if a != b {
+      		result = false
+      	}
+      	return result
+      }
+    - |
+      func f(a int, b int) int {
+      	count := 0
+      	if a != b {
+      		count = 1
+      	}
+      	return count
+      }
+  valid:
+    - |
+      func f(a int, b int) bool {
+      	return a != b
+      }

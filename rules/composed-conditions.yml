@@ -1,0 +1,34 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: conditions-compose-into-a-value
+severity: warning
+message: >-
+  Composing conditions into a single value is usually easier to follow than
+  mutating a flag across branches.
+rule:
+  pattern: return $V;
+  follows:
+    any:
+      - pattern: "if ($C) { $V = $B; }"
+      - pattern: "if ($C) { $V = $B; } else { $V = $D; }"
+    follows:
+      any:
+        - pattern: let $V = $A;
+        - pattern: let $V;
+languages:
+  Python:
+    pattern: return $V
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Go:
+    pattern: return $V
+    follows:
+      any:
+        - pattern: "if $C { $V = $B }"
+        - pattern: "if $C { $V = $B } else { $V = $D }"
+      follows:
+        pattern: $V := $A
