@@ -1,0 +1,89 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        }
+        return a.size;
+      }
+  valid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        } else {
+          return a.size;
+        }
+      }
+Python:
+  invalid:
+    - |
+      def f(a):
+          if not a:
+              return 0
+          return len(a)
+  valid:
+    - |
+      def f(a):
+          if not a:
+              return 0
+          else:
+              return len(a)
+Go:
+  invalid:
+    - |
+      func f(a []int) int {
+      	if len(a) == 0 {
+      		return 0
+      	}
+      	return a[0]
+      }
+  valid:
+    - |
+      func f(a []int) int {
+      	if len(a) == 0 {
+      		return 0
+      	} else {
+      		return a[0]
+      	}
+      }
+Rust:
+  invalid:
+    - |
+      fn f(a: &[i32]) -> i32 {
+          if a.is_empty() {
+              return 0;
+          }
+          return a[0];
+      }
+  valid:
+    - |
+      fn f(a: &[i32]) -> i32 {
+          if a.is_empty() {
+              return 0;
+          } else {
+              return a[0];
+          }
+      }
+Ruby:
+  invalid:
+    - |
+      def f(a)
+        if a.empty?
+          return 0
+        end
+        return a[0]
+      end
+  valid:
+    - |
+      def f(a)
+        if a.empty?
+          return 0
+        else
+          return a[0]
+        end
+      end

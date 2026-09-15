@@ -1,0 +1,61 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: branches-read-as-one-shape
+severity: hint
+message: >-
+  An if that returns early splits the reader's attention between the exit and
+  the body that follows it. An expanded if/else keeps both outcomes in view.
+rule:
+  kind: if_statement
+  not:
+    has:
+      kind: else_clause
+  has:
+    stopBy: end
+    kind: return_statement
+  precedes:
+    any:
+      - kind: expression_statement
+      - kind: return_statement
+      - kind: lexical_declaration
+languages:
+  Python:
+    kind: if_statement
+    not:
+      has:
+        kind: else_clause
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+  Go:
+    kind: if_statement
+    not:
+      has:
+        field: alternative
+        kind: block
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+        - kind: short_var_declaration
+  Rust:
+    all:
+      - kind: expression_statement
+      - has: {stopBy: end, kind: if_expression}
+      - has: {stopBy: end, kind: return_expression}
+      - not: {has: {stopBy: end, kind: else_clause}}
+      - precedes: {kind: expression_statement}
+  Ruby:
+    all:
+      - kind: if
+      - not: {has: {kind: else}}
+      - has: {stopBy: end, kind: return}
+      - precedes: {any: [{kind: return}, {kind: assignment}, {kind: call}]}
