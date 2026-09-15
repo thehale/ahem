@@ -1,0 +1,94 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      function f(a) {
+        if (a.length > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      function f(a) {
+        return a.length > 0;
+      }
+    - |
+      function f(a) {
+        if (a.length > 0) {
+          return a[0];
+        } else {
+          return false;
+        }
+      }
+Python:
+  invalid:
+    - |
+      def f(a):
+          if len(a) > 0:
+              return True
+          else:
+              return False
+  valid:
+    - |
+      def f(a):
+          return len(a) > 0
+Go:
+  invalid:
+    - |
+      func f(a []int) bool {
+      	if len(a) > 0 {
+      		return true
+      	} else {
+      		return false
+      	}
+      }
+  valid:
+    - |
+      func f(a []int) bool {
+      	return len(a) > 0
+      }
+Rust:
+  invalid:
+    - |
+      fn f(a: &[i32]) -> bool {
+          if a.len() > 0 {
+              true
+          } else {
+              false
+          }
+      }
+  valid:
+    - |
+      fn f(a: &[i32]) -> bool {
+          a.len() > 0
+      }
+Kotlin:
+  invalid:
+    - |
+      fun f(a: List<Int>): Boolean {
+          if (a.size > 0) { return true } else { return false }
+      }
+  valid:
+    - |
+      fun f(a: List<Int>): Boolean {
+          return a.size > 0
+      }
+Ruby:
+  invalid:
+    - |
+      def f(a)
+        if a.size > 0
+          true
+        else
+          false
+        end
+      end
+  valid:
+    - |
+      def f(a)
+        a.size > 0
+      end

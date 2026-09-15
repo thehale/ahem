@@ -1,0 +1,53 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: condition-is-already-the-value
+severity: warning
+message: >-
+  A condition already is the value these branches return. Returning it directly
+  says the same thing on one line.
+rule:
+  any:
+    - pattern: "if ($C) { return true; } else { return false; }"
+    - pattern: "if ($C) { return false; } else { return true; }"
+languages:
+  Python:
+    any:
+      - pattern: |-
+          if $C:
+              return True
+          else:
+              return False
+      - pattern: |-
+          if $C:
+              return False
+          else:
+              return True
+  Go:
+    any:
+      - pattern: "if $C { return true } else { return false }"
+      - pattern: "if $C { return false } else { return true }"
+  Rust:
+    any:
+      - pattern: "if $C { return true; } else { return false; }"
+      - pattern: "if $C { return false; } else { return true; }"
+      - pattern: "if $C { true } else { false }"
+      - pattern: "if $C { false } else { true }"
+  Kotlin:
+    any:
+      - pattern: "if ($C) { return true } else { return false }"
+      - pattern: "if ($C) { return false } else { return true }"
+  Ruby:
+    any:
+      - pattern: |-
+          if $C
+            true
+          else
+            false
+          end
+      - pattern: |-
+          if $C
+            false
+          else
+            true
+          end
