@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+function classified() {
+	detected "$@" | while IFS=$'\t' read -r name path; do
+		printf '%s\t%s\n' "$(supported "${name,,}")" "$path"
+	done
+}
+
+function detected() {
+	"$SCC" --by-file --format json "$@" |
+		"$JQ" -r '.[] | .Name + "\t" + .Files[].Location'
+}
+
+function supported() {
+	if "$AST_GREP" run --lang "$1" --pattern _ /dev/null 2>&1 | grep -q "not supported"; then
+		echo ""
+	else
+		echo "$1"
+	fi
+}

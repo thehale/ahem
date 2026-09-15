@@ -10,7 +10,9 @@ shfmt = "latest"
 yamlfmt = "latest"
 zizmor = "latest"
 
-# your-tool = "latest"
+ast-grep = "0.45.3"
+"github:boyter/scc" = "latest"
+yq = "latest"
 
 [settings]
 # TODO: Drop once bashorder v0.1.0 is old enough for the default gate.

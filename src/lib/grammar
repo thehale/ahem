@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+GOTMPL_REPO=ngalaiko/tree-sitter-go-template
+GOTMPL_COMMIT=aa71f63de226c5592dfbfc1f29949522d7c95fac
+
+function library() {
+	local path
+	path="$CACHE/$1-$GOTMPL_COMMIT.so"
+	if [[ ! -f "$path" ]]; then
+		build "$GOTMPL_REPO" "$GOTMPL_COMMIT" "$path"
+	fi
+	echo "$path"
+}
+
+function build() {
+	local source
+	source="$(mktemp --directory)"
+	download "$1" "$2" "$source"
+	shared_object "$source" "$3"
+	rm -rf "$source"
+}
+
+function download() {
+	curl --silent --show-error --location --fail \
+		"https://github.com/$1/archive/$2.tar.gz" |
+		tar xz --directory "$3" --strip-components=1
+}
+
+function shared_object() {
+	mkdir -p "$(dirname "$2")"
+	cc -shared -fPIC -I "$1/src" -o "$2" "$1/src/parser.c"
+}

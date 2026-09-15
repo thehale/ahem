@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+function catalogue() {
+	local rule language
+	for rule in "$ROOT"/rules/*.yml; do
+		for language in $("$YQ" '.tests | keys | .[]' "$rule"); do
+			echo "$rule $language"
+		done
+	done
+}
+
+function matcher() {
+	LANGUAGE="$2" BODY="$(body "$1" "$2")" "$YQ" '{
+		"id": .id + "." + strenv(LANGUAGE),
+		"language": strenv(LANGUAGE),
+		"severity": .severity,
+		"message": .message,
+		"rule": (strenv(BODY) | from_json)
+	} | (... style="")' "$1"
+}
+
+function body() {
+	local default
+	default="$(query "$1")"
+	if [[ "$(LANGUAGE="$2" "$YQ" '.languages[strenv(LANGUAGE)].except // ""' "$1")" == "" ]]; then
+		LANGUAGE="$2" DEFAULT="$default" "$YQ" -o=json -I=0 '.languages[strenv(LANGUAGE)] // (strenv(DEFAULT) | from_json)' "$1"
+	else
+		LANGUAGE="$2" DEFAULT="$default" "$YQ" -o=json -I=0 '{"all": [(strenv(DEFAULT) | from_json), {"not": .languages[strenv(LANGUAGE)].except}]}' "$1"
+	fi
+}
+
+function query() {
+	if [[ "$("$YQ" '.except // ""' "$1")" == "" ]]; then
+		"$YQ" -o=json -I=0 '.rule' "$1"
+	else
+		"$YQ" -o=json -I=0 '{"all": [.rule, {"not": .except}]}' "$1"
+	fi
+}
+
+function snippets() {
+	LANGUAGE="$2" "$YQ" '{
+		"id": .id + "." + strenv(LANGUAGE),
+		"valid": .tests[strenv(LANGUAGE)].valid,
+		"invalid": .tests[strenv(LANGUAGE)].invalid
+	}' "$1"
+}
