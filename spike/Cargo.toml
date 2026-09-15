@@ -1,0 +1,36 @@
+[package]
+name = "spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "spike"
+path = "src/main.rs"
+
+[dependencies]
+ast-grep-config = "0.45.3"
+ast-grep-core = { version = "0.45.3", features = ["tree-sitter"] }
+ast-grep-language = { version = "0.45.3", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+tree-sitter = "0.27"
+tree-sitter-language = "0.1"
+
+[features]
+default = ["all-languages"]
+all-languages = ["ast-grep-language/builtin-parser"]
+rule-languages = [
+	"ast-grep-language/tree-sitter-bash",
+	"ast-grep-language/tree-sitter-css",
+	"ast-grep-language/tree-sitter-go",
+	"ast-grep-language/tree-sitter-javascript",
+	"ast-grep-language/tree-sitter-python",
+	"ast-grep-language/tree-sitter-rust",
+]
+
+[build-dependencies]
+cc = "1"
+
+[profile.release]
+strip = true
