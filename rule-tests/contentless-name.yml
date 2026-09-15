@@ -1,0 +1,21 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid: ["const data = load();", "let result = 1;"]
+  valid: ["const invoices = load();", "let total = 1;"]
+Python:
+  invalid: ["value = compute()"]
+  valid: ["duration = compute()"]
+Go:
+  invalid: ["package m\nvar temp = 1"]
+  valid: ["package m\nvar attempts = 1"]
+Rust:
+  invalid: ["fn f() { let obj = g(); }"]
+  valid: ["fn f() { let listener = g(); }"]
+Kotlin:
+  invalid: ["val data = load()"]
+  valid: ["val invoices = load()"]
+Ruby:
+  invalid: ["result = compute"]
+  valid: ["duration = compute"]
