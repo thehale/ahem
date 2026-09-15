@@ -4,12 +4,13 @@ This directory is throwaway. It exists to make
 [the distribution proposal](../docs/single-file-executable.md) checkable, and
 it should be deleted once the proposal is accepted or rejected.
 
-It answers the three questions that decide the Rust option:
+It answers the four questions that decide the Rust option:
 
 1. Can a Rust binary parse Go templates with **no `cc` at install or run time**?
 2. Can it reuse **ast-grep's rule semantics** rather than reimplementing them?
 3. When a rule is compiled to **every** language, do the languages it does not
    fit **fail loudly**?
+4. Does a rule that does not apply to a language need a **waiver marker**?
 
 ## Run it
 
@@ -50,6 +51,13 @@ resolves to no node in that grammar, so a rule that cannot work in a language
 is a compile error rather than a rule that silently matches nothing. Rust is
 on the list, which is why `rules/comment.yml` already overrides it. The other
 three are the work that compiling to every language surfaces.
+
+**A waiver marker is probably unnecessary.** `waiver()` compiles four
+candidate no-ops against Json. A rule that does not apply still compiles and
+matches nothing, so only a rule naming no node at all is rejected. Json has a
+`comment` node, so it needs no waiver. ast-grep has no conventional no-op:
+`any: []` compiles and matches nothing as an emergent property of an empty
+kind union, while `all: []` and `not: {any: []}` are both rejected.
 
 ## Measurements
 

@@ -214,9 +214,27 @@ to build rather than matching nothing. The spike compiles a bare
 That output is a coverage checklist. deconfuse should surface it as one: `test`
 fails when a rule does not compile for a language, and the error names the
 language, so adding a rule tells you immediately which `languages:` overrides
-it still owes. The only design choice left is whether an author can waive a
-language explicitly, which they will need for cases like a comment rule
-against Json.
+it still owes.
+
+### A waiver marker is probably not needed
+
+The obvious worry is a rule that genuinely does not apply to a language, which
+would make the checklist noise rather than work. It turns out to be rarer than
+it sounds, because **a rule that does not apply still compiles and matches
+nothing**. Only a rule whose `kind` names no node at all is rejected.
+
+Json is the case that looks like it needs a waiver and does not.
+`tree-sitter-json` has a `comment` node, so `kind: comment` compiles there and
+finds comments in the files that have them. All four real failures, Java,
+Kotlin, Markdown and Rust, are languages that *do* have comments under a
+different node name. Every one of them is work, not a waiver.
+
+ast-grep has no conventional no-op marker; `SerializableRule` is atomic,
+relational and composite fields only. If one is ever needed, `any: []`
+compiles and matches nothing, an emergent property of an empty kind union
+rather than a documented idiom. `all: []` and `not: {any: []}` are both
+rejected. Treat `any: []` as available but unblessed, and do not build the
+format around it until a rule actually needs it.
 
 ## Releasing
 

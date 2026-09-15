@@ -96,6 +96,7 @@ impl LanguageExt for Lang {
 fn main() {
 	matching();
 	coverage();
+	waiver();
 }
 
 fn matching() {
@@ -145,6 +146,29 @@ fn coverage() {
 		}
 	}
 	println!("\n{} of {} languages need an override: {}", gaps.len(), langs.len(), gaps.join(", "));
+}
+
+fn waiver() {
+	println!("\n== candidate no-op markers, compiled against Json\n");
+	for (label, body) in [
+		("any: []", "rule:\n  any: []\n"),
+		("all: []", "rule:\n  all: []\n"),
+		("not: {any: []}", "rule:\n  not: {any: []}\n"),
+		("kind: comment", "rule:\n  any: [{kind: comment}]\n"),
+	] {
+		let yaml = format!("id: probe\nlanguage: Json\nseverity: warning\nmessage: m\n{body}");
+		match from_yaml_string::<Lang>(&yaml, &GlobalRules::default()) {
+			Ok(rules) => {
+				let rule = &rules[0];
+				let hits = ["{\"a\": 1}", "[]", "// c"]
+					.iter()
+					.filter(|s| rule.language.ast_grep(s).root().find(&rule.matcher).is_some())
+					.count();
+				println!("ok   {label:<16} compiles, matches {hits} of 3");
+			}
+			Err(error) => println!("GAP  {label:<16} {error}"),
+		}
+	}
 }
 
 const COMPILED: &str = r#"
