@@ -63,7 +63,7 @@ function scan() {
 function rules() {
 	local rule
 	for rule in "$ROOT"/rules/*.yml; do
-		"$YQ" '[.id, .severity, (.tests | keys | join(" "))] | join("  ")' "$rule"
+		printf '%s  %s  %s\n' "$("$YQ" '.id' "$rule")" "$("$YQ" '.severity' "$rule")" "$(languages "$rule" | tr '\n' ' ')"
 	done
 }
 

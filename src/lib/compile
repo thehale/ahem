@@ -5,10 +5,22 @@
 function catalogue() {
 	local rule language
 	for rule in "$ROOT"/rules/*.yml; do
-		for language in $("$YQ" '.tests | keys | .[]' "$rule"); do
+		for language in $(languages "$rule"); do
 			echo "$rule $language"
 		done
 	done
+}
+
+function languages() {
+	local tests
+	tests="$(snippets_for "$1")"
+	if [[ -f "$tests" ]]; then
+		"$YQ" 'keys | .[]' "$tests"
+	fi
+}
+
+function snippets_for() {
+	echo "$ROOT/rule-tests/$(basename "$1")"
 }
 
 function matcher() {
@@ -40,9 +52,9 @@ function query() {
 }
 
 function snippets() {
-	LANGUAGE="$2" "$YQ" '{
-		"id": .id + "." + strenv(LANGUAGE),
-		"valid": .tests[strenv(LANGUAGE)].valid,
-		"invalid": .tests[strenv(LANGUAGE)].invalid
-	}' "$1"
+	ID="$("$YQ" '.id' "$1")" LANGUAGE="$2" "$YQ" '{
+		"id": strenv(ID) + "." + strenv(LANGUAGE),
+		"valid": .[strenv(LANGUAGE)].valid,
+		"invalid": .[strenv(LANGUAGE)].invalid
+	}' "$(snippets_for "$1")"
 }

@@ -21,25 +21,3 @@ languages:
   Bash:
     except:
       regex: "^#!"
-tests:
-  JavaScript:
-    invalid: ["// a thing"]
-    valid: ["let x = 1;", "// SPDX-License-Identifier: MPL-2.0"]
-  Python:
-    invalid: ["# a thing"]
-    valid: ["x = 1"]
-  Go:
-    invalid: ["package m\n// a thing"]
-    valid: ["package m"]
-  Css:
-    invalid: ["/* a thing */"]
-    valid: ["p { color: red; }"]
-  Bash:
-    invalid: ["# a thing"]
-    valid: ["#!/usr/bin/env bash", "# Copyright (c) Someone, 2026", "# SPDX-License-Identifier: MPL-2.0"]
-  Rust:
-    invalid: ["// a thing"]
-    valid: ["fn main() {}"]
-  gotmpl:
-    invalid: ["{{- /* a thing */ -}}"]
-    valid: ["<p>{{ .Title }}</p>"]
