@@ -1,0 +1,145 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      function f(a) {
+        const b = a + 1;
+        const c = b + 1;
+        const d = c + 1;
+        const e = d + 1;
+        const g = e + 1;
+        const h = g + 1;
+        const i = h + 1;
+        return i;
+      }
+  valid:
+    - |
+      function f(a) {
+        const b = a + 1;
+        const c = b + 1;
+        const d = c + 1;
+        const e = d + 1;
+        const g = e + 1;
+        const h = g + 1;
+        return h;
+      }
+Python:
+  invalid:
+    - |
+      def f(a):
+          b = a + 1
+          c = b + 1
+          d = c + 1
+          e = d + 1
+          g = e + 1
+          h = g + 1
+          i = h + 1
+          return i
+  valid:
+    - |
+      def f(a):
+          b = a + 1
+          c = b + 1
+          d = c + 1
+          e = d + 1
+          g = e + 1
+          h = g + 1
+          return h
+Go:
+  invalid:
+    - |
+      func f(a int) int {
+      	b := a + 1
+      	c := b + 1
+      	d := c + 1
+      	e := d + 1
+      	g := e + 1
+      	h := g + 1
+      	i := h + 1
+      	return i
+      }
+  valid:
+    - |
+      func f(a int) int {
+      	b := a + 1
+      	c := b + 1
+      	d := c + 1
+      	e := d + 1
+      	g := e + 1
+      	h := g + 1
+      	return h
+      }
+Rust:
+  invalid:
+    - |
+      fn f(a: i32) -> i32 {
+          let b = a + 1;
+          let c = b + 1;
+          let d = c + 1;
+          let e = d + 1;
+          let g = e + 1;
+          let h = g + 1;
+          let i = h + 1;
+          return i;
+      }
+  valid:
+    - |
+      fn f(a: i32) -> i32 {
+          let b = a + 1;
+          let c = b + 1;
+          let d = c + 1;
+          let e = d + 1;
+          let g = e + 1;
+          let h = g + 1;
+          return h;
+      }
+Kotlin:
+  invalid:
+    - |
+      fun f(a: Int): Int {
+          val b = a + 1
+          val c = b + 1
+          val d = c + 1
+          val e = d + 1
+          val g = e + 1
+          val h = g + 1
+          val i = h + 1
+          return i
+      }
+  valid:
+    - |
+      fun f(a: Int): Int {
+          val b = a + 1
+          val c = b + 1
+          val d = c + 1
+          val e = d + 1
+          val g = e + 1
+          val h = g + 1
+          return h
+      }
+Ruby:
+  invalid:
+    - |
+      def f(a)
+        b = a + 1
+        c = b + 1
+        d = c + 1
+        e = d + 1
+        g = e + 1
+        h = g + 1
+        i = h + 1
+        i
+      end
+  valid:
+    - |
+      def f(a)
+        b = a + 1
+        c = b + 1
+        d = c + 1
+        e = d + 1
+        g = e + 1
+        h = g + 1
+        h
+      end

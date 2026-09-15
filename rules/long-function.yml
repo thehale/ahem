@@ -1,0 +1,55 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: function-holds-more-than-a-story
+severity: hint
+message: >-
+  A function reads as a story when each statement names a step. Extracting
+  helpers until the steps fit in a handful of lines keeps the details out of
+  the telling.
+rule:
+  kind: statement_block
+  inside:
+    any:
+      - kind: function_declaration
+      - kind: method_definition
+      - kind: function_expression
+      - kind: arrow_function
+  has:
+    nthChild: 8
+languages:
+  Python:
+    kind: block
+    inside:
+      kind: function_definition
+    has:
+      nthChild: 8
+  Go:
+    kind: statement_list
+    inside:
+      kind: block
+      inside:
+        any:
+          - kind: function_declaration
+          - kind: method_declaration
+          - kind: func_literal
+    has:
+      nthChild: 8
+  Rust:
+    kind: block
+    inside:
+      kind: function_item
+    has:
+      nthChild: 8
+  Kotlin:
+    kind: statements
+    inside:
+      kind: function_body
+    has:
+      nthChild: 8
+  Ruby:
+    kind: body_statement
+    inside:
+      kind: method
+    has:
+      nthChild: 8
