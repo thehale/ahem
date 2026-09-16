@@ -1,8 +1,9 @@
 <div align="center">
 
-# Template
+# deconfuse
 
-A starting point for new projects.
+Finds code patterns worth reconsidering, and says which principle each one
+breaks.
 
 <!-- BADGES -->
 [![License: MPL-2.0](https://badgen.net/github/license/thehale/template)](https://github.com/thehale/template/blob/main/LICENSE)
@@ -14,10 +15,27 @@ A starting point for new projects.
 ## Quickstart
 
 ```bash
-bin/setup  # Install the tools
-bin/ci     # Run the checks
+cargo build --release
+target/release/deconfuse check src   # report findings under a path
+target/release/deconfuse rules       # list rules and the languages they reach
+target/release/deconfuse test        # run every rule against its snippets
+```
+
+One binary, nothing installed alongside it. Rules and their tests are compiled
+in, every tree-sitter grammar is linked at build time, and nothing is written
+to disk at run time.
+
+## Contributing
+
+```bash
+bin/setup     # Install the tools
+bin/ci        # Run the checks
 bin/ci --fix  # Fix what can be fixed automatically
 ```
+
+Rules live in `rules/`, one file each, paired with snippets in `rule-tests/`.
+See [docs/single-file-executable.md](docs/single-file-executable.md) for why
+deconfuse is built the way it is.
 
 ## License
 

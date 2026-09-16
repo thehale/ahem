@@ -1,24 +1,25 @@
 # Distributing deconfuse as one file
 
+**Status: done.** deconfuse is the Rust binary this document argued for. The
+bash implementation, its four tool dependencies and the throwaway spike are
+gone. What remains here is the reasoning, kept because the alternatives are
+worth having written down and the decisions are worth being able to revisit.
+
 ## The ask
 
-Someone should be able to download one file, run it, and get findings. Today
-they need mise, four binaries resolved through it, and a C compiler that runs
-the first time a Go template is scanned. That is a fine way to develop
-deconfuse and a bad way to use it.
+Someone should be able to download one file, run it, and get findings. Before
+this, they needed mise, four binaries resolved through it, and a C compiler
+that ran the first time a Go template was scanned. That was a fine way to
+develop deconfuse and a bad way to use it.
 
-## Recommendation
+## What shipped
 
-Rewrite deconfuse as a Rust binary that links ast-grep's library crates and
-the Go template grammar directly. Keep `rules/*.yml` exactly as it is.
+A Rust binary that links ast-grep's library crates and the Go template grammar
+directly. `rules/*.yml` and `rule-tests/*.yml` are unchanged in shape and
+compiled into the binary. No `cc`, no `dlopen`, no download, no cache
+directory.
 
-A working spike lives in [`spike/`](../spike/README.md). It compiles the
-grammar at build time, links it into the binary, and matches
-`rules/comment.yml`'s own test snippets using ast-grep's rule deserializer.
-No `cc`, no `dlopen`, no download. The binary is 4.9 MB gzipped with all 27
-of ast-grep's languages, 1.8 MB with the six the rules currently target.
-
-The rest of this document is why the other three candidates lose.
+The rest of this document is why the other three candidates lost.
 
 ## What the four dependencies are actually for
 
@@ -53,8 +54,8 @@ cross-compilation work, bought without the benefits.
 
 Only a candidate that links `ast-grep-core` as a library escapes this,
 because the `Language` trait takes a `TSLanguage` from anywhere, including a
-symbol statically linked from `parser.c`. The spike does this in twenty
-lines.
+symbol statically linked from `parser.c`. `src/lang.rs` does this in a
+twenty-line enum.
 
 ### Can ast-grep's rule semantics be reused?
 
@@ -135,7 +136,7 @@ for the rewrite:
    parallel `rule-tests/` tree, a `testConfigs` block, and
    `--skip-snapshot-tests` to suppress a feature deconfuse does not use.
    Running `valid` and `invalid` snippets directly is the twelve-line
-   `report` function in the spike.
+   `reported` function in `src/verify.rs`.
 
 The cost: a 43 MB binary on disk in the all-languages build, and a
 contributor toolchain that is Rust rather than bash. Both are acceptable.
@@ -255,14 +256,14 @@ a new concept.
 **User rules are not second-class.** A rule read from `ruleDirs` goes through
 the same `from_yaml_string::<Lang>` call as an embedded one, so it gets the
 whole rule language, the custom `gotmpl` grammar, and the same `languages:`
-override machinery. The spike loads a rule from a file at run time beside the
-embedded set and matches with it. There is no plugin API to design, because
+override machinery. A spike loaded a rule from a file at run time beside the
+embedded set and matched with it. There is no plugin API to design, because
 there is no plugin.
 
-**Rule ids stay flat and unique.** The spike checks the merged set for
-collisions. A user rule reusing a built-in id should be an error naming both
-sources rather than a silent override, since silent shadowing is how people
-lose a rule they thought was running.
+**Rule ids stay flat and unique.** The merged set needs a collision check. A
+user rule reusing a built-in id should be an error naming both sources rather
+than a silent override, since silent shadowing is how people lose a rule they
+thought was running.
 
 Precedence: embedded rules load first, `ruleDirs` extend them, `rules:`
 applies severity last, so a project can turn off a built-in and ship its own
@@ -312,11 +313,11 @@ Compiling to every language means rules meet grammars they do not fit.
 ast-grep already complains loudly about this, which is the best news in the
 evaluation. `RuleConfig::try_from` returns `MissingPotentialKinds` when a
 rule's `kind` resolves to no node in a grammar, so an ill-fitting rule fails
-to build rather than matching nothing. The spike compiles a bare
-`kind: comment` rule against all 29 languages and gets:
+to build rather than matching nothing. Compiling a bare
+`kind: comment` rule against all 28 languages and gets:
 
 ```text
-4 of 29 languages need an override: Java, Kotlin, Markdown, Rust
+4 of 28 languages need an override: Java, Kotlin, Markdown, Rust
 ```
 
 That output is a coverage checklist. deconfuse should surface it as one: `test`
@@ -326,55 +327,43 @@ it still owes.
 
 ### What compiling to every language actually costs
 
-One rule made it look nearly free. Four do not. The spike surveys each rule's
-default body against all 29 languages:
+One rule made it look nearly free. Eight do not. `deconfuse test` reports the
+real spread across the 28 languages deconfuse ships:
 
-| Rule | Body is built on | Gaps |
-| --- | --- | --- |
-| `comment-earns-nothing` | `kind: comment` | 4 of 29 |
-| `name-carries-no-content` | `kind: identifier` + `regex` | 7 of 29 |
-| `conditions-compose-into-a-value` | `pattern` + `follows` | 18 of 29 |
-| `branches-read-as-one-shape` | `if_statement` + `has`/`precedes` | 26 of 29 |
+```text
+  argument-names-nothing             14/28 compiled,  6 tested,  8 untested
+  branch-leads-with-a-negation       11/28 compiled,  6 tested,  5 untested
+  branches-read-as-one-shape          7/28 compiled,  5 tested,  2 untested
+  comment-earns-nothing              26/28 compiled,  9 tested, 17 untested
+  condition-is-already-the-value     18/28 compiled,  6 tested, 12 untested
+  conditions-compose-into-a-value    15/28 compiled,  6 tested,  9 untested
+  function-holds-more-than-a-story    8/28 compiled,  6 tested,  2 untested
+  name-carries-no-content            22/28 compiled,  6 tested, 16 untested
+```
 
-The pattern is clear and it is not about `kind` versus `pattern`. It is how
-much structure the rule names. `kind: comment` names one node most grammars
-share. `branches-read-as-one-shape` names `if_statement`, `else_clause`,
-`return_statement` and `lexical_declaration` in one breath, and only
-JavaScript, TypeScript and Tsx have all four under those names. It passes
-three languages and needs an override for the rest.
+The cost tracks how much structure a rule names, not whether it uses `kind` or
+`pattern`. `comment-earns-nothing` names one node most grammars share and
+reaches 26. `branches-read-as-one-shape` names `if_statement`, `else_clause`,
+`return_statement` and `lexical_declaration` in one breath and reaches 7.
 
-Averaged over the four rules, **about half of all languages need bespoke work
-per rule**, and the current four rules would owe roughly 55 overrides between
-them.
+The third column is the one to watch. Across these eight rules, 71 rule and
+language pairs compile and run with no snippet ever written for them. They are
+not wrong, but they are a weaker claim than the 50 that are tested, and
+`deconfuse test` prints the split every run so the gap stays visible rather
+than becoming the quiet default.
 
-This is the number to decide on, and it is a judgement call rather than a
-technical obstacle:
+### This changed how scope was decided
 
-- **Accept it**, and a rule is not finished until it has been thought about in
-  29 languages. Thorough, and slow enough to discourage new rules.
-- **Let a rule declare a family**, so `branches-read-as-one-shape` claims the
-  languages with C-like statement structure and stays silent elsewhere. Keeps
-  the checklist meaningful without pretending every rule is universal.
-
-Whichever way it goes, nothing about the Rust recommendation changes. Both are
-a predicate over `Lang::all()`.
-
-### This conflicts with how `main` works today
-
-`src/lib/compile:languages()` reads the top-level keys of
-`rule-tests/<name>.yml`, so a language with no test snippets is never
-compiled, even when `languages:` has a block for it. Scope comes from the
-tests. That is the opposite of compiling to every language, and the table
-above is why the two have not been reconciled by accident.
-
-The proposal describes the target. `main` describes today. The gap between
-them is a decision someone has to make, not something the packaging work
-should quietly settle in either direction.
+The bash implementation read the test file's top-level keys, so a language
+without snippets was never compiled even when `languages:` had a block for it.
+Scope came from the tests. deconfuse now compiles every rule for every
+language it ships and reports the languages a rule cannot express itself in,
+which is what a generic code matcher should do.
 
 ### Loud failure has one hole
 
 Markdown and Yaml accept `conditions-compose-into-a-value`. They compile it
-and then match nothing in real Markdown or YAML, verified in the spike, so the
+and then match nothing in real Markdown or YAML, so the
 rule is inert rather than wrong. But nothing complains, which means the
 checklist reports a language as covered when the rule is meaningless there.
 Silence is not the same as fit, and only tests close that gap. That is an
@@ -424,68 +413,11 @@ pipe. Because the result is a plain static binary, mise's `github:` backend
 can install it too. deconfuse becomes installable *by* mise without requiring
 mise.
 
-## Migration
-
-The rewrite is not incremental, but it is stageable, because `rules/*.yml` is
-the interface and it does not change. Each stage ships behind `bin/ci`
-running both implementations, so divergence shows up as a failing check
-rather than a surprise.
-
-1. **`deconfuse test`.** Rule self-testing only: read `rules/*.yml`, expand to
-   every language, fail on any that does not compile, then run `valid` and
-   `invalid`. No file walking, no detection. This stage also has to resolve
-   the Haskell abort described below. `bin/ci` runs the Rust one and the bash
-   one and compares.
-2. **`deconfuse check PATH...`** on explicit paths, extension-based detection.
-   Diff its output against the bash version over this repo and a Go template
-   project.
-3. **Directory walking and shebang detection.** The `ignore` crate, already a
-   transitive dependency of `ast-grep-language`, gives `.gitignore`-aware
-   traversal. Shebang sniffing closes the scc gap.
-4. **`rules` and `compile`.** `rules` lists what is loaded. `compile` becomes
-   a dump of the deserialized rule, which is a better debugging tool than the
-   current cache dump because it shows what will actually match.
-5. **Delete `src/`, delete the four tools from `mise.toml`, add the release
-   workflow.** `mise.toml` keeps the development tools and gains Rust.
-
-Stages 1 through 4 leave the repo working at every commit. Stage 5 is the
-only irreversible one, and by then both implementations have agreed on real
-input for four stages.
-
-## What this costs
-
-An honest tally, since the recommendation is a rewrite of a tool that is one
-day old.
-
-- 88 lines of `src/deconfuse` plus 161 lines of `src/lib/*` get thrown away.
-  That is the good news about doing this now rather than in six months.
-- Shebang-based language detection has to be written rather than inherited.
-- Contributors need a Rust toolchain instead of bash. The rules, which are
-  where contribution actually happens, stay YAML.
-- deconfuse takes on ast-grep's library crates as a versioned dependency
-  rather than a pinned binary. They are published, versioned together with
-  the CLI, and currently at 0.45.3, matching the pin in `mise.toml`.
-- Shipping every grammar means deconfuse owns every grammar's bugs for the
-  languages it scans. The spike found one immediately.
-
-### Compiling to every language is not scanning with every grammar
-
-Two separate things, worth keeping apart.
-
-**Compilation** happens once at startup and builds a `Lang -> Vec<RuleConfig>`
-map. It touches every grammar, but only to resolve `kind` names to node ids,
-which is a lookup against static tables. The spike does this for all 29
-languages with no trouble.
-
-**Scanning** detects each file's language once and matches it against that
-language's rules only. A `.py` file meets the Python grammar and nothing else.
-That does not change.
-
 ## The one grammar deconfuse cannot ship
 
 `tree-sitter-haskell` 0.23.1 overflows the heap while parsing. The corruption
 is latent and aborts the process later, in whatever allocates next. The
-spike's `haskell-abort` reproducer aborts in 20 of 21 heap layouts with
+spike's `haskell-abort` reproducer aborted in 20 of 21 heap layouts with
 Haskell in the language set and 0 of 21 without it.
 
 0.23.1 is both what `ast-grep-language` 0.45.3 depends on and the newest
@@ -496,11 +428,13 @@ This is an argument for the approach rather than against it. Linking grammars
 means a bad one is a build-time decision deconfuse gets to make. Shelling out
 to ast-grep would have left the same bug reachable with no way to exclude it.
 
-## Decision
+## What is still open
 
-Adopt Rust. Start with stage 1, which is the spike plus rule expansion, and
-keep the bash implementation until stage 4 passes.
-
-If the rewrite is rejected, the bash-with-vendored-binaries option is the
-fallback, and the first thing it should do is ship prebuilt Go template
-shared objects so that `cc` stops being an install requirement.
+- **Whether an untested language should be allowed to run.** Today it does,
+  and `deconfuse test` names the count. The alternative is refusing to ship a
+  rule for a language nobody has written a snippet for.
+- **User rules and a config file.** The design is above and the loading path
+  is the same call the embedded rules use. Nothing reads `deconfuse.yml` yet.
+- **Release automation.** The matrix above is not wired up, so there is no
+  downloadable binary yet, only a `cargo build` away from one.
+- **Haskell**, whenever its grammar stops corrupting the heap.
