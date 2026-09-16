@@ -24,22 +24,25 @@ function main() {
 		check "YAML: Format" "bin/yamlformat --fix"
 		check "Markdown: Lint" "bin/markdownlint --fix"
 		check "License" "bin/lawyer --fix"
-
-		# check "Category: Action" "bin/your-script"
+		check "Rust: Format" "cargo fmt"
 	else
 		check "Bash: Shebang" "filelike bash | bin/shebang '#!/usr/bin/env bash'"
 		check "Bash: Syntax" "filelike bash | xargs -n1 bash -n"
 		check "Bash: Lint" "filelike bash | xargs shellcheck --external-sources"
 		check "Bash: Format" "filelike bash | xargs shfmt --diff"
 		check "Bash: Order" "filelike bash | bashorder check"
-		check "Bash: Test" "bats --recursive bin src"
+		check "Bash: Test" "bats --recursive bin"
 		check "Actions: Lint" "actionlint"
 		check "Actions: Audit" "zizmor --quiet .github"
 		check "YAML: Format" "bin/yamlformat"
 		check "Markdown: Lint" "bin/markdownlint"
 		check "License" "bin/lawyer"
 
-		check "Rules: Test" "src/deconfuse test"
+		check "Rust: Format" "cargo fmt --check"
+		check "Rust: Lint" "cargo clippy --all-targets -- --deny warnings"
+		check "Rust: Build" "cargo build --release"
+		check "Rules: Test" "target/release/deconfuse test"
+		check "Rules: Self" "target/release/deconfuse check src"
 	fi
 
 	summarize "$(elapsed "$started")"

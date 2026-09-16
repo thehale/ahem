@@ -1,0 +1,54 @@
+[package]
+name = "deconfuse"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+publish = false
+
+[[bin]]
+name = "deconfuse"
+path = "src/main.rs"
+
+[dependencies]
+ast-grep-config = "0.45.3"
+ast-grep-core = { version = "0.45.3", features = ["tree-sitter"] }
+ast-grep-language = { version = "0.45.3", default-features = false, features = [
+	"tree-sitter-bash",
+	"tree-sitter-c",
+	"tree-sitter-cpp",
+	"tree-sitter-c-sharp",
+	"tree-sitter-css",
+	"tree-sitter-dart",
+	"tree-sitter-elixir",
+	"tree-sitter-go",
+	"tree-sitter-hcl",
+	"tree-sitter-html",
+	"tree-sitter-java",
+	"tree-sitter-javascript",
+	"tree-sitter-json",
+	"tree-sitter-kotlin",
+	"tree-sitter-lua",
+	"tree-sitter-md",
+	"tree-sitter-nix",
+	"tree-sitter-php",
+	"tree-sitter-python",
+	"tree-sitter-ruby",
+	"tree-sitter-rust",
+	"tree-sitter-scala",
+	"tree-sitter-solidity",
+	"tree-sitter-swift",
+	"tree-sitter-typescript",
+	"tree-sitter-yaml",
+] }
+ignore = "0.4"
+include_dir = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+tree-sitter = "0.27"
+tree-sitter-language = "0.1"
+
+[build-dependencies]
+cc = "1"
+
+[profile.release]
+strip = true

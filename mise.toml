@@ -3,17 +3,12 @@
 "github:thehale/bashorder" = "latest"
 actionlint = "latest"
 bats = "1.14.0"
-jq = "latest"
 markdownlint-cli2 = "latest"
+rust = "1.98.1"
 shellcheck = "latest"
 shfmt = "latest"
 yamlfmt = "latest"
 zizmor = "latest"
 
-ast-grep = "0.45.3"
-"github:boyter/scc" = "latest"
-yq = "latest"
-
 [settings]
-# TODO: Drop once bashorder v0.1.0 is old enough for the default gate.
 minimum_release_age_excludes = ["github:thehale/bashorder"]
