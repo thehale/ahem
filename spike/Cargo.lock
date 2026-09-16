@@ -477,6 +477,7 @@ dependencies = [
  "serde",
  "serde_yaml",
  "tree-sitter",
+ "tree-sitter-haskell",
  "tree-sitter-language",
 ]
 

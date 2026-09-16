@@ -481,19 +481,20 @@ languages with no trouble.
 language's rules only. A `.py` file meets the Python grammar and nothing else.
 That does not change.
 
-## The one open risk
+## The one grammar deconfuse cannot ship
 
-Matching a rule against Haskell aborts the spike with
-`corrupted size vs. prev_size`, reproducibly. It is not the vendored grammar,
-not `tree-sitter-haskell` on its own, and not ast-grep, all of which the
-spike's README rules out individually. It is somewhere in using
-`ast-grep-core` as a library, and it is not root-caused.
+`tree-sitter-haskell` 0.23.1 overflows the heap while parsing. The corruption
+is latent and aborts the process later, in whatever allocates next. The
+spike's `haskell-abort` reproducer aborts in 20 of 21 heap layouts with
+Haskell in the language set and 0 of 21 without it.
 
-It is reached by scanning a Haskell file, so compiling to every language
-neither causes nor worsens it. Resolve it in stage 1, before the rewrite is
-committed to. It is plausibly a small fix, a `TSLanguage` handed out per call
-where ast-grep's own CLI hands out one, but that is a guess until someone runs
-it under a sanitizer.
+0.23.1 is both what `ast-grep-language` 0.45.3 depends on and the newest
+published version, so there is nothing to upgrade to. deconfuse ships the
+other 26 languages plus `gotmpl`, and adds Haskell when upstream fixes it.
+
+This is an argument for the approach rather than against it. Linking grammars
+means a bad one is a build-time decision deconfuse gets to make. Shelling out
+to ast-grep would have left the same bug reachable with no way to exclude it.
 
 ## Decision
 

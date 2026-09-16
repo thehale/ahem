@@ -100,30 +100,38 @@ For comparison, today's four mise-resolved dependencies are 83 MB on this
 machine, 21 MB as a `tar czf` bundle: ast-grep 50 MB, scc 18 MB, yq 14 MB,
 jq 2.2 MB.
 
-## Open risk: an abort when matching Haskell
+## Resolved: the abort belongs to tree-sitter-haskell
 
-Matching, rather than compiling, a rule against Haskell source aborts the
-process with `corrupted size vs. prev_size`. It reproduces every run.
+An earlier draft recorded an unexplained abort and blamed the spike's use of
+`ast-grep-core`, and ruled out the vendored grammar on a test that turned out
+to have reused a cached build artifact. Both conclusions were wrong.
 
-What is known:
+`src/bin/haskell-abort.rs` is the reproducer. It compiles a `kind: comment`
+rule for every language, matches a handful of snippets, and takes a
+`PERTURB` count of live heap blocks to allocate first:
 
-- Compiling rules for all 29 languages is clean. Only matching aborts.
-- It is not the vendored grammar. The abort happens with the `gotmpl` object
-  unlinked.
-- It is not the grammar alone. `tree_sitter::Parser` with the same
-  `tree-sitter-haskell` 0.23.1 parses all the same snippets without aborting,
-  including with one parser reused across parses.
-- It is not ast-grep. `ast-grep run --lang haskell` on the same snippets is
-  clean, and `src/deconfuse check` over a `.hs` file exits 0.
+```bash
+cargo run --release --bin haskell-abort              # aborts
+SKIP=Haskell cargo run --release --bin haskell-abort # clean
+```
 
-So it sits somewhere in this spike's use of `ast-grep-core` as a library, most
-likely in how `Lang::get_ts_language` hands out a `TSLanguage` per call. Not
-root-caused. It is stage-1 work for the migration, and the proposal lists it
-as the one thing to resolve before committing to the rewrite.
+Swept over 21 heap layouts:
 
-It is reached by scanning a Haskell file. Compiling rules for every language
-resolves `kind` names against static tables and never parses anything, which
-is why `coverage()` touches all 29 grammars and stays clean.
+```text
+all languages:  20/21 heap layouts aborted
+SKIP=Haskell:    0/21 heap layouts aborted
+```
+
+`tree-sitter-haskell` 0.23.1, the version `ast-grep-language` 0.45.3 pulls and
+the newest published, overflows the heap while parsing. The damage is latent
+and surfaces later as `corrupted size vs. prev_size` in whatever allocates
+next, which is why it first looked like a `gotmpl` or an `ast-grep` problem.
+The narrowest input that triggers it is a Haskell source consisting only of a
+comment, though whether a given build aborts depends on heap layout, so a
+standalone one-grammar reproducer is not reliable.
+
+Nothing here is deconfuse's to fix and there is no fixed release to upgrade
+to. deconfuse ships every language except Haskell until upstream has one.
 
 ## Known holes
 
