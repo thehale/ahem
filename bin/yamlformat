@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/yamlformat [--fix]
+
+set -euo pipefail
+
+PATHS=(
+	".github"
+)
+
+# yamlfmt strips every blank line by default, which collapses a workflow into
+# an unreadable wall. Keep the blank lines that separate blocks.
+CONFIG='
+formatter:
+  type: basic
+  retain_line_breaks_single: true
+'
+
+CONFIG_DIR=""
+
+main() {
+	trap cleanup EXIT
+	write_config
+
+	if [[ "${1:-}" == "--fix" ]]; then
+		yamlfmt -conf "$CONFIG_DIR/.yamlfmt" "${PATHS[@]}"
+	else
+		yamlfmt -conf "$CONFIG_DIR/.yamlfmt" -lint "${PATHS[@]}"
+	fi
+}
+
+write_config() {
+	CONFIG_DIR="$(mktemp --directory)"
+	printf '%s\n' "$CONFIG" >"$CONFIG_DIR/.yamlfmt"
+}
+
+cleanup() {
+	if [[ -n "$CONFIG_DIR" ]]; then
+		rm --recursive --force "$CONFIG_DIR"
+	fi
+}
+
+main "$@"

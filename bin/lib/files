@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/lib/files [--extension EXT]... [--shebang WORD]...
+
+set -euo pipefail
+
+EXCLUDED_DIRECTORIES=(
+	vendor
+)
+
+EXTENSIONS=()
+SHEBANGS=()
+
+main() {
+	read_options "$@"
+	list_repo_files | select_matching_files | omit_excluded_paths
+}
+
+read_options() {
+	while (($# > 0)); do
+		case "$1" in
+		--extension)
+			EXTENSIONS+=("${2:?--extension needs a name}")
+			shift 2
+			;;
+		--shebang)
+			SHEBANGS+=("${2:?--shebang needs a word}")
+			shift 2
+			;;
+		*)
+			echo "Usage: bin/lib/files [--extension EXT]... [--shebang WORD]..." >&2
+			exit 1
+			;;
+		esac
+	done
+
+	if ((${#EXTENSIONS[@]} + ${#SHEBANGS[@]} == 0)); then
+		echo "bin/lib/files: give at least one --extension or --shebang" >&2
+		exit 1
+	fi
+}
+
+list_repo_files() {
+	comm -23 <(list_nonignored_files) <(list_deleted_files)
+}
+
+list_nonignored_files() {
+	git ls-files --cached --others --exclude-standard | sort -u
+}
+
+list_deleted_files() {
+	git ls-files --deleted | sort -u
+}
+
+select_matching_files() {
+	local files
+	files="$(cat)"
+	[[ -n "$files" ]] || return 0
+
+	{
+		printf '%s\n' "$files" | select_by_extension
+		printf '%s\n' "$files" | select_by_shebang
+	} | sort -u
+}
+
+select_by_extension() {
+	((${#EXTENSIONS[@]})) || return 0
+
+	local pattern
+	pattern="$(printf '%s|' "${EXTENSIONS[@]}")"
+	sed --regexp-extended --quiet "/\\.(${pattern%|})$/ p"
+}
+
+select_by_shebang() {
+	((${#SHEBANGS[@]})) || return 0
+
+	local pattern
+	pattern="$(printf '%s|' "${SHEBANGS[@]}")"
+	xargs --no-run-if-empty --delimiter='\n' \
+		sed --separate --quiet --regexp-extended \
+		"1 { /^#!.*[ /](${pattern%|})$/ F }"
+}
+
+omit_excluded_paths() {
+	local pattern
+	pattern="$(printf '(^|/)%s/|' "${EXCLUDED_DIRECTORIES[@]}")"
+	sed --regexp-extended "\%${pattern%|}%d"
+}
+
+main "$@"

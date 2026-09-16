@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: source bin/lib/timing; elapsed "$started"
+
+# Microseconds since the epoch
+timestamp() {
+	local now="$EPOCHREALTIME"
+	echo "${now//[.,]/}"
+}
+
+elapsed() {
+	local micros=$(($(timestamp) - $1))
+	printf '%d.%02ds\n' "$((micros / 1000000))" "$((micros % 1000000 / 10000))"
+}

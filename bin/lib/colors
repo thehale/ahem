@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: source bin/lib/colors; green "done"
+
+green() {
+	echo -e "\033[32m$1\033[0m"
+}
+
+red() {
+	echo -e "\033[31m$1\033[0m"
+}
+
+yellow() {
+	echo -e "\033[33m$1\033[0m"
+}
+
+blue() {
+	echo -e "\033[34m$1\033[0m"
+}
+
+grey() {
+	echo -e "\033[90m$1\033[0m"
+}

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: source bin/lib/filelike; filelike bash
+
+filelike() {
+	local language="${1:-}"
+	local files
+	files="$(dirname "${BASH_SOURCE[0]}")/files"
+
+	case "$language" in
+	"")
+		echo "filelike: give a language" >&2
+		return 1
+		;;
+	bash)
+		"$files" --extension sh --extension bash --shebang bash
+		;;
+	*)
+		"$files" --extension "$language"
+		;;
+	esac
+}

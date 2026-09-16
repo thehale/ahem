@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+set -euo pipefail
+
+# shellcheck source=bin/lib/colors
+source "$(dirname "${BASH_SOURCE[0]}")/lib/colors"
+# shellcheck source=bin/lib/filelike
+source "$(dirname "${BASH_SOURCE[0]}")/lib/filelike"
+# shellcheck source=bin/lib/timing
+source "$(dirname "${BASH_SOURCE[0]}")/lib/timing"
+
+results=""
+
+function main() {
+	local started
+	started="$(timestamp)"
+
+	if [[ "${1:-}" == "--fix" ]]; then
+		check "Bash: Shebang" "filelike bash | bin/shebang --fix '#!/usr/bin/env bash'"
+		check "Bash: Format" "filelike bash | xargs shfmt --write"
+		check "Bash: Order" "filelike bash | bashorder check --fix"
+		check "YAML: Format" "bin/yamlformat --fix"
+		check "Markdown: Lint" "bin/markdownlint --fix"
+		check "License" "bin/lawyer --fix"
+
+		# check "Category: Action" "bin/your-script"
+	else
+		check "Bash: Shebang" "filelike bash | bin/shebang '#!/usr/bin/env bash'"
+		check "Bash: Syntax" "filelike bash | xargs -n1 bash -n"
+		check "Bash: Lint" "filelike bash | xargs shellcheck --external-sources"
+		check "Bash: Format" "filelike bash | xargs shfmt --diff"
+		check "Bash: Order" "filelike bash | bashorder check"
+		check "Bash: Test" "bats --recursive bin"
+		check "Actions: Lint" "actionlint"
+		check "Actions: Audit" "zizmor --quiet .github"
+		check "YAML: Format" "bin/yamlformat"
+		check "Markdown: Lint" "bin/markdownlint"
+		check "License" "bin/lawyer"
+
+		# check "Category: Action" "bin/your-script"
+	fi
+
+	summarize "$(elapsed "$started")"
+}
+
+function check() {
+	local exit_code=0
+	local name="$1"
+	local cmd="$2"
+
+	local started
+	started="$(timestamp)"
+
+	echo -e "\n$(yellow "==>") $(blue "$name") $(grey "$cmd")\n"
+	set +e
+	(eval "$cmd")
+	exit_code=$?
+	set -e
+
+	local outcome
+	if [ "$exit_code" -ne 0 ]; then
+		outcome="$(red "FAIL")"
+	else
+		outcome="$(green "PASS")"
+	fi
+	results+="$outcome $exit_code $(blue "$name") $(grey "$cmd") ($(elapsed "$started"))\n"
+}
+
+function summarize() {
+	local total="$1"
+
+	echo -e "\n$(yellow "==> Summary <==")\n\n$results$(yellow "TOTAL") ($total)\n"
+	if [[ "$results" == *"FAIL"* ]]; then
+		echo "Some checks failed. Please review the summary above."
+		exit 1
+	else
+		echo "All checks passed successfully!"
+		exit 0
+	fi
+}
+
+main "$@"

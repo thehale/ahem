@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/install-git-hooks
+
+set -euo pipefail
+
+# Relative, so it resolves against the top of the working tree in any clone.
+HOOKS="bin/.hooks"
+
+main() {
+	if ! git rev-parse --git-dir &>/dev/null; then
+		echo "Not a git repository. Skipping hooks."
+		return 0
+	fi
+
+	git config core.hooksPath "$HOOKS"
+	echo "Hooks installed from $HOOKS"
+}
+
+main "$@"

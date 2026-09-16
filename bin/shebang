@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: filelike bash | bin/shebang [--fix] '#!/usr/bin/env bash'
+
+set -euo pipefail
+
+main() {
+	local fix=""
+
+	if [[ "${1:-}" == "--fix" ]]; then
+		fix="$1"
+		shift
+	fi
+
+	local shebang="${1:-}"
+
+	if [[ -z "$shebang" ]]; then
+		usage
+	fi
+
+	if [[ -n "$fix" ]]; then
+		fix_shebangs "$shebang"
+	else
+		report_shebangs "$shebang"
+	fi
+}
+
+usage() {
+	echo "Usage: filelike bash | bin/shebang [--fix] '<shebang>'" >&2
+	exit 1
+}
+
+fix_shebangs() {
+	find_wrong_shebangs "$1" | rewrite_shebangs "$1"
+}
+
+find_wrong_shebangs() {
+	xargs --no-run-if-empty sed --separate --quiet "1 { /^#!/ { \%^$1\$% ! F } }"
+}
+
+rewrite_shebangs() {
+	xargs --no-run-if-empty sed --in-place "1 s%.*%$1%"
+}
+
+report_shebangs() {
+	local wrong
+	wrong="$(find_wrong_shebangs "$1")"
+
+	if [[ -n "$wrong" ]]; then
+		echo "Wrong shebang, expected '$1':" >&2
+		printf '%s\n' "$wrong" | indent >&2
+		exit 1
+	fi
+}
+
+indent() {
+	sed 's%^%  %'
+}
+
+main "$@"
