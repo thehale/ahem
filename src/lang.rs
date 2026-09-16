@@ -82,9 +82,7 @@ impl FromStr for Lang {
 		}
 		let lang = SupportLang::from_str(name).map_err(|error| error.to_string())?;
 		if UNSHIPPED.contains(&lang) {
-			return Err(format!(
-				"{name} is not shipped, see docs/single-file-executable.md"
-			));
+			return Err(format!("{name} is not shipped, see UNSHIPPED in src/lang.rs"));
 		}
 		Ok(Lang::Builtin(lang))
 	}
