@@ -16,6 +16,10 @@ CONFIG='
 # no-inline-html
 MD033: false
 
+# line-length: terminal output is as wide as it is
+MD013:
+  code_blocks: false
+
 # first-line-heading
 MD041: false
 '

@@ -14,11 +14,29 @@ breaks.
 
 ## Quickstart
 
+Point `check` at the files you just touched. Each finding names the line, the
+principle it breaks, and the rule that found it.
+
+```console
+$ deconfuse check src/session.js
+src/session.js:2: Default to no comments. A well named helper is the comment, and rationale belongs in the commit message where it cannot drift from the code. [comment-earns-nothing]
+src/session.js:3: A condition already is the value these branches return. Returning it directly says the same thing on one line. [condition-is-already-the-value]
+```
+
+A path can be a file or a directory, and several can be given at once. The exit
+status is 1 while anything is reported, so a review step can gate on it.
+
+```bash
+deconfuse check src lib   # report findings under either path
+deconfuse rules           # list rules and the languages they reach
+deconfuse test            # run every rule against its snippets
+```
+
+## Installation
+
 ```bash
 cargo build --release
-target/release/deconfuse check src   # report findings under a path
-target/release/deconfuse rules       # list rules and the languages they reach
-target/release/deconfuse test        # run every rule against its snippets
+install -m 755 target/release/deconfuse ~/.local/bin/
 ```
 
 One binary, nothing installed alongside it. Rules and their tests are compiled
@@ -34,8 +52,8 @@ bin/ci --fix  # Fix what can be fixed automatically
 ```
 
 Rules live in `rules/`, one file each, paired with snippets in `rule-tests/`.
-See [docs/single-file-executable.md](docs/single-file-executable.md) for why
-deconfuse is built the way it is.
+A rule reaches a language only once that language has snippets proving it
+fires and stays quiet, so adding a language means adding its snippets.
 
 ## License
 
