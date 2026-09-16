@@ -49,17 +49,24 @@ fn run(action: impl Fn(&[Rule]) -> usize) -> i32 {
 }
 
 fn listed(rules: &[Rule]) {
-	let total = Lang::all().len();
 	for rule in rules {
-		let languages: Vec<String> = rule.matchers.keys().map(|lang| lang.to_string()).collect();
-		println!(
-			"{}  {:?}  {}/{total}  {}",
-			rule.id,
-			rule.severity,
-			languages.len(),
-			languages.join(" ")
-		);
+		let (proven, unproven) = split_by_evidence(rule);
+		println!("{}  {:?}", rule.id, rule.severity);
+		println!("  proven   {:2}  {}", proven.len(), proven.join(" "));
+		println!("  unproven {:2}  {}", unproven.len(), unproven.join(" "));
 	}
+}
+
+fn split_by_evidence(rule: &Rule) -> (Vec<String>, Vec<String>) {
+	let (proven, unproven): (Vec<&Lang>, Vec<&Lang>) = rule
+		.matchers
+		.keys()
+		.partition(|lang| rule.tests.contains_key(lang));
+	(named(proven), named(unproven))
+}
+
+fn named(langs: Vec<&Lang>) -> Vec<String> {
+	langs.iter().map(|lang| lang.to_string()).collect()
 }
 
 fn usage() -> i32 {

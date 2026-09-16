@@ -347,10 +347,12 @@ reaches 26. `branches-read-as-one-shape` names `if_statement`, `else_clause`,
 `return_statement` and `lexical_declaration` in one breath and reaches 7.
 
 The third column is the one to watch. Across these eight rules, 71 rule and
-language pairs compile and run with no snippet ever written for them. They are
-not wrong, but they are a weaker claim than the 50 that are tested, and
-`deconfuse test` prints the split every run so the gap stays visible rather
-than becoming the quiet default.
+language pairs compile and run with no snippet ever written for them. A
+matcher that compiles is not a matcher that matches: authoring hit exactly
+that, where `field: alternative` compiled cleanly and found no node. So
+deconfuse calls a pair **proven** only where a snippet exercises it, and
+**unproven** otherwise, in both `rules` and `test`. Unproven pairs still run.
+They are just never reported as coverage.
 
 ### This changed how scope was decided
 

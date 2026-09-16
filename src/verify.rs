@@ -62,16 +62,16 @@ fn reported(rule: &Rule, lang: Lang, source: &str, expectation: Expectation) -> 
 }
 
 fn coverage(rules: &[Rule]) {
-	println!("\nlanguage coverage");
+	println!("\nlanguage evidence");
 	let total = Lang::all().len();
 	for rule in rules {
-		let untested = rule
+		let unproven = rule
 			.matchers
 			.keys()
 			.filter(|lang| !rule.tests.contains_key(lang))
 			.count();
 		println!(
-			"  {:34} {:2}/{total} compiled, {:2} tested, {untested:2} untested",
+			"  {:34} {:2}/{total} compiled, {:2} proven, {unproven:2} unproven",
 			rule.id,
 			rule.matchers.len(),
 			rule.tests.len()
