@@ -1,145 +1,503 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
-JavaScript:
+Bash:
   invalid:
     - |
-      function f(a) {
-        const b = a + 1;
-        const c = b + 1;
-        const d = c + 1;
-        const e = d + 1;
-        const g = e + 1;
-        const h = g + 1;
-        const i = h + 1;
-        return i;
+      f() {
+        s1
+        s2
+        s3
+        s4
+        s5
+        s6
+        s7
+        s8
       }
   valid:
     - |
-      function f(a) {
-        const b = a + 1;
-        const c = b + 1;
-        const d = c + 1;
-        const e = d + 1;
-        const g = e + 1;
-        const h = g + 1;
-        return h;
+      f() {
+        s1
+        s2
+        s3
+        s4
+        s5
+        s6
+        s7
       }
-Python:
+C:
   invalid:
     - |
-      def f(a):
-          b = a + 1
-          c = b + 1
-          d = c + 1
-          e = d + 1
-          g = e + 1
-          h = g + 1
-          i = h + 1
-          return i
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
   valid:
     - |
-      def f(a):
-          b = a + 1
-          c = b + 1
-          d = c + 1
-          e = d + 1
-          g = e + 1
-          h = g + 1
-          return h
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }
+Cpp:
+  invalid:
+    - |
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }
+CSharp:
+  invalid:
+    - |
+      class A {
+        void F() {
+          S1();
+          S2();
+          S3();
+          S4();
+          S5();
+          S6();
+          S7();
+          S8();
+        }
+      }
+  valid:
+    - |
+      class A {
+        void F() {
+          S1();
+          S2();
+          S3();
+          S4();
+          S5();
+          S6();
+          S7();
+        }
+      }
+Dart:
+  invalid:
+    - |
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      void f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }
+Elixir:
+  invalid:
+    - |
+      def f do
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+        s8()
+      end
+  valid:
+    - |
+      def f do
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+      end
 Go:
   invalid:
     - |
-      func f(a int) int {
-      	b := a + 1
-      	c := b + 1
-      	d := c + 1
-      	e := d + 1
-      	g := e + 1
-      	h := g + 1
-      	i := h + 1
-      	return i
+      package m
+
+      func f() {
+      	s1()
+      	s2()
+      	s3()
+      	s4()
+      	s5()
+      	s6()
+      	s7()
+      	s8()
       }
   valid:
     - |
-      func f(a int) int {
-      	b := a + 1
-      	c := b + 1
-      	d := c + 1
-      	e := d + 1
-      	g := e + 1
-      	h := g + 1
-      	return h
+      package m
+
+      func f() {
+      	s1()
+      	s2()
+      	s3()
+      	s4()
+      	s5()
+      	s6()
+      	s7()
       }
-Rust:
+Java:
   invalid:
     - |
-      fn f(a: i32) -> i32 {
-          let b = a + 1;
-          let c = b + 1;
-          let d = c + 1;
-          let e = d + 1;
-          let g = e + 1;
-          let h = g + 1;
-          let i = h + 1;
-          return i;
+      class A {
+        void f() {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+          s8();
+        }
       }
   valid:
     - |
-      fn f(a: i32) -> i32 {
-          let b = a + 1;
-          let c = b + 1;
-          let d = c + 1;
-          let e = d + 1;
-          let g = e + 1;
-          let h = g + 1;
-          return h;
+      class A {
+        void f() {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+        }
+      }
+JavaScript:
+  invalid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
       }
 Kotlin:
   invalid:
     - |
-      fun f(a: Int): Int {
-          val b = a + 1
-          val c = b + 1
-          val d = c + 1
-          val e = d + 1
-          val g = e + 1
-          val h = g + 1
-          val i = h + 1
-          return i
+      fun f() {
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
+          s8()
       }
   valid:
     - |
-      fun f(a: Int): Int {
-          val b = a + 1
-          val c = b + 1
-          val d = c + 1
-          val e = d + 1
-          val g = e + 1
-          val h = g + 1
-          return h
+      fun f() {
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
       }
+Lua:
+  invalid:
+    - |
+      function f()
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+        s8()
+      end
+  valid:
+    - |
+      function f()
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+      end
+Php:
+  invalid:
+    - |
+      <?php
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      <?php
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }
+Python:
+  invalid:
+    - |
+      def f():
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
+          s8()
+  valid:
+    - |
+      def f():
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
 Ruby:
   invalid:
     - |
-      def f(a)
-        b = a + 1
-        c = b + 1
-        d = c + 1
-        e = d + 1
-        g = e + 1
-        h = g + 1
-        i = h + 1
-        i
+      def f
+        s1
+        s2
+        s3
+        s4
+        s5
+        s6
+        s7
+        s8
       end
   valid:
     - |
-      def f(a)
-        b = a + 1
-        c = b + 1
-        d = c + 1
-        e = d + 1
-        g = e + 1
-        h = g + 1
-        h
+      def f
+        s1
+        s2
+        s3
+        s4
+        s5
+        s6
+        s7
       end
+Rust:
+  invalid:
+    - |
+      fn f() {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+          s8();
+      }
+  valid:
+    - |
+      fn f() {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+      }
+Scala:
+  invalid:
+    - |
+      object A {
+        def f() = {
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
+          s8()
+        }
+      }
+  valid:
+    - |
+      object A {
+        def f() = {
+          s1()
+          s2()
+          s3()
+          s4()
+          s5()
+          s6()
+          s7()
+        }
+      }
+Solidity:
+  invalid:
+    - |
+      contract A {
+        function f() public {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+          s8();
+        }
+      }
+  valid:
+    - |
+      contract A {
+        function f() public {
+          s1();
+          s2();
+          s3();
+          s4();
+          s5();
+          s6();
+          s7();
+        }
+      }
+Swift:
+  invalid:
+    - |
+      func f() {
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+        s8()
+      }
+  valid:
+    - |
+      func f() {
+        s1()
+        s2()
+        s3()
+        s4()
+        s5()
+        s6()
+        s7()
+      }
+Tsx:
+  invalid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }
+TypeScript:
+  invalid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+        s8();
+      }
+  valid:
+    - |
+      function f() {
+        s1();
+        s2();
+        s3();
+        s4();
+        s5();
+        s6();
+        s7();
+      }

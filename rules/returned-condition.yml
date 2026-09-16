@@ -4,13 +4,80 @@
 id: condition-is-already-the-value
 severity: warning
 message: >-
-  A condition already is the value these branches return. Returning it directly
-  says the same thing on one line.
+  A condition already is the value these branches return. Returning it directly says the same thing on one line.
 rule:
   any:
     - pattern: "if ($C) { return true; } else { return false; }"
     - pattern: "if ($C) { return false; } else { return true; }"
 languages:
+  C:
+    any:
+      - pattern:
+          context: "void f() { if ($C) { return true; } else { return false; } }"
+          selector: if_statement
+      - pattern:
+          context: "void f() { if ($C) { return false; } else { return true; } }"
+          selector: if_statement
+  Cpp:
+    any:
+      - pattern:
+          context: "void f() { if ($C) { return true; } else { return false; } }"
+          selector: if_statement
+      - pattern:
+          context: "void f() { if ($C) { return false; } else { return true; } }"
+          selector: if_statement
+  CSharp:
+    any:
+      - pattern:
+          context: "class A { bool F() { if ($C) { return true; } else { return false; } } }"
+          selector: if_statement
+      - pattern:
+          context: "class A { bool F() { if ($C) { return false; } else { return true; } } }"
+          selector: if_statement
+  Dart:
+    any:
+      - pattern:
+          context: "bool f() { if ($C) { return true; } else { return false; } }"
+          selector: if_statement
+      - pattern:
+          context: "bool f() { if ($C) { return false; } else { return true; } }"
+          selector: if_statement
+  Elixir:
+    any:
+      - pattern: "if $C do\n  true\nelse\n  false\nend"
+      - pattern: "if $C do\n  false\nelse\n  true\nend"
+  Go:
+    any:
+      - pattern: "if $C { return true } else { return false }"
+      - pattern: "if $C { return false } else { return true }"
+  Java:
+    any:
+      - pattern:
+          context: "class A { boolean f() { if ($C) { return true; } else { return false; } } }"
+          selector: if_statement
+      - pattern:
+          context: "class A { boolean f() { if ($C) { return false; } else { return true; } } }"
+          selector: if_statement
+  Kotlin:
+    any:
+      - pattern: "if ($C) { return true } else { return false }"
+      - pattern: "if ($C) { return false } else { return true }"
+  Lua:
+    any:
+      - pattern: "if $C then return true else return false end"
+      - pattern: "if $C then return false else return true end"
+  Nix:
+    any:
+      - pattern: "if $C then true else false"
+      - pattern: "if $C then false else true"
+  Php:
+    any:
+      - pattern:
+          context: "<?php\nfunction f() { if ($C) { return true; } else { return false; } }"
+          selector: if_statement
+      - pattern:
+          context: "<?php\nfunction f() { if ($C) { return false; } else { return true; } }"
+          selector: if_statement
   Python:
     any:
       - pattern: |-
@@ -23,20 +90,6 @@ languages:
               return False
           else:
               return True
-  Go:
-    any:
-      - pattern: "if $C { return true } else { return false }"
-      - pattern: "if $C { return false } else { return true }"
-  Rust:
-    any:
-      - pattern: "if $C { return true; } else { return false; }"
-      - pattern: "if $C { return false; } else { return true; }"
-      - pattern: "if $C { true } else { false }"
-      - pattern: "if $C { false } else { true }"
-  Kotlin:
-    any:
-      - pattern: "if ($C) { return true } else { return false }"
-      - pattern: "if ($C) { return false } else { return true }"
   Ruby:
     any:
       - pattern: |-
@@ -51,3 +104,33 @@ languages:
           else
             true
           end
+  Rust:
+    any:
+      - pattern: "if $C { return true; } else { return false; }"
+      - pattern: "if $C { return false; } else { return true; }"
+      - pattern: "if $C { true } else { false }"
+      - pattern: "if $C { false } else { true }"
+  Scala:
+    any:
+      - pattern:
+          context: "object A { def f() = if ($C) true else false }"
+          selector: if_expression
+      - pattern:
+          context: "object A { def f() = if ($C) false else true }"
+          selector: if_expression
+  Solidity:
+    any:
+      - pattern:
+          context: "contract A { function f() public { if ($C) { return true; } else { return false; } } }"
+          selector: if_statement
+      - pattern:
+          context: "contract A { function f() public { if ($C) { return false; } else { return true; } } }"
+          selector: if_statement
+  Swift:
+    any:
+      - pattern:
+          context: "func f() -> Bool { if $C { return true } else { return false } }"
+          selector: if_statement
+      - pattern:
+          context: "func f() -> Bool { if $C { return false } else { return true } }"
+          selector: if_statement

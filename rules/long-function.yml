@@ -4,9 +4,7 @@
 id: function-holds-more-than-a-story
 severity: hint
 message: >-
-  A function reads as a story when each statement names a step. Extracting
-  helpers until the steps fit in a handful of lines keeps the details out of
-  the telling.
+  A function reads as a story when each statement names a step. Extracting helpers until the steps fit in a handful of lines keeps the details out of the telling.
 rule:
   kind: statement_block
   inside:
@@ -16,14 +14,46 @@ rule:
       - kind: function_expression
       - kind: arrow_function
   has:
-    nthChild: 8
+    nthChild: &limit 8
 languages:
-  Python:
-    kind: block
+  Bash:
+    kind: compound_statement
     inside:
       kind: function_definition
     has:
-      nthChild: 8
+      nthChild: *limit
+  C:
+    kind: compound_statement
+    inside:
+      kind: function_definition
+    has:
+      nthChild: *limit
+  Cpp:
+    kind: compound_statement
+    inside:
+      kind: function_definition
+    has:
+      nthChild: *limit
+  CSharp:
+    kind: block
+    inside:
+      any:
+        - kind: method_declaration
+        - kind: local_function_statement
+    has:
+      nthChild: *limit
+  Dart:
+    kind: block
+    inside:
+      kind: function_body
+    has:
+      nthChild: *limit
+  Elixir:
+    kind: do_block
+    inside:
+      kind: call
+    has:
+      nthChild: *limit
   Go:
     kind: statement_list
     inside:
@@ -34,22 +64,70 @@ languages:
           - kind: method_declaration
           - kind: func_literal
     has:
-      nthChild: 8
-  Rust:
+      nthChild: *limit
+  Java:
     kind: block
     inside:
-      kind: function_item
+      any:
+        - kind: method_declaration
+        - kind: constructor_declaration
     has:
-      nthChild: 8
+      nthChild: *limit
   Kotlin:
     kind: statements
     inside:
       kind: function_body
     has:
-      nthChild: 8
+      nthChild: *limit
+  Lua:
+    kind: block
+    inside:
+      any:
+        - kind: function_declaration
+        - kind: function_definition
+    has:
+      nthChild: *limit
+  Php:
+    kind: compound_statement
+    inside:
+      any:
+        - kind: function_definition
+        - kind: method_declaration
+    has:
+      nthChild: *limit
+  Python:
+    kind: block
+    inside:
+      kind: function_definition
+    has:
+      nthChild: *limit
   Ruby:
     kind: body_statement
     inside:
       kind: method
     has:
-      nthChild: 8
+      nthChild: *limit
+  Rust:
+    kind: block
+    inside:
+      kind: function_item
+    has:
+      nthChild: *limit
+  Scala:
+    kind: block
+    inside:
+      kind: function_definition
+    has:
+      nthChild: *limit
+  Solidity:
+    kind: function_body
+    inside:
+      kind: function_definition
+    has:
+      nthChild: *limit
+  Swift:
+    kind: statements
+    inside:
+      kind: function_body
+    has:
+      nthChild: *limit

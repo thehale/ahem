@@ -1,30 +1,175 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
-JavaScript:
-  invalid: ["// a thing"]
-  valid: ["let x = 1;", "// SPDX-License-Identifier: MPL-2.0"]
-Python:
-  invalid: ["# a thing"]
-  valid: ["x = 1"]
-Go:
-  invalid: ["package m\n// a thing"]
-  valid: ["package m"]
-Css:
-  invalid: ["/* a thing */"]
-  valid: ["p { color: red; }"]
 Bash:
-  invalid: ["# a thing"]
-  valid: ["#!/usr/bin/env bash", "# Copyright (c) Someone, 2026", "# SPDX-License-Identifier: MPL-2.0"]
-Rust:
-  invalid: ["// a thing"]
-  valid: ["fn main() {}"]
-gotmpl:
-  invalid: ["{{- /* a thing */ -}}"]
-  valid: ["<p>{{ .Title }}</p>"]
+  invalid:
+    - "# a thing"
+  valid:
+    - "echo hi"
+    - "#!/usr/bin/env bash"
+    - "# Copyright (c) Someone, 2026"
+    - "# SPDX-License-Identifier: MPL-2.0"
+C:
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+  valid:
+    - "int x = 1;"
+    - "// SPDX-License-Identifier: MPL-2.0"
+Cpp:
+  invalid:
+    - "// a thing"
+  valid:
+    - "int x = 1;"
+CSharp:
+  invalid:
+    - "// a thing"
+  valid:
+    - "class A {}"
+Css:
+  invalid:
+    - "/* a thing */"
+  valid:
+    - "p { color: red; }"
+    - "/* Copyright (c) Someone, 2026 */"
+Dart:
+  invalid:
+    - "// a thing"
+    - "/// a thing"
+  valid:
+    - "void f() {}"
+Elixir:
+  invalid:
+    - "# a thing"
+  valid:
+    - "x = 1"
+Go:
+  invalid:
+    - |
+      package m
+      // a thing
+  valid:
+    - "package m"
+    - |
+      // SPDX-License-Identifier: MPL-2.0
+      package m
+Hcl:
+  invalid:
+    - "# a thing"
+    - "// a thing"
+  valid:
+    - "a = 1"
+Html:
+  invalid:
+    - "<!-- a thing -->"
+  valid:
+    - "<p>hi</p>"
+Java:
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+    - |
+      /** a thing */
+      class A {}
+  valid:
+    - "class A {}"
+    - "// SPDX-License-Identifier: MPL-2.0"
+JavaScript:
+  invalid:
+    - "// a thing"
+  valid:
+    - "let x = 1;"
+    - "// SPDX-License-Identifier: MPL-2.0"
+Json:
+  invalid:
+    - |
+      {}
+      // a thing
+  valid:
+    - "{\"a\": 1}"
 Kotlin:
-  invalid: ["// a thing"]
-  valid: ["fun f() {}", "// SPDX-License-Identifier: MPL-2.0"]
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+  valid:
+    - "fun f() {}"
+    - "// SPDX-License-Identifier: MPL-2.0"
+Lua:
+  invalid:
+    - "-- a thing"
+  valid:
+    - "local x = 1"
+Nix:
+  invalid:
+    - "# a thing"
+  valid:
+    - "{ a = 1; }"
+Php:
+  invalid:
+    - |
+      <?php
+      // a thing
+    - |
+      <?php
+      # a thing
+  valid:
+    - |
+      <?php
+      $x = 1;
+Python:
+  invalid:
+    - "# a thing"
+  valid:
+    - "x = 1"
+    - "# Copyright (c) Someone, 2026"
 Ruby:
-  invalid: ["# a thing"]
-  valid: ["def f; end", "# Copyright (c) Someone, 2026"]
+  invalid:
+    - "# a thing"
+  valid:
+    - "def f; end"
+    - "# Copyright (c) Someone, 2026"
+Rust:
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+  valid:
+    - "fn main() {}"
+    - "// SPDX-License-Identifier: MPL-2.0"
+Scala:
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+  valid:
+    - "object A {}"
+Solidity:
+  invalid:
+    - "// a thing"
+  valid:
+    - "contract A {}"
+Swift:
+  invalid:
+    - "// a thing"
+    - "/* a thing */"
+  valid:
+    - "let x = 1"
+Tsx:
+  invalid:
+    - "// a thing"
+  valid:
+    - "let x = 1;"
+TypeScript:
+  invalid:
+    - "// a thing"
+  valid:
+    - "let x = 1;"
+Yaml:
+  invalid:
+    - "# a thing"
+  valid:
+    - "key: value"
+    - "# Copyright (c) Someone, 2026"
+gotmpl:
+  invalid:
+    - "{{- /* a thing */ -}}"
+  valid:
+    - "<p>{{ .Title }}</p>"

@@ -1,6 +1,238 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
+Bash:
+  invalid:
+    - |
+      if ! ready; then
+        wait
+      else
+        go
+      fi
+    - |
+      if [[ $state != done ]]; then
+        wait
+      else
+        go
+      fi
+  valid:
+    - |
+      if ready; then
+        go
+      else
+        wait
+      fi
+    - |
+      if ! ready; then
+        wait
+      fi
+C:
+  invalid:
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        } else {
+          go();
+        }
+      }
+    - |
+      void f() {
+        if (state != done) {
+          wait();
+        } else {
+          go();
+        }
+      }
+  valid:
+    - |
+      void f() {
+        if (ready) {
+          go();
+        } else {
+          wait();
+        }
+      }
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        }
+      }
+Cpp:
+  invalid:
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        } else {
+          go();
+        }
+      }
+  valid:
+    - |
+      void f() {
+        if (ready) {
+          go();
+        } else {
+          wait();
+        }
+      }
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        }
+      }
+CSharp:
+  invalid:
+    - |
+      class A {
+        void F() {
+          if (!ready) {
+            Wait();
+          } else {
+            Go();
+          }
+        }
+      }
+    - |
+      class A {
+        void F() {
+          if (state != done) {
+            Wait();
+          } else {
+            Go();
+          }
+        }
+      }
+  valid:
+    - |
+      class A {
+        void F() {
+          if (ready) {
+            Go();
+          } else {
+            Wait();
+          }
+        }
+      }
+    - |
+      class A {
+        void F() {
+          if (!ready) {
+            Wait();
+          }
+        }
+      }
+Dart:
+  invalid:
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        } else {
+          go();
+        }
+      }
+    - |
+      void f() {
+        if (state != done) {
+          wait();
+        } else {
+          go();
+        }
+      }
+  valid:
+    - |
+      void f() {
+        if (ready) {
+          go();
+        } else {
+          wait();
+        }
+      }
+    - |
+      void f() {
+        if (!ready) {
+          wait();
+        }
+      }
+Elixir:
+  invalid:
+    - |
+      if !ready do
+        wait()
+      else
+        go()
+      end
+    - |
+      if state != :done do
+        wait()
+      else
+        go()
+      end
+  valid:
+    - |
+      if ready do
+        go()
+      else
+        wait()
+      end
+    - |
+      if !ready do
+        wait()
+      end
+Go:
+  invalid:
+    - |
+      if !ready {
+      	wait()
+      } else {
+      	go()
+      }
+  valid:
+    - |
+      if ready {
+      	go()
+      } else {
+      	wait()
+      }
+    - |
+      if !ready {
+      	wait()
+      }
+Java:
+  invalid:
+    - |
+      class A {
+        void f() {
+          if (!ready) {
+            wait();
+          } else {
+            go();
+          }
+        }
+      }
+  valid:
+    - |
+      class A {
+        void f() {
+          if (ready) {
+            go();
+          } else {
+            wait();
+          }
+        }
+      }
+    - |
+      class A {
+        void f() {
+          if (!ready) {
+            wait();
+          }
+        }
+      }
 JavaScript:
   invalid:
     - |
@@ -26,49 +258,6 @@ JavaScript:
       if (!ready) {
         wait();
       }
-Python:
-  invalid:
-    - |
-      if not ready:
-          wait()
-      else:
-          go()
-  valid:
-    - |
-      if ready:
-          go()
-      else:
-          wait()
-Go:
-  invalid:
-    - |
-      if !ready {
-      	wait()
-      } else {
-      	go()
-      }
-  valid:
-    - |
-      if ready {
-      	go()
-      } else {
-      	wait()
-      }
-Rust:
-  invalid:
-    - |
-      if !ready {
-          wait();
-      } else {
-          go();
-      }
-  valid:
-    - |
-      if ready {
-          go();
-      } else {
-          wait();
-      }
 Kotlin:
   invalid:
     - |
@@ -84,6 +273,91 @@ Kotlin:
       } else {
           wait()
       }
+    - |
+      if (!ready) {
+          wait()
+      }
+Lua:
+  invalid:
+    - |
+      if not ready then
+        wait()
+      else
+        go()
+      end
+    - |
+      if state ~= done then
+        wait()
+      else
+        go()
+      end
+  valid:
+    - |
+      if ready then
+        go()
+      else
+        wait()
+      end
+    - |
+      if not ready then
+        wait()
+      end
+Nix:
+  invalid:
+    - "if !ready then wait else go"
+    - "if state != done then wait else go"
+  valid:
+    - "if ready then go else wait"
+Php:
+  invalid:
+    - |
+      <?php
+      if (!$ready) {
+        wait();
+      } else {
+        go();
+      }
+    - |
+      <?php
+      if ($state != $done) {
+        wait();
+      } else {
+        go();
+      }
+  valid:
+    - |
+      <?php
+      if ($ready) {
+        go();
+      } else {
+        wait();
+      }
+    - |
+      <?php
+      if (!$ready) {
+        wait();
+      }
+Python:
+  invalid:
+    - |
+      if not ready:
+          wait()
+      else:
+          go()
+    - |
+      if state != done:
+          wait()
+      else:
+          go()
+  valid:
+    - |
+      if ready:
+          go()
+      else:
+          wait()
+    - |
+      if not ready:
+          wait()
 Ruby:
   invalid:
     - |
@@ -99,3 +373,147 @@ Ruby:
       else
         wait
       end
+    - |
+      if !ready
+        wait
+      end
+Rust:
+  invalid:
+    - |
+      if !ready {
+          wait();
+      } else {
+          go();
+      }
+  valid:
+    - |
+      if ready {
+          go();
+      } else {
+          wait();
+      }
+    - |
+      if !ready {
+          wait();
+      }
+Scala:
+  invalid:
+    - |
+      object A {
+        def f() = if (!ready) wait() else go()
+      }
+    - |
+      object A {
+        def f() = if (state != done) wait() else go()
+      }
+  valid:
+    - |
+      object A {
+        def f() = if (ready) go() else wait()
+      }
+    - |
+      object A {
+        def f() = if (!ready) wait()
+      }
+Solidity:
+  invalid:
+    - |
+      contract A {
+        function f() public {
+          if (!ready) {
+            wait();
+          } else {
+            go();
+          }
+        }
+      }
+  valid:
+    - |
+      contract A {
+        function f() public {
+          if (ready) {
+            go();
+          } else {
+            wait();
+          }
+        }
+      }
+    - |
+      contract A {
+        function f() public {
+          if (!ready) {
+            wait();
+          }
+        }
+      }
+Swift:
+  invalid:
+    - |
+      func f() {
+        if !ready {
+          wait()
+        } else {
+          go()
+        }
+      }
+    - |
+      func f() {
+        if state != done {
+          wait()
+        } else {
+          go()
+        }
+      }
+  valid:
+    - |
+      func f() {
+        if ready {
+          go()
+        } else {
+          wait()
+        }
+      }
+    - |
+      func f() {
+        if !ready {
+          wait()
+        }
+      }
+Tsx:
+  invalid:
+    - |
+      if (!ready) {
+        wait();
+      } else {
+        go();
+      }
+  valid:
+    - |
+      if (ready) {
+        go();
+      } else {
+        wait();
+      }
+    - |
+      if (!ready) {
+        wait();
+      }
+TypeScript:
+  invalid:
+    - |
+      if (!ready) {
+        wait();
+      } else {
+        go();
+      }
+  valid:
+    - |
+      if (ready) {
+        go();
+      } else {
+        wait();
+      }
+    - |
+      if (!ready) {
+        wait();
+      }

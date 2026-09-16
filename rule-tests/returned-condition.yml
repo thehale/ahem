@@ -1,6 +1,128 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
+C:
+  invalid:
+    - |
+      bool f(int n) {
+        if (n > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      bool f(int n) {
+        return n > 0;
+      }
+    - |
+      int f(int n) {
+        if (n > 0) {
+          return n;
+        } else {
+          return 0;
+        }
+      }
+Cpp:
+  invalid:
+    - |
+      bool f(int n) {
+        if (n > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      bool f(int n) {
+        return n > 0;
+      }
+CSharp:
+  invalid:
+    - |
+      class A {
+        bool F(int n) {
+          if (n > 0) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+  valid:
+    - |
+      class A {
+        bool F(int n) {
+          return n > 0;
+        }
+      }
+Dart:
+  invalid:
+    - |
+      bool f(int n) {
+        if (n > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      bool f(int n) {
+        return n > 0;
+      }
+Elixir:
+  invalid:
+    - |
+      if n > 0 do
+        true
+      else
+        false
+      end
+  valid:
+    - "n > 0"
+    - |
+      if n > 0 do
+        n
+      else
+        0
+      end
+Go:
+  invalid:
+    - |
+      func f(a []int) bool {
+      	if len(a) > 0 {
+      		return true
+      	} else {
+      		return false
+      	}
+      }
+  valid:
+    - |
+      func f(a []int) bool {
+      	return len(a) > 0
+      }
+Java:
+  invalid:
+    - |
+      class A {
+        boolean f(int n) {
+          if (n > 0) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+  valid:
+    - |
+      class A {
+        boolean f(int n) {
+          return n > 0;
+        }
+      }
 JavaScript:
   invalid:
     - |
@@ -24,6 +146,51 @@ JavaScript:
           return false;
         }
       }
+Kotlin:
+  invalid:
+    - |
+      fun f(a: List<Int>): Boolean {
+          if (a.size > 0) { return true } else { return false }
+      }
+  valid:
+    - |
+      fun f(a: List<Int>): Boolean {
+          return a.size > 0
+      }
+Lua:
+  invalid:
+    - |
+      function f(n)
+        if n > 0 then return true else return false end
+      end
+  valid:
+    - |
+      function f(n)
+        return n > 0
+      end
+Nix:
+  invalid:
+    - "if n > 0 then true else false"
+  valid:
+    - "n > 0"
+    - "if n > 0 then n else 0"
+Php:
+  invalid:
+    - |
+      <?php
+      function f($n) {
+        if ($n > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      <?php
+      function f($n) {
+        return $n > 0;
+      }
 Python:
   invalid:
     - |
@@ -36,47 +203,6 @@ Python:
     - |
       def f(a):
           return len(a) > 0
-Go:
-  invalid:
-    - |
-      func f(a []int) bool {
-      	if len(a) > 0 {
-      		return true
-      	} else {
-      		return false
-      	}
-      }
-  valid:
-    - |
-      func f(a []int) bool {
-      	return len(a) > 0
-      }
-Rust:
-  invalid:
-    - |
-      fn f(a: &[i32]) -> bool {
-          if a.len() > 0 {
-              true
-          } else {
-              false
-          }
-      }
-  valid:
-    - |
-      fn f(a: &[i32]) -> bool {
-          a.len() > 0
-      }
-Kotlin:
-  invalid:
-    - |
-      fun f(a: List<Int>): Boolean {
-          if (a.size > 0) { return true } else { return false }
-      }
-  valid:
-    - |
-      fun f(a: List<Int>): Boolean {
-          return a.size > 0
-      }
 Ruby:
   invalid:
     - |
@@ -92,3 +218,93 @@ Ruby:
       def f(a)
         a.size > 0
       end
+Rust:
+  invalid:
+    - |
+      fn f(a: &[i32]) -> bool {
+          if a.len() > 0 {
+              true
+          } else {
+              false
+          }
+      }
+  valid:
+    - |
+      fn f(a: &[i32]) -> bool {
+          a.len() > 0
+      }
+Scala:
+  invalid:
+    - |
+      object A {
+        def f(n: Int) = if (n > 0) true else false
+      }
+  valid:
+    - |
+      object A {
+        def f(n: Int) = n > 0
+      }
+Solidity:
+  invalid:
+    - |
+      contract A {
+        function f(uint n) public returns (bool) {
+          if (n > 0) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+  valid:
+    - |
+      contract A {
+        function f(uint n) public returns (bool) {
+          return n > 0;
+        }
+      }
+Swift:
+  invalid:
+    - |
+      func f(n: Int) -> Bool {
+        if n > 0 {
+          return true
+        } else {
+          return false
+        }
+      }
+  valid:
+    - |
+      func f(n: Int) -> Bool {
+        return n > 0
+      }
+Tsx:
+  invalid:
+    - |
+      function f(a) {
+        if (a.length > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      function f(a) {
+        return a.length > 0;
+      }
+TypeScript:
+  invalid:
+    - |
+      function f(a: number[]) {
+        if (a.length > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+  valid:
+    - |
+      function f(a: number[]) {
+        return a.length > 0;
+      }

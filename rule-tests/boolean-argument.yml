@@ -1,73 +1,138 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
-JavaScript:
+C:
   invalid:
-    - |
-      render(page, true);
-    - |
-      render(page, false);
+    - "void g() { f(true); }"
   valid:
-    - |
-      render(page, { draft: true });
-    - |
-      const draft = true;
-Python:
+    - "void g() { f(retry); }"
+    - "void g() { bool retry = true; }"
+Cpp:
   invalid:
-    - |
-      render(page, True)
+    - "void g() { f(false); }"
   valid:
-    - |
-      draft = True
+    - "void g() { f(retry); }"
+CSharp:
+  invalid:
+    - "class A { void G() { F(true); } }"
+  valid:
+    - "class A { void G() { F(Retry); } }"
+    - "class A { bool retry = true; }"
+Dart:
+  invalid:
+    - "void g() { f(true); }"
+  valid:
+    - "void g() { f(retry); }"
+    - "var retry = true;"
+Elixir:
+  invalid:
+    - "f(true)"
+  valid:
+    - "f(retry)"
+    - "retry = true"
 Go:
   invalid:
     - |
       package m
-
-      func x() {
-      	render(page, true)
-      }
+      func g() { f(true) }
   valid:
     - |
       package m
-
-      func x() {
-      	draft := true
-      }
-Rust:
+      func g() { f(retry) }
+    - |
+      package m
+      var retry = true
+Hcl:
   invalid:
-    - |
-      fn x() {
-          render(page, true);
-      }
+    - "a = f(true)"
   valid:
-    - |
-      fn x() {
-          let draft = true;
-      }
-    - |
-      fn x() -> Result<bool, E> {
-          Ok(false)
-      }
-    - |
-      fn x() -> Option<bool> {
-          Some(true)
-      }
+    - "a = f(retry)"
+    - "a = true"
+Java:
+  invalid:
+    - "class A { void g() { f(true); } }"
+  valid:
+    - "class A { void g() { f(RETRY); } }"
+    - "class A { boolean retry = true; }"
+JavaScript:
+  invalid:
+    - "save(true);"
+  valid:
+    - "save(retry);"
+    - "const retry = true;"
 Kotlin:
   invalid:
-    - |
-      fun x() {
-          render(page, true)
-      }
+    - "fun g() { f(true) }"
   valid:
-    - |
-      fun x() {
-          val draft = true
-      }
-Ruby:
+    - "fun g() { f(retry) }"
+    - "val retry = true"
+Lua:
+  invalid:
+    - "f(true)"
+  valid:
+    - "f(retry)"
+    - "local retry = true"
+Nix:
+  invalid:
+    - "f true"
+  valid:
+    - "f retry"
+    - "{ retry = true; }"
+Php:
   invalid:
     - |
-      render(page, true)
+      <?php
+      f(true);
   valid:
     - |
-      draft = true
+      <?php
+      f($retry);
+    - |
+      <?php
+      $retry = true;
+Python:
+  invalid:
+    - "save(True)"
+  valid:
+    - "save(retry)"
+    - "retry = True"
+Ruby:
+  invalid:
+    - "save(true)"
+  valid:
+    - "save(retry)"
+    - "retry = true"
+Rust:
+  invalid:
+    - "fn g() { save(true); }"
+  valid:
+    - "fn g() { save(retry); }"
+    - "fn g() -> bool { Ok(true) }"
+    - "fn g() { let retry = true; }"
+Scala:
+  invalid:
+    - "object A { def g() = f(true) }"
+  valid:
+    - "object A { def g() = f(retry) }"
+    - "object A { val retry = true }"
+Solidity:
+  invalid:
+    - "contract A { function g() public { f(true); } }"
+  valid:
+    - "contract A { function g() public { f(retry); } }"
+Swift:
+  invalid:
+    - "f(true)"
+  valid:
+    - "f(retry)"
+    - "let retry = true"
+Tsx:
+  invalid:
+    - "save(true);"
+  valid:
+    - "save(retry);"
+TypeScript:
+  invalid:
+    - "save(true);"
+  valid:
+    - "save(retry);"

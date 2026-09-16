@@ -1,6 +1,128 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
+C:
+  invalid:
+    - |
+      int f(int a, int b) {
+        int result = 0;
+        if (a != b) {
+          result = 1;
+        }
+        return result;
+      }
+  valid:
+    - |
+      int f(int a, int b) {
+        return a != b;
+      }
+    - |
+      int f(int a, int n) {
+        int total = 0;
+        for (int i = 0; i < n; i++) {
+          total = total + i;
+        }
+        return total;
+      }
+Cpp:
+  invalid:
+    - |
+      int f(int a, int b) {
+        int result = 0;
+        if (a != b) {
+          result = 1;
+        }
+        return result;
+      }
+  valid:
+    - |
+      int f(int a, int b) {
+        return a != b;
+      }
+CSharp:
+  invalid:
+    - |
+      class A {
+        int F(int a, int b) {
+          int result = 0;
+          if (a != b) {
+            result = 1;
+          }
+          return result;
+        }
+      }
+  valid:
+    - |
+      class A {
+        bool F(int a, int b) {
+          return a != b;
+        }
+      }
+Dart:
+  invalid:
+    - |
+      int f(int a, int b) {
+        var result = 0;
+        if (a != b) {
+          result = 1;
+        }
+        return result;
+      }
+  valid:
+    - |
+      bool f(int a, int b) {
+        return a != b;
+      }
+Go:
+  invalid:
+    - |
+      func f(a int, b int) bool {
+      	result := false
+      	if a != b {
+      		result = true
+      	}
+      	return result
+      }
+    - |
+      func f(a int, b int) bool {
+      	result := true
+      	if a != b {
+      		result = false
+      	}
+      	return result
+      }
+    - |
+      func f(a int, b int) int {
+      	count := 0
+      	if a != b {
+      		count = 1
+      	}
+      	return count
+      }
+  valid:
+    - |
+      func f(a int, b int) bool {
+      	return a != b
+      }
+Java:
+  invalid:
+    - |
+      class A {
+        int f(int a, int b) {
+          int result = 0;
+          if (a != b) {
+            result = 1;
+          }
+          return result;
+        }
+      }
+  valid:
+    - |
+      class A {
+        boolean f(int a, int b) {
+          return a != b;
+        }
+      }
 JavaScript:
   invalid:
     - |
@@ -43,12 +165,59 @@ JavaScript:
         return a !== b;
       }
     - |
-      function f(a, b) {
+      function f(a) {
         let total = 0;
         for (const x of a) {
           total = total + x;
         }
         return total;
+      }
+Kotlin:
+  invalid:
+    - |
+      fun f(a: Int, b: Int): Boolean {
+          var result = false
+          if (a != b) {
+              result = true
+          }
+          return result
+      }
+  valid:
+    - |
+      fun f(a: Int, b: Int): Boolean {
+          return a != b
+      }
+Lua:
+  invalid:
+    - |
+      function f(a, b)
+        local result = false
+        if a ~= b then
+          result = true
+        end
+        return result
+      end
+  valid:
+    - |
+      function f(a, b)
+        return a ~= b
+      end
+Php:
+  invalid:
+    - |
+      <?php
+      function f($a, $b) {
+        $result = false;
+        if ($a != $b) {
+          $result = true;
+        }
+        return $result;
+      }
+  valid:
+    - |
+      <?php
+      function f($a, $b) {
+        return $a != $b;
       }
 Python:
   invalid:
@@ -81,67 +250,6 @@ Python:
     - |
       def f(a, b):
           return a != b
-Go:
-  invalid:
-    - |
-      func f(a int, b int) bool {
-      	result := false
-      	if a != b {
-      		result = true
-      	}
-      	return result
-      }
-    - |
-      func f(a int, b int) bool {
-      	result := true
-      	if a != b {
-      		result = false
-      	}
-      	return result
-      }
-    - |
-      func f(a int, b int) int {
-      	count := 0
-      	if a != b {
-      		count = 1
-      	}
-      	return count
-      }
-  valid:
-    - |
-      func f(a int, b int) bool {
-      	return a != b
-      }
-Rust:
-  invalid:
-    - |
-      fn f(a: i32, b: i32) -> bool {
-          let mut result = false;
-          if a != b {
-              result = true;
-          }
-          return result;
-      }
-  valid:
-    - |
-      fn f(a: i32, b: i32) -> bool {
-          return a != b;
-      }
-Kotlin:
-  invalid:
-    - |
-      fun f(a: Int, b: Int): Boolean {
-          var result = false
-          if (a != b) {
-              result = true
-          }
-          return result
-      }
-  valid:
-    - |
-      fun f(a: Int, b: Int): Boolean {
-          return a != b
-      }
 Ruby:
   invalid:
     - |
@@ -157,3 +265,82 @@ Ruby:
       def f(a, b)
         return a != b
       end
+Rust:
+  invalid:
+    - |
+      fn f(a: i32, b: i32) -> bool {
+          let mut result = false;
+          if a != b {
+              result = true;
+          }
+          return result;
+      }
+  valid:
+    - |
+      fn f(a: i32, b: i32) -> bool {
+          return a != b;
+      }
+Solidity:
+  invalid:
+    - |
+      contract A {
+        function f(uint a, uint b) public returns (bool) {
+          bool result = false;
+          if (a != b) {
+            result = true;
+          }
+          return result;
+        }
+      }
+  valid:
+    - |
+      contract A {
+        function f(uint a, uint b) public returns (bool) {
+          return a != b;
+        }
+      }
+Swift:
+  invalid:
+    - |
+      func f(a: Int, b: Int) -> Bool {
+        var result = false
+        if a != b {
+          result = true
+        }
+        return result
+      }
+  valid:
+    - |
+      func f(a: Int, b: Int) -> Bool {
+        return a != b
+      }
+Tsx:
+  invalid:
+    - |
+      function f(a, b) {
+        let result = false;
+        if (a !== b) {
+          result = true;
+        }
+        return result;
+      }
+  valid:
+    - |
+      function f(a, b) {
+        return a !== b;
+      }
+TypeScript:
+  invalid:
+    - |
+      function f(a: number, b: number) {
+        let result = false;
+        if (a !== b) {
+          result = true;
+        }
+        return result;
+      }
+  valid:
+    - |
+      function f(a: number, b: number) {
+        return a !== b;
+      }

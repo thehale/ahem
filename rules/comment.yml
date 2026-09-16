@@ -4,8 +4,7 @@
 id: comment-earns-nothing
 severity: warning
 message: >-
-  Default to no comments. A well named helper is the comment, and rationale
-  belongs in the commit message where it cannot drift from the code.
+  Default to no comments. A well named helper is the comment, and rationale belongs in the commit message where it cannot drift from the code.
 rule:
   any:
     - kind: comment
@@ -21,6 +20,18 @@ languages:
   Kotlin:
     any:
       - kind: line_comment
+      - kind: multiline_comment
+  Java:
+    any:
+      - kind: line_comment
+      - kind: block_comment
+  Scala:
+    any:
+      - kind: comment
+      - kind: block_comment
+  Swift:
+    any:
+      - kind: comment
       - kind: multiline_comment
   Bash:
     except:

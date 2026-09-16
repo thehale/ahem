@@ -4,17 +4,83 @@
 id: argument-names-nothing
 severity: hint
 message: >-
-  A bare true or false at a call site leaves the reader to open the function to
-  learn what it selects. A named value, or two functions, carries the meaning
-  to the call.
+  A bare true or false at a call site leaves the reader to open the function to learn what it selects. A named value, or two functions, carries the meaning to the call.
 rule:
   all:
-    - any:
+    - any: &literal
         - pattern: "true"
         - pattern: "false"
     - inside:
         kind: arguments
 languages:
+  C:
+    all:
+      - any: &keyword
+          - kind: "true"
+          - kind: "false"
+      - inside:
+          kind: argument_list
+  Cpp:
+    all:
+      - any: *keyword
+      - inside:
+          kind: argument_list
+  CSharp:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: argument
+  Dart:
+    all:
+      - any: *keyword
+      - inside:
+          kind: arguments
+  Elixir:
+    all:
+      - kind: boolean
+      - inside:
+          kind: arguments
+  Go:
+    all:
+      - any: *literal
+      - inside:
+          kind: argument_list
+  Hcl:
+    all:
+      - kind: bool_lit
+      - inside:
+          kind: literal_value
+          inside:
+            kind: expression
+            inside:
+              kind: function_arguments
+  Java:
+    all:
+      - any: *keyword
+      - inside:
+          kind: argument_list
+  Kotlin:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: value_argument
+  Lua:
+    all:
+      - any: *keyword
+      - inside:
+          kind: arguments
+  Nix:
+    all:
+      - kind: variable_expression
+      - regex: "^(true|false)$"
+      - inside:
+          kind: apply_expression
+          field: argument
+  Php:
+    all:
+      - kind: boolean
+      - inside:
+          kind: argument
   Python:
     all:
       - any:
@@ -22,11 +88,9 @@ languages:
           - pattern: "False"
       - inside:
           kind: argument_list
-  Go:
+  Ruby:
     all:
-      - any:
-          - pattern: "true"
-          - pattern: "false"
+      - any: *literal
       - inside:
           kind: argument_list
   Rust:
@@ -40,15 +104,20 @@ languages:
               has:
                 field: function
                 regex: ^(Ok|Err|Some)$
-  Kotlin:
+  Scala:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: arguments
+  Solidity:
+    all:
+      - kind: boolean_literal
+      - inside:
+          kind: expression
+          inside:
+            kind: call_argument
+  Swift:
     all:
       - kind: boolean_literal
       - inside:
           kind: value_argument
-  Ruby:
-    all:
-      - any:
-          - pattern: "true"
-          - pattern: "false"
-      - inside:
-          kind: argument_list

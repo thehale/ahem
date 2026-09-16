@@ -4,8 +4,7 @@
 id: branches-read-as-one-shape
 severity: hint
 message: >-
-  An if that returns early splits the reader's attention between the exit and
-  the body that follows it. An expanded if/else keeps both outcomes in view.
+  An if that returns early splits the reader's attention between the exit and the body that follows it. An expanded if/else keeps both outcomes in view.
 rule:
   kind: if_statement
   not:
@@ -20,7 +19,7 @@ rule:
       - kind: return_statement
       - kind: lexical_declaration
 languages:
-  Python:
+  C:
     kind: if_statement
     not:
       has:
@@ -32,6 +31,46 @@ languages:
       any:
         - kind: expression_statement
         - kind: return_statement
+        - kind: declaration
+  Cpp:
+    kind: if_statement
+    not:
+      has:
+        kind: else_clause
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+        - kind: declaration
+  CSharp:
+    kind: if_statement
+    not:
+      has:
+        regex: ^else$
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+        - kind: local_declaration_statement
+  Dart:
+    kind: if_statement
+    not:
+      has:
+        regex: ^else$
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+        - kind: local_variable_declaration
   Go:
     kind: if_statement
     not:
@@ -46,16 +85,126 @@ languages:
         - kind: expression_statement
         - kind: return_statement
         - kind: short_var_declaration
-  Rust:
+  Java:
+    kind: if_statement
+    not:
+      has:
+        regex: ^else$
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+        - kind: local_variable_declaration
+  Kotlin:
     all:
-      - kind: expression_statement
-      - has: {stopBy: end, kind: if_expression}
-      - has: {stopBy: end, kind: return_expression}
-      - not: {has: {stopBy: end, kind: else_clause}}
-      - precedes: {kind: expression_statement}
+      - kind: if_expression
+      - not:
+          has:
+            regex: ^else$
+      - has:
+          stopBy: end
+          kind: jump_expression
+          regex: ^return
+      - precedes:
+          any:
+            - kind: property_declaration
+            - kind: jump_expression
+            - kind: call_expression
+  Lua:
+    kind: if_statement
+    not:
+      has:
+        kind: else_statement
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: function_call
+        - kind: return_statement
+        - kind: variable_declaration
+        - kind: assignment_statement
+  Php:
+    kind: if_statement
+    not:
+      has:
+        kind: else_clause
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
+  Python:
+    kind: if_statement
+    not:
+      has:
+        kind: else_clause
+    has:
+      stopBy: end
+      kind: return_statement
+    precedes:
+      any:
+        - kind: expression_statement
+        - kind: return_statement
   Ruby:
     all:
       - kind: if
-      - not: {has: {kind: else}}
-      - has: {stopBy: end, kind: return}
-      - precedes: {any: [{kind: return}, {kind: assignment}, {kind: call}]}
+      - not:
+          has:
+            kind: else
+      - has:
+          stopBy: end
+          kind: return
+      - precedes:
+          any:
+            - kind: return
+            - kind: assignment
+            - kind: call
+  Rust:
+    all:
+      - kind: expression_statement
+      - has:
+          stopBy: end
+          kind: if_expression
+      - has:
+          stopBy: end
+          kind: return_expression
+      - not:
+          has:
+            stopBy: end
+            kind: else_clause
+      - precedes:
+          kind: expression_statement
+  Solidity:
+    all:
+      - kind: statement
+      - has:
+          kind: if_statement
+          not:
+            has:
+              regex: ^else$
+      - has:
+          stopBy: end
+          kind: return_statement
+      - precedes:
+          kind: statement
+  Swift:
+    all:
+      - kind: if_statement
+      - not:
+          has:
+            regex: ^else$
+      - has:
+          stopBy: end
+          kind: control_transfer_statement
+          regex: ^return
+      - precedes:
+          any:
+            - kind: property_declaration
+            - kind: control_transfer_statement
+            - kind: call_expression

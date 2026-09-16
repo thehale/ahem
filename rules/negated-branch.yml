@@ -4,15 +4,13 @@
 id: branch-leads-with-a-negation
 severity: hint
 message: >-
-  Reading a negated condition first asks for the inverse to be held in mind
-  through both branches. Leading with the positive case puts them in the order
-  they read.
+  Reading a negated condition first asks for the inverse to be held in mind through both branches. Leading with the positive case puts them in the order they read.
 rule:
   all:
     - kind: if_statement
     - has:
         field: condition
-        has:
+        has: &braced
           any:
             - kind: unary_expression
               regex: ^!
@@ -23,18 +21,81 @@ rule:
     - has:
         kind: else_clause
 languages:
-  Python:
+  Bash:
     all:
       - kind: if_statement
       - has:
           field: condition
           any:
-            - kind: not_operator
-            - kind: comparison_operator
+            - kind: negated_command
+            - kind: test_command
               has:
-                regex: ^(!=|is not|not in)$
+                kind: binary_expression
+                has:
+                  field: operator
+                  regex: ^!=
       - has:
           kind: else_clause
+  C:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          has: *braced
+      - has:
+          kind: else_clause
+  Cpp:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          has: *braced
+      - has:
+          kind: else_clause
+  CSharp:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          any:
+            - kind: prefix_unary_expression
+              regex: ^!
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^!=
+      - has:
+          regex: ^else$
+  Dart:
+    all:
+      - kind: if_statement
+      - has:
+          any:
+            - kind: unary_expression
+              regex: ^!
+            - kind: equality_expression
+              regex: "!="
+      - has:
+          regex: ^else$
+  Elixir:
+    all:
+      - kind: call
+      - has:
+          field: target
+          regex: ^if$
+      - has:
+          kind: arguments
+          has:
+            any:
+              - kind: unary_operator
+                regex: ^!
+              - kind: binary_operator
+                has:
+                  field: operator
+                  regex: ^!=
+      - has:
+          stopBy: end
+          kind: else_block
   Go:
     all:
       - kind: if_statement
@@ -50,6 +111,92 @@ languages:
       - has:
           field: alternative
           kind: block
+  Java:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          has: *braced
+      - has:
+          regex: ^else$
+  Kotlin:
+    all:
+      - kind: if_expression
+      - has:
+          any:
+            - kind: prefix_expression
+              regex: ^!
+            - kind: equality_expression
+              regex: "!="
+      - has:
+          regex: ^else$
+  Lua:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          any:
+            - kind: unary_expression
+              regex: ^not
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^~=
+      - has:
+          kind: else_statement
+  Nix:
+    all:
+      - kind: if_expression
+      - has:
+          field: condition
+          any:
+            - kind: unary_expression
+              regex: ^!
+            - kind: binary_expression
+              has:
+                field: operator
+                regex: ^!=
+      - has:
+          regex: ^else$
+  Php:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          has:
+            any:
+              - kind: unary_op_expression
+                regex: ^!
+              - kind: binary_expression
+                has:
+                  field: operator
+                  regex: ^!=
+      - has:
+          kind: else_clause
+  Python:
+    all:
+      - kind: if_statement
+      - has:
+          field: condition
+          any:
+            - kind: not_operator
+            - kind: comparison_operator
+              has:
+                regex: ^(!=|is not|not in)$
+      - has:
+          kind: else_clause
+  Ruby:
+    all:
+      - kind: if
+      - has:
+          field: condition
+          any:
+            - kind: unary
+              regex: ^!
+            - kind: binary
+              regex: "!="
+      - has:
+          kind: else
   Rust:
     all:
       - kind: if_expression
@@ -64,26 +211,41 @@ languages:
                 regex: ^!=
       - has:
           kind: else_clause
-  Kotlin:
+  Scala:
     all:
       - kind: if_expression
       - has:
-          any:
-            - kind: prefix_expression
-              regex: ^!
-            - kind: equality_expression
-              regex: "!="
+          field: condition
+          has:
+            any:
+              - kind: prefix_expression
+                regex: ^!
+              - kind: infix_expression
+                regex: "!="
       - has:
           regex: ^else$
-  Ruby:
+  Solidity:
     all:
-      - kind: if
+      - kind: if_statement
+      - has:
+          field: condition
+          has:
+            any:
+              - kind: unary_expression
+                regex: ^!
+              - kind: binary_expression
+                regex: "!="
+      - has:
+          regex: ^else$
+  Swift:
+    all:
+      - kind: if_statement
       - has:
           field: condition
           any:
-            - kind: unary
+            - kind: prefix_expression
               regex: ^!
-            - kind: binary
+            - kind: infix_expression
               regex: "!="
       - has:
-          kind: else
+          regex: ^else$

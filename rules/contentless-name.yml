@@ -4,12 +4,20 @@
 id: name-carries-no-content
 severity: warning
 message: >-
-  A name like data, result or value names the shape of the code rather than
-  what it holds, so the reader learns nothing the line did not already say.
+  A name like data, result or value names the shape of the code rather than what it holds, so the reader learns nothing the line did not already say.
 rule:
   kind: identifier
-  regex: "^(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
+  regex: &contentless "^(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
 languages:
+  Bash:
+    kind: variable_name
+    regex: *contentless
   Kotlin:
     kind: simple_identifier
-    regex: "^(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
+    regex: *contentless
+  Php:
+    kind: name
+    regex: *contentless
+  Swift:
+    kind: simple_identifier
+    regex: *contentless

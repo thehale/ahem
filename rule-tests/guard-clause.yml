@@ -1,38 +1,82 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 
-JavaScript:
+C:
   invalid:
     - |
-      function f(a) {
-        if (!a) {
+      int f(int n) {
+        if (n < 0) {
           return 0;
         }
-        return a.size;
+        return n;
       }
   valid:
     - |
-      function f(a) {
-        if (!a) {
+      int f(int n) {
+        if (n < 0) {
           return 0;
         } else {
-          return a.size;
+          return n;
         }
       }
-Python:
+Cpp:
   invalid:
     - |
-      def f(a):
-          if not a:
-              return 0
-          return len(a)
+      int f(int n) {
+        if (n < 0) {
+          return 0;
+        }
+        return n;
+      }
   valid:
     - |
-      def f(a):
-          if not a:
-              return 0
-          else:
-              return len(a)
+      int f(int n) {
+        if (n < 0) {
+          return 0;
+        } else {
+          return n;
+        }
+      }
+CSharp:
+  invalid:
+    - |
+      class A {
+        int F(int n) {
+          if (n < 0) {
+            return 0;
+          }
+          return n;
+        }
+      }
+  valid:
+    - |
+      class A {
+        int F(int n) {
+          if (n < 0) {
+            return 0;
+          } else {
+            return n;
+          }
+        }
+      }
+Dart:
+  invalid:
+    - |
+      int f(int n) {
+        if (n < 0) {
+          return 0;
+        }
+        return n;
+      }
+  valid:
+    - |
+      int f(int n) {
+        if (n < 0) {
+          return 0;
+        } else {
+          return n;
+        }
+      }
 Go:
   invalid:
     - |
@@ -51,24 +95,116 @@ Go:
       		return a[0]
       	}
       }
-Rust:
+Java:
   invalid:
     - |
-      fn f(a: &[i32]) -> i32 {
-          if a.is_empty() {
-              return 0;
+      class A {
+        int f(int n) {
+          if (n < 0) {
+            return 0;
           }
-          return a[0];
+          return n;
+        }
       }
   valid:
     - |
-      fn f(a: &[i32]) -> i32 {
-          if a.is_empty() {
-              return 0;
+      class A {
+        int f(int n) {
+          if (n < 0) {
+            return 0;
           } else {
-              return a[0];
+            return n;
+          }
+        }
+      }
+JavaScript:
+  invalid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        }
+        return a.size;
+      }
+  valid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        } else {
+          return a.size;
+        }
+      }
+Kotlin:
+  invalid:
+    - |
+      fun f(n: Int): Int {
+          if (n < 0) {
+              return 0
+          }
+          return n
+      }
+  valid:
+    - |
+      fun f(n: Int): Int {
+          if (n < 0) {
+              return 0
+          } else {
+              return n
           }
       }
+Lua:
+  invalid:
+    - |
+      function f(n)
+        if n < 0 then
+          return 0
+        end
+        return n
+      end
+  valid:
+    - |
+      function f(n)
+        if n < 0 then
+          return 0
+        else
+          return n
+        end
+      end
+Php:
+  invalid:
+    - |
+      <?php
+      function f($n) {
+        if ($n < 0) {
+          return 0;
+        }
+        return $n;
+      }
+  valid:
+    - |
+      <?php
+      function f($n) {
+        if ($n < 0) {
+          return 0;
+        } else {
+          return $n;
+        }
+      }
+Python:
+  invalid:
+    - |
+      def f(a):
+          if not a:
+              return 0
+          return len(a)
+  valid:
+    - |
+      def f(a):
+          if not a:
+              return 0
+          else:
+              return len(a)
 Ruby:
   invalid:
     - |
@@ -87,3 +223,97 @@ Ruby:
           return a[0]
         end
       end
+Rust:
+  invalid:
+    - |
+      fn f(a: &[i32]) -> i32 {
+          if a.is_empty() {
+              return 0;
+          }
+          return a[0];
+      }
+  valid:
+    - |
+      fn f(a: &[i32]) -> i32 {
+          if a.is_empty() {
+              return 0;
+          } else {
+              return a[0];
+          }
+      }
+Solidity:
+  invalid:
+    - |
+      contract A {
+        function f(uint n) public returns (uint) {
+          if (n == 0) {
+            return 0;
+          }
+          return n;
+        }
+      }
+  valid:
+    - |
+      contract A {
+        function f(uint n) public returns (uint) {
+          if (n == 0) {
+            return 0;
+          } else {
+            return n;
+          }
+        }
+      }
+Swift:
+  invalid:
+    - |
+      func f(n: Int) -> Int {
+        if n < 0 {
+          return 0
+        }
+        return n
+      }
+  valid:
+    - |
+      func f(n: Int) -> Int {
+        if n < 0 {
+          return 0
+        } else {
+          return n
+        }
+      }
+Tsx:
+  invalid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        }
+        return a.size;
+      }
+  valid:
+    - |
+      function f(a) {
+        if (!a) {
+          return 0;
+        } else {
+          return a.size;
+        }
+      }
+TypeScript:
+  invalid:
+    - |
+      function f(a: number[]) {
+        if (!a) {
+          return 0;
+        }
+        return a[0];
+      }
+  valid:
+    - |
+      function f(a: number[]) {
+        if (!a) {
+          return 0;
+        } else {
+          return a[0];
+        }
+      }

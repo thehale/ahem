@@ -4,23 +4,116 @@
 id: conditions-compose-into-a-value
 severity: warning
 message: >-
-  Composing conditions into a single value is usually easier to follow than
-  mutating a flag across branches.
+  Composing conditions into a single value is usually easier to follow than mutating a flag across branches.
 rule:
   pattern: return $V;
   follows:
-    any:
-      - pattern: "if ($C) { $V = $B; }"
-      - pattern: "if ($C) { $V = $B; } else { $V = $D; }"
-    follows:
-      any:
-        - pattern: let $V = $A;
-        - pattern: let $V;
+    kind: if_statement
+    has:
+      stopBy: end
+      pattern: $V = $B;
 languages:
+  C:
+    pattern:
+      context: "void f() { return $V; }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "void f() { $V = $B; }"
+          selector: expression_statement
+  Cpp:
+    pattern:
+      context: "void f() { return $V; }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "void f() { $V = $B; }"
+          selector: expression_statement
+  CSharp:
+    pattern:
+      context: "class A { void F() { return $V; } }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "class A { void F() { $V = $B; } }"
+          selector: expression_statement
+  Dart:
+    pattern:
+      context: "void f() { return $V; }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "void f() { $V = $B; }"
+          selector: expression_statement
+  Go:
+    pattern: return $V
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Java:
+    pattern:
+      context: "class A { void f() { return $V; } }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "class A { void f() { $V = $B; } }"
+          selector: expression_statement
+  Kotlin:
+    pattern: return $V
+    follows:
+      kind: if_expression
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Lua:
+    pattern: return $V
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        kind: identifier
+        pattern: $V
+        inside:
+          kind: variable_list
+  Php:
+    pattern:
+      context: "<?php\nfunction f() { return $V; }"
+      selector: return_statement
+    follows:
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern:
+          context: "<?php\nfunction f() { $V = $B; }"
+          selector: expression_statement
   Python:
     pattern: return $V
     follows:
       kind: if_statement
+      has:
+        stopBy: end
+        pattern: $V = $B
+  Ruby:
+    pattern: return $V
+    follows:
+      kind: if
       has:
         stopBy: end
         pattern: $V = $B
@@ -34,25 +127,47 @@ languages:
       has:
         stopBy: end
         pattern: $V = $B
-  Kotlin:
-    pattern: return $V
+  Solidity:
+    all:
+      - kind: statement
+      - has:
+          kind: return_statement
+          pattern:
+            context: "contract A { function f() public { return $V; } }"
+            selector: return_statement
+      - follows:
+          kind: statement
+          has:
+            stopBy: end
+            pattern:
+              context: "contract A { function f() public { $V = $B; } }"
+              selector: expression_statement
+  Swift:
+    pattern:
+      context: "func f() { return $V }"
+      selector: control_transfer_statement
     follows:
-      kind: if_expression
+      kind: if_statement
       has:
         stopBy: end
-        pattern: $V = $B
-  Ruby:
-    pattern: return $V
+        pattern:
+          context: "func f() { $V = $B }"
+          selector: assignment
+  TypeScript:
+    pattern:
+      context: "function f() { return $V; }"
+      selector: return_statement
     follows:
-      kind: if
+      kind: if_statement
       has:
         stopBy: end
-        pattern: $V = $B
-  Go:
-    pattern: return $V
+        pattern: $V = $B;
+  Tsx:
+    pattern:
+      context: "function f() { return $V; }"
+      selector: return_statement
     follows:
-      any:
-        - pattern: "if $C { $V = $B }"
-        - pattern: "if $C { $V = $B } else { $V = $D }"
-      follows:
-        pattern: $V := $A
+      kind: if_statement
+      has:
+        stopBy: end
+        pattern: $V = $B;

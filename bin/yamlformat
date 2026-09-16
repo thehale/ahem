@@ -8,6 +8,8 @@ set -euo pipefail
 
 PATHS=(
 	".github"
+	"rules"
+	"rule-tests"
 )
 
 # yamlfmt strips every blank line by default, which collapses a workflow into
