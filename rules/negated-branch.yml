@@ -74,7 +74,8 @@ languages:
             - kind: unary_expression
               regex: ^!
             - kind: equality_expression
-              regex: "!="
+              has:
+                regex: "^!=$"
       - has:
           regex: ^else$
   Elixir:
@@ -127,7 +128,8 @@ languages:
             - kind: prefix_expression
               regex: ^!
             - kind: equality_expression
-              regex: "!="
+              has:
+                regex: "^!=$"
       - has:
           regex: ^else$
   Lua:
@@ -194,7 +196,9 @@ languages:
             - kind: unary
               regex: ^!
             - kind: binary
-              regex: "!="
+              has:
+                field: operator
+                regex: "^!=$"
       - has:
           kind: else
   Rust:
@@ -221,7 +225,9 @@ languages:
               - kind: prefix_expression
                 regex: ^!
               - kind: infix_expression
-                regex: "!="
+                has:
+                  field: operator
+                  regex: "^!=$"
       - has:
           regex: ^else$
   Solidity:
@@ -234,7 +240,9 @@ languages:
               - kind: unary_expression
                 regex: ^!
               - kind: binary_expression
-                regex: "!="
+                has:
+                  field: operator
+                  regex: "^!=$"
       - has:
           regex: ^else$
   Swift:
@@ -246,6 +254,8 @@ languages:
             - kind: prefix_expression
               regex: ^!
             - kind: infix_expression
-              regex: "!="
+              has:
+                field: op
+                regex: "^!=$"
       - has:
           regex: ^else$

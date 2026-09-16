@@ -48,6 +48,10 @@ pub fn verify(rules: &[Rule]) -> usize {
 fn reported(rule: &Rule, lang: Lang, source: &str, expectation: Expectation) -> usize {
 	let matcher = &rule.matchers[&lang];
 	let root = lang.ast_grep(source);
+	if root.root().dfs().any(|node| node.is_error() || node.is_missing()) {
+		println!("FAIL {}.{lang}: snippet is not {lang} in {source:?}", rule.id);
+		return 1;
+	}
 	let matched = root.root().find(&matcher.matcher).is_some();
 	if expectation.met_by(matched) {
 		0

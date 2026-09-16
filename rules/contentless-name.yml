@@ -7,7 +7,7 @@ message: >-
   A name like data, result or value names the shape of the code rather than what it holds, so the reader learns nothing the line did not already say.
 rule:
   kind: identifier
-  regex: &contentless "^(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
+  regex: &contentless "^[$]?(data|result|value|item|temp|tmp|obj|info|output|written|thing|stuff|foo|bar)$"
 languages:
   Bash:
     kind: variable_name
@@ -16,7 +16,7 @@ languages:
     kind: simple_identifier
     regex: *contentless
   Php:
-    kind: name
+    kind: variable_name
     regex: *contentless
   Swift:
     kind: simple_identifier

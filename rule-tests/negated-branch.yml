@@ -189,12 +189,12 @@ Go:
       if !ready {
       	wait()
       } else {
-      	go()
+      	start()
       }
   valid:
     - |
       if ready {
-      	go()
+      	start()
       } else {
       	wait()
       }

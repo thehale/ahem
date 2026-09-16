@@ -52,6 +52,9 @@ languages:
     kind: do_block
     inside:
       kind: call
+      has:
+        field: target
+        regex: "^defp?$"
     has:
       nthChild: *limit
   Go:

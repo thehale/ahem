@@ -29,7 +29,7 @@ Elixir:
     - "f(true)"
   valid:
     - "f(retry)"
-    - "retry = true"
+    - "enabled = true"
 Go:
   invalid:
     - |
@@ -101,7 +101,7 @@ Ruby:
     - "save(true)"
   valid:
     - "save(retry)"
-    - "retry = true"
+    - "enabled = true"
 Rust:
   invalid:
     - "fn g() { save(true); }"

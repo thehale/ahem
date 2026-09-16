@@ -30,6 +30,10 @@ languages:
       - kind: boolean_literal
       - inside:
           kind: argument
+          not:
+            has:
+              field: name
+              kind: identifier
   Dart:
     all:
       - any: *keyword
@@ -64,6 +68,9 @@ languages:
       - kind: boolean_literal
       - inside:
           kind: value_argument
+          not:
+            has:
+              kind: simple_identifier
   Lua:
     all:
       - any: *keyword
@@ -81,6 +88,10 @@ languages:
       - kind: boolean
       - inside:
           kind: argument
+          not:
+            has:
+              field: name
+              kind: name
   Python:
     all:
       - any:
@@ -121,3 +132,7 @@ languages:
       - kind: boolean_literal
       - inside:
           kind: value_argument
+          not:
+            has:
+              field: name
+              kind: value_argument_label

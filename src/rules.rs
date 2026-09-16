@@ -9,7 +9,6 @@ use ast_grep_config::{
 use include_dir::{Dir, include_dir};
 use serde::Deserialize;
 use std::collections::BTreeMap;
-use std::str::FromStr;
 
 static RULES: Dir = include_dir!("$CARGO_MANIFEST_DIR/rules");
 static TESTS: Dir = include_dir!("$CARGO_MANIFEST_DIR/rule-tests");
@@ -22,7 +21,7 @@ struct Authored {
 	rule: SerializableRule,
 	except: Option<SerializableRule>,
 	#[serde(default)]
-	languages: BTreeMap<String, serde_yaml::Value>,
+	languages: BTreeMap<Lang, serde_yaml::Value>,
 }
 
 #[derive(Deserialize, Default)]
@@ -63,16 +62,14 @@ fn tests(name: &std::ffi::OsStr) -> Result<BTreeMap<Lang, Snippets>, String> {
 
 fn assembled(authored: Authored, tests: BTreeMap<Lang, Snippets>) -> Result<Rule, String> {
 	let mut matchers = BTreeMap::new();
-	for lang in tests.keys() {
+	for (lang, snippets) in &tests {
+		evidenced(&authored.id, *lang, snippets)?;
 		let matched =
 			matcher(&authored, *lang).map_err(|error| format!("{}.{lang}: {error}", authored.id))?;
 		matchers.insert(*lang, matched);
 	}
 	for lang in authored.languages.keys() {
-		let tailored = Lang::from_str(lang)?;
-		if !tests.contains_key(&tailored) {
-			return Err(format!("{}: {lang} is tailored but has no snippets", authored.id));
-		}
+		tailored(&authored.id, *lang, &tests)?;
 	}
 	Ok(Rule {
 		id: authored.id.clone(),
@@ -80,6 +77,22 @@ fn assembled(authored: Authored, tests: BTreeMap<Lang, Snippets>) -> Result<Rule
 		matchers,
 		tests,
 	})
+}
+
+fn evidenced(id: &str, lang: Lang, snippets: &Snippets) -> Result<(), String> {
+	match snippets.invalid.is_empty() || snippets.valid.is_empty() {
+		true => Err(format!(
+			"{id}.{lang}: a language needs a snippet the rule flags and one it leaves alone"
+		)),
+		false => Ok(()),
+	}
+}
+
+fn tailored(id: &str, lang: Lang, tests: &BTreeMap<Lang, Snippets>) -> Result<(), String> {
+	match tests.contains_key(&lang) {
+		true => Ok(()),
+		false => Err(format!("{id}: {lang} is tailored but has no snippets")),
+	}
 }
 
 fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> {
@@ -124,7 +137,7 @@ fn tailoring(
 	authored: &Authored,
 	lang: Lang,
 ) -> Result<(Option<SerializableRule>, Option<SerializableRule>), String> {
-	let Some(tailored) = authored.languages.get(&lang.to_string()) else {
+	let Some(tailored) = authored.languages.get(&lang) else {
 		return Ok((None, None));
 	};
 	let serde_yaml::Value::Mapping(keyed) = tailored else {

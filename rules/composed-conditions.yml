@@ -125,8 +125,10 @@ languages:
     follows:
       kind: expression_statement
       has:
-        stopBy: end
-        pattern: $V = $B
+        kind: if_expression
+        has:
+          stopBy: end
+          pattern: $V = $B
   Solidity:
     all:
       - kind: statement
@@ -138,10 +140,12 @@ languages:
       - follows:
           kind: statement
           has:
-            stopBy: end
-            pattern:
-              context: "contract A { function f() public { $V = $B; } }"
-              selector: expression_statement
+            kind: if_statement
+            has:
+              stopBy: end
+              pattern:
+                context: "contract A { function f() public { $V = $B; } }"
+                selector: expression_statement
   Swift:
     pattern:
       context: "func f() { return $V }"
