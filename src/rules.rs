@@ -9,6 +9,7 @@ use ast_grep_config::{
 use include_dir::{Dir, include_dir};
 use serde::Deserialize;
 use std::collections::BTreeMap;
+use std::str::FromStr;
 
 static RULES: Dir = include_dir!("$CARGO_MANIFEST_DIR/rules");
 static TESTS: Dir = include_dir!("$CARGO_MANIFEST_DIR/rule-tests");
@@ -36,7 +37,6 @@ pub struct Rule {
 	pub id: String,
 	pub severity: Severity,
 	pub matchers: BTreeMap<Lang, RuleConfig<Lang>>,
-	pub gaps: Vec<Lang>,
 	pub tests: BTreeMap<Lang, Snippets>,
 }
 
@@ -62,22 +62,24 @@ fn tests(name: &std::ffi::OsStr) -> Result<BTreeMap<Lang, Snippets>, String> {
 }
 
 fn assembled(authored: Authored, tests: BTreeMap<Lang, Snippets>) -> Result<Rule, String> {
-	let mut rule = Rule {
-		id: authored.id.clone(),
-		severity: authored.severity.clone(),
-		matchers: BTreeMap::new(),
-		gaps: vec![],
-		tests,
-	};
-	for lang in Lang::all() {
-		match matcher(&authored, lang) {
-			Ok(matched) => {
-				rule.matchers.insert(lang, matched);
-			}
-			Err(_) => rule.gaps.push(lang),
+	let mut matchers = BTreeMap::new();
+	for lang in tests.keys() {
+		let matched =
+			matcher(&authored, *lang).map_err(|error| format!("{}.{lang}: {error}", authored.id))?;
+		matchers.insert(*lang, matched);
+	}
+	for lang in authored.languages.keys() {
+		let tailored = Lang::from_str(lang)?;
+		if !tests.contains_key(&tailored) {
+			return Err(format!("{}: {lang} is tailored but has no snippets", authored.id));
 		}
 	}
-	Ok(rule)
+	Ok(Rule {
+		id: authored.id.clone(),
+		severity: authored.severity.clone(),
+		matchers,
+		tests,
+	})
 }
 
 fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> {

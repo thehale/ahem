@@ -30,6 +30,12 @@ fn dispatch(command: &str, rest: &[String]) -> i32 {
 			listed(rules);
 			0
 		}),
+		"languages" => {
+			for lang in Lang::all() {
+				println!("{lang}");
+			}
+			0
+		}
 		_ => usage(),
 	}
 }
@@ -50,26 +56,17 @@ fn run(action: impl Fn(&[Rule]) -> usize) -> i32 {
 
 fn listed(rules: &[Rule]) {
 	for rule in rules {
-		let (proven, unproven) = split_by_evidence(rule);
+		let reached = named(&rule.matchers.keys().collect::<Vec<&Lang>>());
 		println!("{}  {:?}", rule.id, rule.severity);
-		println!("  proven   {:2}  {}", proven.len(), proven.join(" "));
-		println!("  unproven {:2}  {}", unproven.len(), unproven.join(" "));
+		println!("  {:2} languages  {}", reached.len(), reached.join(" "));
 	}
 }
 
-fn split_by_evidence(rule: &Rule) -> (Vec<String>, Vec<String>) {
-	let (proven, unproven): (Vec<&Lang>, Vec<&Lang>) = rule
-		.matchers
-		.keys()
-		.partition(|lang| rule.tests.contains_key(lang));
-	(named(proven), named(unproven))
-}
-
-fn named(langs: Vec<&Lang>) -> Vec<String> {
+fn named(langs: &[&Lang]) -> Vec<String> {
 	langs.iter().map(|lang| lang.to_string()).collect()
 }
 
 fn usage() -> i32 {
-	eprintln!("usage: deconfuse [check PATH... | rules | test]");
+	eprintln!("usage: deconfuse [check PATH... | rules | languages | test]");
 	1
 }
