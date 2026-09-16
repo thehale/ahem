@@ -15,12 +15,12 @@ pub fn check(rules: &[Rule], paths: &[String]) -> usize {
 		.iter()
 		.map(|found| match found {
 			Ok(path) => inspect(rules, path),
-			Err(error) => unreachable(error),
+			Err(error) => unopened(error.clone()),
 		})
 		.sum()
 }
 
-fn unreachable(error: &str) -> usize {
+fn unopened(error: String) -> usize {
 	eprintln!("deconfuse: {error}");
 	1
 }
@@ -47,8 +47,9 @@ fn walked(paths: &[String]) -> Vec<Result<PathBuf, String>> {
 }
 
 fn inspect(rules: &[Rule], path: &Path) -> usize {
-	let Ok(source) = std::fs::read_to_string(path) else {
-		return 0;
+	let source = match std::fs::read_to_string(path) {
+		Ok(source) => source,
+		Err(error) => return skipped(path, error),
 	};
 	let Some(lang) = Lang::of(path, source.lines().next()) else {
 		return 0;
@@ -64,6 +65,13 @@ fn inspect(rules: &[Rule], path: &Path) -> usize {
 		}
 	}
 	found
+}
+
+fn skipped(path: &Path, error: std::io::Error) -> usize {
+	match error.kind() {
+		std::io::ErrorKind::InvalidData => 0,
+		_ => unopened(format!("{}: {error}", path.display())),
+	}
 }
 
 fn applicable(rules: &[Rule], lang: Lang) -> impl Iterator<Item = &Rule> {
