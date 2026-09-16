@@ -84,7 +84,11 @@ impl FromStr for Lang {
 		if UNSHIPPED.contains(&lang) {
 			return Err(format!("{name} is not shipped, see UNSHIPPED in src/lang.rs"));
 		}
-		Ok(Lang::Builtin(lang))
+		let canonical = Lang::Builtin(lang);
+		if canonical.to_string() != name {
+			return Err(format!("{name} is spelled {canonical} everywhere else"));
+		}
+		Ok(canonical)
 	}
 }
 

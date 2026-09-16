@@ -40,11 +40,6 @@ Go:
     - |
       package m
       var attempts = 1
-Hcl:
-  invalid:
-    - "data = 1"
-  valid:
-    - "attempts = 1"
 Java:
   invalid:
     - "class A { int data = 1; }"

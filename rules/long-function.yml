@@ -39,6 +39,7 @@ languages:
     inside:
       any:
         - kind: method_declaration
+        - kind: constructor_declaration
         - kind: local_function_statement
     has:
       nthChild: *limit
@@ -107,7 +108,9 @@ languages:
   Ruby:
     kind: body_statement
     inside:
-      kind: method
+      any:
+        - kind: method
+        - kind: singleton_method
     has:
       nthChild: *limit
   Rust:

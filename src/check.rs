@@ -11,10 +11,21 @@ use std::path::{Path, PathBuf};
 const SKIP_HIDDEN: bool = false;
 
 pub fn check(rules: &[Rule], paths: &[String]) -> usize {
-	walked(paths).iter().map(|path| inspect(rules, path)).sum()
+	walked(paths)
+		.iter()
+		.map(|found| match found {
+			Ok(path) => inspect(rules, path),
+			Err(error) => unreachable(error),
+		})
+		.sum()
 }
 
-fn walked(paths: &[String]) -> Vec<PathBuf> {
+fn unreachable(error: &str) -> usize {
+	eprintln!("deconfuse: {error}");
+	1
+}
+
+fn walked(paths: &[String]) -> Vec<Result<PathBuf, String>> {
 	let mut roots = paths.iter();
 	let first = roots.next().cloned().unwrap_or_else(|| ".".to_string());
 	let mut builder = WalkBuilder::new(first);
@@ -24,9 +35,14 @@ fn walked(paths: &[String]) -> Vec<PathBuf> {
 	builder
 		.hidden(SKIP_HIDDEN)
 		.build()
-		.filter_map(Result::ok)
-		.filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
-		.map(|entry| entry.into_path())
+		.filter(|found| match found {
+			Ok(entry) => entry.file_type().is_some_and(|kind| kind.is_file()),
+			Err(_) => true,
+		})
+		.map(|found| match found {
+			Ok(entry) => Ok(entry.into_path()),
+			Err(error) => Err(error.to_string()),
+		})
 		.collect()
 }
 

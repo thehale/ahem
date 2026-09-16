@@ -239,6 +239,9 @@ Scala:
       object A {
         def f(n: Int) = if (n > 0) true else false
       }
+    - |
+      object A:
+        def f(n: Int) = if n > 0 then true else false
   valid:
     - |
       object A {

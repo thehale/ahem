@@ -118,6 +118,12 @@ languages:
       - pattern:
           context: "object A { def f() = if ($C) false else true }"
           selector: if_expression
+      - pattern:
+          context: "object A { def f() = if $C then true else false }"
+          selector: if_expression
+      - pattern:
+          context: "object A { def f() = if $C then false else true }"
+          selector: if_expression
   Solidity:
     any:
       - pattern:

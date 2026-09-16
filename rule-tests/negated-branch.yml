@@ -406,6 +406,9 @@ Scala:
       object A {
         def f() = if (state != done) wait() else go()
       }
+    - |
+      object A:
+        def f() = if !ready then wait() else go()
   valid:
     - |
       object A {
@@ -415,6 +418,9 @@ Scala:
       object A {
         def f() = if (!ready) wait()
       }
+    - |
+      object A:
+        def f() = if ready then go() else wait()
 Solidity:
   invalid:
     - |

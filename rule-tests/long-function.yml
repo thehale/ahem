@@ -77,6 +77,19 @@ CSharp:
   invalid:
     - |
       class A {
+        public A() {
+          S1();
+          S2();
+          S3();
+          S4();
+          S5();
+          S6();
+          S7();
+          S8();
+        }
+      }
+    - |
+      class A {
         void F() {
           S1();
           S2();
@@ -327,6 +340,19 @@ Python:
           s7()
 Ruby:
   invalid:
+    - |
+      class Sync
+        def self.run
+          s1
+          s2
+          s3
+          s4
+          s5
+          s6
+          s7
+          s8
+        end
+      end
     - |
       def f
         s1

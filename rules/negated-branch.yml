@@ -17,7 +17,7 @@ rule:
             - kind: binary_expression
               has:
                 field: operator
-                regex: ^!=
+                regex: ^!==?
     - has:
         kind: else_clause
 languages:
@@ -33,7 +33,7 @@ languages:
                 kind: binary_expression
                 has:
                   field: operator
-                  regex: ^!=
+                  regex: ^!==?
       - has:
           kind: else_clause
   C:
@@ -63,7 +63,7 @@ languages:
             - kind: binary_expression
               has:
                 field: operator
-                regex: ^!=
+                regex: ^!==?
       - has:
           regex: ^else$
   Dart:
@@ -75,7 +75,7 @@ languages:
               regex: ^!
             - kind: equality_expression
               has:
-                regex: "^!=$"
+                regex: "^!==?$"
       - has:
           regex: ^else$
   Elixir:
@@ -93,7 +93,7 @@ languages:
               - kind: binary_operator
                 has:
                   field: operator
-                  regex: ^!=
+                  regex: ^!==?
       - has:
           stopBy: end
           kind: else_block
@@ -108,7 +108,7 @@ languages:
             - kind: binary_expression
               has:
                 field: operator
-                regex: ^!=
+                regex: ^!==?
       - has:
           field: alternative
           kind: block
@@ -129,7 +129,7 @@ languages:
               regex: ^!
             - kind: equality_expression
               has:
-                regex: "^!=$"
+                regex: "^!==?$"
       - has:
           regex: ^else$
   Lua:
@@ -157,7 +157,7 @@ languages:
             - kind: binary_expression
               has:
                 field: operator
-                regex: ^!=
+                regex: ^!==?
       - has:
           regex: ^else$
   Php:
@@ -172,7 +172,7 @@ languages:
               - kind: binary_expression
                 has:
                   field: operator
-                  regex: ^!=
+                  regex: ^!==?
       - has:
           kind: else_clause
   Python:
@@ -198,7 +198,7 @@ languages:
             - kind: binary
               has:
                 field: operator
-                regex: "^!=$"
+                regex: "^!==?$"
       - has:
           kind: else
   Rust:
@@ -212,22 +212,26 @@ languages:
             - kind: binary_expression
               has:
                 field: operator
-                regex: ^!=
+                regex: ^!==?
       - has:
           kind: else_clause
   Scala:
     all:
       - kind: if_expression
-      - has:
-          field: condition
-          has:
-            any:
-              - kind: prefix_expression
-                regex: ^!
-              - kind: infix_expression
-                has:
-                  field: operator
-                  regex: "^!=$"
+      - any:
+          - has:
+              field: condition
+              any: &scala
+                - kind: prefix_expression
+                  regex: ^!
+                - kind: infix_expression
+                  has:
+                    field: operator
+                    regex: "^!==?$"
+          - has:
+              field: condition
+              has:
+                any: *scala
       - has:
           regex: ^else$
   Solidity:
@@ -242,7 +246,7 @@ languages:
               - kind: binary_expression
                 has:
                   field: operator
-                  regex: "^!=$"
+                  regex: "^!==?$"
       - has:
           regex: ^else$
   Swift:
@@ -256,6 +260,6 @@ languages:
             - kind: infix_expression
               has:
                 field: op
-                regex: "^!=$"
+                regex: "^!==?$"
       - has:
           regex: ^else$
