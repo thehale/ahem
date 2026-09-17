@@ -3,6 +3,22 @@
 version = 4
 
 [[package]]
+name = "ahem"
+version = "0.1.0"
+dependencies = [
+ "ast-grep-config",
+ "ast-grep-core",
+ "ast-grep-language",
+ "cc",
+ "ignore",
+ "include_dir",
+ "serde",
+ "serde_yaml",
+ "tree-sitter",
+ "tree-sitter-language",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -177,22 +193,6 @@ name = "crossbeam-utils"
 version = "0.8.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6"
-
-[[package]]
-name = "deconfuse"
-version = "0.1.0"
-dependencies = [
- "ast-grep-config",
- "ast-grep-core",
- "ast-grep-language",
- "cc",
- "ignore",
- "include_dir",
- "serde",
- "serde_yaml",
- "tree-sitter",
- "tree-sitter-language",
-]
 
 [[package]]
 name = "dyn-clone"

@@ -41,8 +41,8 @@ function main() {
 		check "Rust: Format" "cargo fmt --check"
 		check "Rust: Lint" "cargo clippy --all-targets -- --deny warnings"
 		check "Rust: Build" "cargo build --release"
-		check "Rules: Test" "target/release/deconfuse test"
-		check "Rules: Self" "target/release/deconfuse check src"
+		check "Rules: Test" "target/release/ahem test"
+		check "Rules: Self" "target/release/ahem check src"
 	fi
 
 	summarize "$(elapsed "$started")"

@@ -1,6 +1,6 @@
 <div align="center">
 
-# deconfuse
+# ahem
 
 Finds code patterns worth reconsidering, and says which principle each one
 breaks.
@@ -18,7 +18,7 @@ Point `check` at the files you just touched. Each finding names the line, the
 principle it breaks, and the rule that found it.
 
 ```console
-$ deconfuse check src/session.js
+$ ahem check src/session.js
 src/session.js:2: Default to no comments. A well named helper is the comment, and rationale belongs in the commit message where it cannot drift from the code. [comment-earns-nothing]
 src/session.js:3: A condition already is the value these branches return. Returning it directly says the same thing on one line. [condition-is-already-the-value]
 ```
@@ -27,16 +27,16 @@ A path can be a file or a directory, and several can be given at once. The exit
 status is 1 while anything is reported, so a review step can gate on it.
 
 ```bash
-deconfuse check src lib   # report findings under either path
-deconfuse rules           # list rules and the languages they reach
-deconfuse test            # run every rule against its snippets
+ahem check src lib   # report findings under either path
+ahem rules           # list rules and the languages they reach
+ahem test            # run every rule against its snippets
 ```
 
 ## Installation
 
 ```bash
 cargo build --release
-install -m 755 target/release/deconfuse ~/.local/bin/
+install -m 755 target/release/ahem ~/.local/bin/
 ```
 
 One binary, nothing installed alongside it. Rules and their tests are compiled
@@ -54,9 +54,9 @@ bin/ci --fix  # Fix what can be fixed automatically
 Rules live in `rules/`, one file each, paired with snippets in `rule-tests/`.
 A rule reaches only the languages its snippets name, and each language needs
 one snippet the rule flags and one it leaves alone, so adding a language means
-adding its snippets. Whether those snippets hold is what `deconfuse test`
-answers, so a language whose snippets have stopped holding fails `bin/ci`
-rather than dropping out of the rule.
+adding its snippets. Whether those snippets hold is what `ahem test` answers,
+so a language whose snippets have stopped holding fails `bin/ci` rather than
+dropping out of the rule.
 
 ```bash
 cargo run --example ast -- LANGUAGE PATH  # print the tree a matcher sees

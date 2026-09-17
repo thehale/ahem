@@ -1,12 +1,12 @@
 [package]
-name = "deconfuse"
+name = "ahem"
 version = "0.1.0"
 edition = "2024"
 license = "MPL-2.0"
 publish = false
 
 [[bin]]
-name = "deconfuse"
+name = "ahem"
 path = "src/main.rs"
 
 [dependencies]

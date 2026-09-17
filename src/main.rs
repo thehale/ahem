@@ -44,7 +44,7 @@ fn run(action: impl Fn(&[Rule]) -> usize) -> i32 {
 	let rules = match rules::compile() {
 		Ok(rules) => rules,
 		Err(error) => {
-			eprintln!("deconfuse: {error}");
+			eprintln!("ahem: {error}");
 			return 2;
 		}
 	};
@@ -67,6 +67,6 @@ fn named(langs: &[&Lang]) -> Vec<String> {
 }
 
 fn usage() -> i32 {
-	eprintln!("usage: deconfuse [check PATH... | rules | languages | test]");
+	eprintln!("usage: ahem [check PATH... | rules | languages | test]");
 	1
 }
