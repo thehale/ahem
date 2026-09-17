@@ -2,6 +2,7 @@
 name = "ahem"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.90"
 description = "Automated code style feedback for coding agents"
 repository = "https://github.com/thehale/ahem"
 readme = "README.md"

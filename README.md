@@ -34,6 +34,16 @@ ahem test            # run every rule against its snippets
 ## Installation
 
 ```bash
+cargo install --locked ahem
+```
+
+`--locked` builds against the dependency versions the rules were tested
+against, which for a tool whose findings come from linked grammars is the
+difference between two machines agreeing and not.
+
+From a checkout:
+
+```bash
 cargo build --release
 install -m 755 target/release/ahem ~/.local/bin/
 ```
