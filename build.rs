@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 fn main() {
+	println!("cargo:rerun-if-changed=rules");
+	println!("cargo:rerun-if-changed=rule-tests");
 	compile("gotmpl", &["parser.c"]);
 	compile("toml", &["parser.c", "scanner.c"]);
 }
