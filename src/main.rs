@@ -35,9 +35,9 @@ fn split(args: &[String]) -> (&str, &[String]) {
 fn dispatch(command: &str, rest: &[String]) -> i32 {
 	match command {
 		"check" => run(|rules| check::check(rules, rest)),
-		"--diff" => match rest {
-			[source] => run(|rules| diff::diff(rules, source)),
-			_ => usage(),
+		"--diff" => match rest.split_first() {
+			Some((source, paths)) => run(|rules| diff::diff(rules, source, paths)),
+			None => usage(),
 		},
 		"test" => run(verify::verify),
 		"rules" => run(|rules| {
@@ -109,7 +109,9 @@ fn manual() -> String {
 		"usage: {} [COMMAND] [PATH...]
 
   check PATH...  report what the rules find under each path, or under .
-  --diff FILE    report only on the lines a unified diff touches, - for stdin
+  --diff FILE [PATH...]
+                 report on a unified diff, - for stdin, or on each PATH given,
+                 narrowed to the lines the diff covers where it covers them
   rules          list the rules and the languages each one reaches
   languages      list the grammars linked into this binary
   test           run every rule against its own snippets

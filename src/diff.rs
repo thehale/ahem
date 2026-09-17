@@ -1,7 +1,7 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::check::{Scope, reported, root};
+use crate::check::{Scope, check, reported, root};
 use crate::rules::Rule;
 use std::collections::BTreeSet;
 use std::io::Read;
@@ -15,11 +15,36 @@ struct Touched {
 	added: Vec<(usize, String)>,
 }
 
-pub fn diff(rules: &[Rule], source: &str) -> usize {
+pub fn diff(rules: &[Rule], source: &str, paths: &[String]) -> usize {
 	match given(source) {
-		Ok(patch) => touched(&patch).iter().map(|file| inspect(rules, file)).sum(),
+		Ok(patch) => examined(rules, &touched(&patch), paths),
 		Err(error) => unread(source, error),
 	}
+}
+
+fn examined(rules: &[Rule], files: &[Touched], paths: &[String]) -> usize {
+	match paths.is_empty() {
+		true => files.iter().map(|file| inspect(rules, file)).sum(),
+		false => paths.iter().map(|path| asked(rules, files, path)).sum(),
+	}
+}
+
+fn asked(rules: &[Rule], files: &[Touched], path: &str) -> usize {
+	match covering(files, path) {
+		Some(file) => inspect(rules, file),
+		None => check(rules, std::slice::from_ref(&path.to_string())),
+	}
+}
+
+fn covering<'a>(files: &'a [Touched], path: &str) -> Option<&'a Touched> {
+	let wanted = std::fs::canonicalize(path).ok()?;
+	files
+		.iter()
+		.find(|file| resolved(&file.path) == Some(wanted.clone()))
+}
+
+fn resolved(named: &Path) -> Option<PathBuf> {
+	std::fs::canonicalize(located(named)?).ok()
 }
 
 fn given(source: &str) -> Result<String, std::io::Error> {
