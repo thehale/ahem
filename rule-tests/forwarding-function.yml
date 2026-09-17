@@ -41,6 +41,10 @@ Python:
       class Session:
           def close(self, reason):
               return self.socket.close(reason)
+    - |
+      @pytest.fixture
+      def deliveries(database):
+          return DeliveryStore(database)
 Ruby:
   invalid:
     - |
@@ -66,6 +70,17 @@ Ruby:
       class Session
         def close(reason)
           super(reason)
+        end
+      end
+    - |
+      def recorded_as(recording)
+        assume_title_from_parent(recording)
+        subscribe_creator_to_parent(recording)
+      end
+    - |
+      def extract(io)
+        sandboxed(io) do |path|
+          probe(path)
         end
       end
 Rust:

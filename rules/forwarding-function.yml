@@ -69,6 +69,9 @@ languages:
   Python:
     all:
       - kind: function_definition
+      - not:
+          inside:
+            kind: decorated_definition
       - has:
           stopBy: end
           kind: call
@@ -124,11 +127,25 @@ languages:
           has:
             kind: identifier
       - has:
-          stopBy: end
-          kind: call
-          has:
-            field: method
-            kind: identifier
+          field: body
+          all:
+            - not:
+                has:
+                  nthChild: 2
+            - has:
+                any:
+                  - &bare
+                    kind: call
+                    has:
+                      field: method
+                      kind: identifier
+                    not:
+                      has:
+                        any:
+                          - kind: block
+                          - kind: do_block
+                  - kind: return
+                    has: *bare
   Rust:
     all:
       - kind: function_item
