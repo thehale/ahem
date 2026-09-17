@@ -1,0 +1,125 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+JavaScript:
+  invalid:
+    - |
+      function setLength(el, px) {
+        return resize(el, px);
+      }
+    - |
+      const notify = (user, message) => send(user, message);
+  valid:
+    - |
+      function setLength(el, px) {
+        el.style.width = `${px}px`;
+      }
+    - |
+      const notify = (user, message) => send(user, message, { urgent: true });
+    - |
+      class Session {
+        close(reason) {
+          return this.socket.close(reason);
+        }
+      }
+Python:
+  invalid:
+    - |
+      def find_user(email):
+          return fetch_user(email)
+    - |
+      def record(name, count):
+          increment(name, count)
+  valid:
+    - |
+      def find_user(email):
+          return fetch_user(email.lower())
+    - |
+      def record(name, count):
+          increment(name, count, flush=True)
+    - |
+      class Session:
+          def close(self, reason):
+              return self.socket.close(reason)
+Ruby:
+  invalid:
+    - |
+      def find_user(email)
+        fetch_user(email)
+      end
+    - |
+      def record(name, count, at)
+        increment(name, count, at)
+      end
+  valid:
+    - |
+      def find_user(email)
+        fetch_user(email.downcase)
+      end
+    - |
+      class Session
+        def close(reason)
+          @socket.close(reason)
+        end
+      end
+    - |
+      class Session
+        def close(reason)
+          super(reason)
+        end
+      end
+Rust:
+  invalid:
+    - |
+      fn parsed(patch: &str) -> Vec<Touched> {
+      	touched(patch)
+      }
+    - |
+      fn width(text: &str, font: &Font) -> u32 {
+      	measure(text, font)
+      }
+  valid:
+    - |
+      fn parsed(patch: &str) -> Vec<Touched> {
+      	touched(patch.trim())
+      }
+    - |
+      fn width(text: &str, font: &Font) -> u32 {
+      	measure(font, text)
+      }
+    - |
+      impl Session {
+      	fn close(&self, reason: &str) {
+      		self.socket.close(reason);
+      	}
+      }
+Tsx:
+  invalid:
+    - |
+      function renderRow(item: Item, index: number) {
+        return Row(item, index);
+      }
+  valid:
+    - |
+      function renderRow(item: Item, index: number) {
+        return <Row item={item} index={index} />;
+      }
+TypeScript:
+  invalid:
+    - |
+      export function findUser(email: string): Promise<User> {
+        return fetchUser(email);
+      }
+    - |
+      const notify = (user: User, message: string): void => send(user, message);
+  valid:
+    - |
+      export function findUser(email: string): Promise<User> {
+        return fetchUser(email.toLowerCase());
+      }
+    - |
+      class Session {
+        close(reason: string): void {
+          this.socket.close(reason);
+        }
+      }

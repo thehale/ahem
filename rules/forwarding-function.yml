@@ -1,0 +1,158 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: function-only-renames-a-call
+severity: hint
+message: >-
+  A function whose body hands its own parameters straight to another call adds a name the reader has to resolve before reaching the work. Calling that function directly says the same thing and leaves one fewer name to learn.
+rule:
+  all:
+    - any:
+        - kind: function_declaration
+        - kind: method_definition
+        - all:
+            - kind: arrow_function
+            - inside:
+                kind: variable_declarator
+    - has: &plain
+        stopBy: end
+        kind: call_expression
+        has:
+          field: function
+          kind: identifier
+    - any:
+        - all:
+            - has:
+                field: parameters
+                any:
+                  - pattern:
+                      context: "function f($A: $T) {}"
+                      selector: formal_parameters
+                  - pattern:
+                      context: "function f($A) {}"
+                      selector: formal_parameters
+            - has:
+                field: body
+                any:
+                  - pattern:
+                      context: "function f() { return $F($A); }"
+                      selector: statement_block
+                  - pattern:
+                      context: "function f() { $F($A); }"
+                      selector: statement_block
+                  - pattern:
+                      context: "const g = () => $F($A)"
+                      selector: call_expression
+        - all:
+            - has:
+                field: parameters
+                any:
+                  - pattern:
+                      context: "function f($A: $T, $B: $U) {}"
+                      selector: formal_parameters
+                  - pattern:
+                      context: "function f($A, $B) {}"
+                      selector: formal_parameters
+            - has:
+                field: body
+                any:
+                  - pattern:
+                      context: "function f() { return $F($A, $B); }"
+                      selector: statement_block
+                  - pattern:
+                      context: "function f() { $F($A, $B); }"
+                      selector: statement_block
+                  - pattern:
+                      context: "const g = () => $F($A, $B)"
+                      selector: call_expression
+languages:
+  Python:
+    all:
+      - kind: function_definition
+      - has:
+          stopBy: end
+          kind: call
+          has:
+            field: function
+            kind: identifier
+      - any:
+          - all:
+              - has:
+                  field: parameters
+                  any:
+                    - pattern:
+                        context: "def f($A: $T): pass"
+                        selector: parameters
+                    - pattern:
+                        context: "def f($A): pass"
+                        selector: parameters
+              - has:
+                  field: body
+                  any:
+                    - pattern:
+                        context: "def f():\n    return $F($A)"
+                        selector: block
+                    - pattern:
+                        context: "def f():\n    $F($A)"
+                        selector: block
+          - all:
+              - has:
+                  field: parameters
+                  any:
+                    - pattern:
+                        context: "def f($A: $T, $B: $U): pass"
+                        selector: parameters
+                    - pattern:
+                        context: "def f($A, $B): pass"
+                        selector: parameters
+              - has:
+                  field: body
+                  any:
+                    - pattern:
+                        context: "def f():\n    return $F($A, $B)"
+                        selector: block
+                    - pattern:
+                        context: "def f():\n    $F($A, $B)"
+                        selector: block
+  Ruby:
+    all:
+      - any:
+          - pattern: "def $N($$$A)\n  $F($$$A)\nend"
+          - pattern: "def $N($$$A)\n  return $F($$$A)\nend"
+      - has:
+          field: parameters
+          has:
+            kind: identifier
+      - has:
+          stopBy: end
+          kind: call
+          has:
+            field: method
+            kind: identifier
+  Rust:
+    all:
+      - kind: function_item
+      - has: *plain
+      - any:
+          - all:
+              - has:
+                  field: parameters
+                  pattern:
+                    context: "fn f($A: $T) {}"
+                    selector: parameters
+              - has:
+                  field: body
+                  any:
+                    - pattern: "{ $F($A) }"
+                    - pattern: "{ return $F($A); }"
+          - all:
+              - has:
+                  field: parameters
+                  pattern:
+                    context: "fn f($A: $T, $B: $U) {}"
+                    selector: parameters
+              - has:
+                  field: body
+                  any:
+                    - pattern: "{ $F($A, $B) }"
+                    - pattern: "{ return $F($A, $B); }"
