@@ -6,7 +6,9 @@ use crate::rules::Rule;
 use ast_grep_config::Severity;
 use ast_grep_core::tree_sitter::LanguageExt;
 use ignore::WalkBuilder;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 const SKIP_HIDDEN: bool = false;
 const REPOSITORY: &str = ".git";
@@ -33,6 +35,7 @@ fn walked(paths: &[String]) -> Vec<Result<PathBuf, String>> {
 	for root in roots {
 		builder.add(root);
 	}
+	let reviewed = reviewed(paths);
 	builder
 		.hidden(SKIP_HIDDEN)
 		.filter_entry(|entry| entry.file_name() != REPOSITORY)
@@ -41,11 +44,71 @@ fn walked(paths: &[String]) -> Vec<Result<PathBuf, String>> {
 			Ok(entry) => entry.file_type().is_some_and(|kind| kind.is_file()),
 			Err(_) => true,
 		})
+		.filter(|found| match found {
+			Ok(entry) => reviewed.covers(entry.path()),
+			Err(_) => true,
+		})
 		.map(|found| match found {
 			Ok(entry) => Ok(entry.into_path()),
 			Err(error) => Err(error.to_string()),
 		})
 		.collect()
+}
+
+struct Reviewed {
+	repository: Option<Repository>,
+	named: HashSet<PathBuf>,
+}
+
+struct Repository {
+	root: PathBuf,
+	tracked: HashSet<PathBuf>,
+}
+
+impl Reviewed {
+	fn covers(&self, path: &Path) -> bool {
+		let Some(repository) = &self.repository else {
+			return true;
+		};
+		let Ok(full) = std::fs::canonicalize(path) else {
+			return true;
+		};
+		if !full.starts_with(&repository.root) {
+			return true;
+		}
+		repository.tracked.contains(&full) || self.named.contains(&full)
+	}
+}
+
+fn reviewed(paths: &[String]) -> Reviewed {
+	Reviewed {
+		repository: repository(),
+		named: paths.iter().filter_map(whole).collect(),
+	}
+}
+
+fn repository() -> Option<Repository> {
+	let root = spoken(&["rev-parse", "--show-toplevel"])?;
+	let root = std::fs::canonicalize(root.trim()).ok()?;
+	let listed = spoken(&["-C", root.to_str()?, "ls-files", "-z"])?;
+	let tracked = listed
+		.split('\0')
+		.filter(|name| !name.is_empty())
+		.filter_map(|name| whole(root.join(name)))
+		.collect();
+	Some(Repository { root, tracked })
+}
+
+fn spoken(args: &[&str]) -> Option<String> {
+	let said = Command::new("git").args(args).output().ok()?;
+	match said.status.success() {
+		true => Some(String::from_utf8_lossy(&said.stdout).into_owned()),
+		false => None,
+	}
+}
+
+fn whole<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
+	std::fs::canonicalize(path).ok().filter(|full| full.is_file())
 }
 
 fn inspect(rules: &[Rule], path: &Path) -> usize {
