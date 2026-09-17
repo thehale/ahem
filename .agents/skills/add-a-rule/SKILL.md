@@ -66,9 +66,11 @@ every language, including the ones that replace `rule` outright.
 
 ## Message and severity
 
-The message is the whole finding. It is prose about why the code reads badly,
-and it never says what to do. An agent takes it as a general preference, so a
-message wider than its matcher causes edits the rule never asked for. Keep it
+The message is the whole finding. It is guidance and not an order: it explains
+why the code reads badly and where what the code is carrying would sit better,
+and the agent receiving it makes the call. That agent takes it as a general
+preference, so a message wider than its matcher causes edits the rule never
+asked for. Keep it
 inside what the matcher can see. `branches-read-as-one-shape` reaches
 statements alone, and its message argued for an expanded if/else without
 saying so, which pushed an agent twice into expanding one-line conditionals it
