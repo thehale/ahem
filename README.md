@@ -2,8 +2,7 @@
 
 # ahem
 
-Finds code patterns worth reconsidering, and says which principle each one
-breaks.
+Automated code style feedback for coding agents.
 
 <!-- BADGES -->
 [![License: MPL-2.0](https://badgen.net/github/license/thehale/template)](https://github.com/thehale/template/blob/main/LICENSE)

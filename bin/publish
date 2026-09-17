@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/publish [--dry-run]
+
+set -euo pipefail
+
+# shellcheck source=bin/lib/colors
+source "$(dirname "${BASH_SOURCE[0]}")/lib/colors"
+
+BRANCH="main"
+RELEASE_TAG="^v[0-9]+\.[0-9]+\.[0-9]+$"
+
+main() {
+	refuse_automation
+	confirm_branch
+	confirm_clean_tree
+	confirm_release_tag
+	confirm_declared_origin
+	bin/ci
+	publish "$@"
+}
+
+refuse_automation() {
+	if [[ -n "${CI:-}" ]]; then
+		refuse "CI publishes nothing. Run bin/publish from a workstation."
+	fi
+}
+
+refuse() {
+	red "$1" >&2
+	exit 1
+}
+
+confirm_branch() {
+	local branch
+	branch="$(git rev-parse --abbrev-ref HEAD)"
+
+	if [[ "$branch" != "$BRANCH" ]]; then
+		refuse "On $branch. A release is published from $BRANCH."
+	fi
+}
+
+confirm_clean_tree() {
+	if [[ -n "$(git status --porcelain)" ]]; then
+		refuse "The working tree has changes. Commit them or put them aside."
+	fi
+}
+
+confirm_release_tag() {
+	local tag version
+	tag="$(release_tag)"
+	version="$(manifest version)"
+
+	if [[ -z "$tag" ]]; then
+		refuse "HEAD carries no vX.Y.Z tag. Tag the commit you mean to release."
+	fi
+
+	if [[ "$tag" != "v$version" ]]; then
+		refuse "Tag $tag and Cargo.toml version $version name different releases."
+	fi
+}
+
+release_tag() {
+	git tag --points-at HEAD | grep --extended-regexp "$RELEASE_TAG" | head --lines 1 || true
+}
+
+manifest() {
+	sed --quiet --regexp-extended "/^\[package\]/,/^\[/ s%^$1 = \"(.*)\"%\1%p" Cargo.toml
+}
+
+confirm_declared_origin() {
+	local remote declared
+	remote="$(git remote get-url origin)"
+	declared="$(manifest repository)"
+
+	if [[ "$declared" != "${remote%.git}" ]]; then
+		refuse "Cargo.toml repository $declared is not origin ${remote%.git}."
+	fi
+}
+
+publish() {
+	local name version
+	name="$(manifest name)"
+	version="$(manifest version)"
+
+	yellow "Publishing $name $version from $(release_tag)"
+	cargo publish "$@"
+	green "Published $name $version"
+}
+
+main "$@"

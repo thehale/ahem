@@ -2,8 +2,12 @@
 name = "ahem"
 version = "0.1.0"
 edition = "2024"
+description = "Automated code style feedback for coding agents"
+repository = "https://github.com/thehale/ahem"
+readme = "README.md"
+keywords = ["lint", "code-review", "static-analysis", "ast-grep"]
+categories = ["command-line-utilities", "development-tools"]
 license = "MPL-2.0"
-publish = false
 
 [[bin]]
 name = "ahem"
