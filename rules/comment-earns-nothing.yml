@@ -62,3 +62,6 @@ languages:
   Bash:
     except:
       regex: "^#!"
+  Yaml:
+    except:
+      regex: '^#[ \t]*v?\d+(\.\d+)*$'
