@@ -12,6 +12,24 @@ except:
   any:
     - regex: Copyright
     - regex: SPDX-License-Identifier
+    - regex: "@ts-"
+    - regex: "//go:"
+    - regex: "biome-ignore"
+    - regex: "codespell"
+    - regex: "detekt"
+    - regex: "eslint"
+    - regex: "ktlint"
+    - regex: "mypy"
+    - regex: "noqa"
+    - regex: "nolint"
+    - regex: "prettier-ignore"
+    - regex: "pylint"
+    - regex: "pyright"
+    - regex: "rubocop"
+    - regex: "shellcheck"
+    - regex: "stylelint"
+    - regex: "swiftlint"
+    - regex: "type: ignore"
 languages:
   Rust:
     any:

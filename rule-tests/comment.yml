@@ -6,6 +6,7 @@ Bash:
     - "# a thing"
   valid:
     - "echo hi"
+    - "# shellcheck disable=SC2034"
     - "#!/usr/bin/env bash"
     - "# Copyright (c) Someone, 2026"
     - "# SPDX-License-Identifier: MPL-2.0"
@@ -51,6 +52,9 @@ Go:
   valid:
     - "package m"
     - |
+      //go:generate stringer -type=Kind
+      package m
+    - |
       // SPDX-License-Identifier: MPL-2.0
       package m
 Hcl:
@@ -79,6 +83,7 @@ JavaScript:
     - "// a thing"
   valid:
     - "let x = 1;"
+    - "// eslint-disable-next-line no-console"
     - "// SPDX-License-Identifier: MPL-2.0"
 Json:
   invalid:
@@ -121,6 +126,7 @@ Python:
     - "# a thing"
   valid:
     - "x = 1"
+    - "# noqa: E501"
     - "# Copyright (c) Someone, 2026"
 Ruby:
   invalid:
@@ -168,6 +174,7 @@ TypeScript:
     - "// a thing"
   valid:
     - "let x = 1;"
+    - "// @ts-expect-error the types disagree"
 Yaml:
   invalid:
     - "# a thing"
