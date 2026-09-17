@@ -3,8 +3,12 @@
 
 id: comment-earns-nothing
 severity: warning
-message: >-
-  Default to no comments. A well named helper is the comment, and rationale belongs in the commit message where it cannot drift from the code.
+message: |-
+  Default to no comments. What one carries belongs:
+  - in a name, when it says what the code is
+  - in a test, when it asserts what the code does
+  - in the README, when a reader needs it before any code
+  - in the commit message, when it is rationale
 rule:
   any:
     - kind: comment
