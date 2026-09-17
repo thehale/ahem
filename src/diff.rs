@@ -1,7 +1,7 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::check::{Scope, check, reported, root, spoken};
+use crate::check::{Scope, check, findings, root, spoken, tell};
 use crate::rules::Rule;
 use std::collections::BTreeSet;
 use std::io::Read;
@@ -145,7 +145,12 @@ fn inspect(rules: &[Rule], file: &Touched) -> usize {
 	};
 	match stale(file, &source) {
 		true => outdated(&path),
-		false => reported(rules, &path, &source, &Scope::Lines(file.lines.clone())),
+		false => tell(&findings(
+			rules,
+			&path,
+			&source,
+			&Scope::Lines(file.lines.clone()),
+		)),
 	}
 }
 

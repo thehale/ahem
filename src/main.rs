@@ -3,6 +3,7 @@
 
 mod check;
 mod diff;
+mod hook;
 mod lang;
 mod rules;
 mod say;
@@ -36,6 +37,7 @@ fn dispatch(command: &str, rest: &[String]) -> i32 {
 	match command {
 		"check" => run(|rules| check::check(rules, rest)),
 		"--diff" => run(|rules| diff::diff(rules, rest)),
+		"--hook" => run(hook::hook),
 		named if named.starts_with("--diff=") => run(|rules| diff::patched(rules, named, rest)),
 		"test" => run(verify::verify),
 		"rules" => run(|rules| {
@@ -112,6 +114,7 @@ fn manual() -> String {
                  PATH given, narrowed to the lines the diff covers
   --diff -       read the unified diff on stdin instead
   --diff=FILE    read the unified diff in FILE instead
+  --hook         answer a coding agent's tool-use payload on stdin
   rules          list the rules and the languages each one reaches
   languages      list the grammars linked into this binary
   test           run every rule against its own snippets

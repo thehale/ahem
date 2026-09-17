@@ -121,7 +121,14 @@ fn inspect(rules: &[Rule], path: &Path) -> usize {
 		Ok(source) => source,
 		Err(error) => return skipped(path, error),
 	};
-	reported(rules, path, &source, &Scope::Whole)
+	tell(&findings(rules, path, &source, &Scope::Whole))
+}
+
+pub fn tell(lines: &[String]) -> usize {
+	for line in lines {
+		say(line);
+	}
+	lines.len()
 }
 
 pub enum Scope {
@@ -138,12 +145,12 @@ impl Scope {
 	}
 }
 
-pub fn reported(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> usize {
+pub fn findings(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> Vec<String> {
 	let Some(lang) = Lang::of(path, source.lines().next()) else {
-		return 0;
+		return vec![];
 	};
 	let root = lang.ast_grep(source);
-	let mut found = 0;
+	let mut found = vec![];
 	for rule in applicable(rules, lang) {
 		let matcher = &rule.matchers[&lang];
 		for node in root.root().find_all(&matcher.matcher) {
@@ -151,13 +158,12 @@ pub fn reported(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> usi
 			if !scope.covers(first, node.end_pos().line() + 1) {
 				continue;
 			}
-			say(&format!(
+			found.push(format!(
 				"{}:{first}: {} [{}]",
 				path.display(),
 				matcher.message,
 				rule.id
 			));
-			found += 1;
 		}
 	}
 	found
