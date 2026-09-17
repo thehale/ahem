@@ -14,18 +14,51 @@ use tree_sitter_language::LanguageFn;
 
 unsafe extern "C" {
 	fn tree_sitter_gotmpl() -> *const ();
+	fn tree_sitter_toml() -> *const ();
 }
 
 const GOTMPL: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_gotmpl) };
+const TOML: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_toml) };
 
 const UNSHIPPED: &[SupportLang] = &[SupportLang::Haskell];
 
 const NAMED_NODE: bool = true;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum Vendored {
+	GoTmpl,
+	Toml,
+}
+
+impl Vendored {
+	const ALL: [Vendored; 2] = [Vendored::GoTmpl, Vendored::Toml];
+
+	fn name(&self) -> &'static str {
+		match self {
+			Vendored::GoTmpl => "gotmpl",
+			Vendored::Toml => "Toml",
+		}
+	}
+
+	fn extension(&self) -> &'static str {
+		match self {
+			Vendored::GoTmpl => "gotmpl",
+			Vendored::Toml => "toml",
+		}
+	}
+
+	fn parser(&self) -> LanguageFn {
+		match self {
+			Vendored::GoTmpl => GOTMPL,
+			Vendored::Toml => TOML,
+		}
+	}
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Lang {
 	Builtin(SupportLang),
-	GoTmpl,
+	Vendored(Vendored),
 }
 
 impl Lang {
@@ -36,7 +69,7 @@ impl Lang {
 			.copied()
 			.map(Lang::Builtin)
 			.collect();
-		langs.push(Lang::GoTmpl);
+		langs.extend(Vendored::ALL.iter().copied().map(Lang::Vendored));
 		langs
 	}
 
@@ -61,7 +94,7 @@ impl fmt::Display for Lang {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Lang::Builtin(lang) => write!(f, "{lang:?}"),
-			Lang::GoTmpl => write!(f, "gotmpl"),
+			Lang::Vendored(vendored) => write!(f, "{}", vendored.name()),
 		}
 	}
 }
@@ -77,8 +110,8 @@ impl FromStr for Lang {
 	type Err = String;
 
 	fn from_str(name: &str) -> Result<Self, Self::Err> {
-		if name == "gotmpl" {
-			return Ok(Lang::GoTmpl);
+		if let Some(vendored) = Vendored::ALL.iter().find(|vendored| vendored.name() == name) {
+			return Ok(Lang::Vendored(*vendored));
 		}
 		let lang = SupportLang::from_str(name).map_err(|error| error.to_string())?;
 		if UNSHIPPED.contains(&lang) {
@@ -96,41 +129,45 @@ impl Language for Lang {
 	fn kind_to_id(&self, kind: &str) -> u16 {
 		match self {
 			Lang::Builtin(lang) => lang.kind_to_id(kind),
-			Lang::GoTmpl => self.get_ts_language().id_for_node_kind(kind, NAMED_NODE),
+			Lang::Vendored(_) => self.get_ts_language().id_for_node_kind(kind, NAMED_NODE),
 		}
 	}
 
 	fn field_to_id(&self, field: &str) -> Option<u16> {
 		match self {
 			Lang::Builtin(lang) => lang.field_to_id(field),
-			Lang::GoTmpl => self.get_ts_language().field_id_for_name(field).map(|id| id.get()),
+			Lang::Vendored(_) => self.get_ts_language().field_id_for_name(field).map(|id| id.get()),
 		}
 	}
 
 	fn meta_var_char(&self) -> char {
 		match self {
 			Lang::Builtin(lang) => lang.meta_var_char(),
-			Lang::GoTmpl => '$',
+			Lang::Vendored(_) => '$',
 		}
 	}
 
 	fn expando_char(&self) -> char {
 		match self {
 			Lang::Builtin(lang) => lang.expando_char(),
-			Lang::GoTmpl => '_',
+			Lang::Vendored(_) => '_',
 		}
 	}
 
 	fn pre_process_pattern<'q>(&self, query: &'q str) -> Cow<'q, str> {
 		match self {
 			Lang::Builtin(lang) => lang.pre_process_pattern(query),
-			Lang::GoTmpl => Cow::Borrowed(query),
+			Lang::Vendored(_) => Cow::Borrowed(query),
 		}
 	}
 
 	fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
-		if path.as_ref().extension().is_some_and(|ext| ext == "gotmpl") {
-			return Some(Lang::GoTmpl);
+		let suffix = path.as_ref().extension();
+		let vendored = Vendored::ALL
+			.iter()
+			.find(|vendored| suffix.is_some_and(|ext| ext == vendored.extension()));
+		if let Some(vendored) = vendored {
+			return Some(Lang::Vendored(*vendored));
 		}
 		SupportLang::from_path(path)
 			.filter(|lang| !UNSHIPPED.contains(lang))
@@ -146,7 +183,7 @@ impl LanguageExt for Lang {
 	fn get_ts_language(&self) -> TSLanguage {
 		match self {
 			Lang::Builtin(lang) => lang.get_ts_language(),
-			Lang::GoTmpl => GOTMPL.into(),
+			Lang::Vendored(vendored) => vendored.parser().into(),
 		}
 	}
 }

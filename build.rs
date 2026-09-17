@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: MPL-2.0
 
 fn main() {
-	println!("cargo:rerun-if-changed=vendor/gotmpl/src/parser.c");
-	cc::Build::new()
-		.include("vendor/gotmpl/src")
-		.file("vendor/gotmpl/src/parser.c")
-		.warnings(false)
-		.compile("tree_sitter_gotmpl");
+	compile("gotmpl", &["parser.c"]);
+	compile("toml", &["parser.c", "scanner.c"]);
+}
+
+fn compile(grammar: &str, sources: &[&str]) {
+	let src = format!("vendor/{grammar}/src");
+	let mut build = cc::Build::new();
+	build.include(&src).warnings(false);
+	for source in sources {
+		println!("cargo:rerun-if-changed={src}/{source}");
+		build.file(format!("{src}/{source}"));
+	}
+	build.compile(&format!("tree_sitter_{grammar}"));
 }

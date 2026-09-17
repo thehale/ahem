@@ -152,6 +152,12 @@ Swift:
     - "/* a thing */"
   valid:
     - "let x = 1"
+Toml:
+  invalid:
+    - "# a thing"
+  valid:
+    - "key = \"value\""
+    - "# Copyright (c) Someone, 2026"
 Tsx:
   invalid:
     - "// a thing"
