@@ -9,6 +9,7 @@ use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 
 const SKIP_HIDDEN: bool = false;
+const REPOSITORY: &str = ".git";
 
 pub fn check(rules: &[Rule], paths: &[String]) -> usize {
 	walked(paths)
@@ -21,7 +22,7 @@ pub fn check(rules: &[Rule], paths: &[String]) -> usize {
 }
 
 fn unopened(error: String) -> usize {
-	eprintln!("deconfuse: {error}");
+	eprintln!("ahem: {error}");
 	1
 }
 
@@ -34,6 +35,7 @@ fn walked(paths: &[String]) -> Vec<Result<PathBuf, String>> {
 	}
 	builder
 		.hidden(SKIP_HIDDEN)
+		.filter_entry(|entry| entry.file_name() != REPOSITORY)
 		.build()
 		.filter(|found| match found {
 			Ok(entry) => entry.file_type().is_some_and(|kind| kind.is_file()),
