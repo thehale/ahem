@@ -4,10 +4,12 @@
 mod check;
 mod lang;
 mod rules;
+mod say;
 mod verify;
 
 use lang::Lang;
 use rules::Rule;
+use say::say;
 
 fn main() {
 	let args: Vec<String> = std::env::args().skip(1).collect();
@@ -39,7 +41,7 @@ fn dispatch(command: &str, rest: &[String]) -> i32 {
 		}),
 		"languages" => {
 			for lang in Lang::all() {
-				println!("{lang}");
+				say(&lang.to_string());
 			}
 			0
 		}
@@ -66,8 +68,8 @@ fn run(action: impl Fn(&[Rule]) -> usize) -> i32 {
 fn listed(rules: &[Rule]) {
 	for rule in rules {
 		let reached = named(&rule.matchers.keys().collect::<Vec<&Lang>>());
-		println!("{}  {:?}", rule.id, rule.severity);
-		println!("  {:2} languages  {}", reached.len(), reached.join(" "));
+		say(&format!("{}  {:?}", rule.id, rule.severity));
+		say(&format!("  {:2} languages  {}", reached.len(), reached.join(" ")));
 	}
 }
 
@@ -76,15 +78,19 @@ fn named(langs: &[&Lang]) -> Vec<String> {
 }
 
 fn version() -> i32 {
-	println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+	say(&format!(
+		"{} {}",
+		env!("CARGO_PKG_NAME"),
+		env!("CARGO_PKG_VERSION")
+	));
 	0
 }
 
 fn help() -> i32 {
 	version();
-	println!("{}", env!("CARGO_PKG_DESCRIPTION"));
-	println!();
-	println!("{}", manual());
+	say(env!("CARGO_PKG_DESCRIPTION"));
+	say("");
+	say(&manual());
 	0
 }
 

@@ -3,6 +3,7 @@
 
 use crate::lang::Lang;
 use crate::rules::Rule;
+use crate::say::say;
 use ast_grep_config::Severity;
 use ast_grep_core::tree_sitter::LanguageExt;
 use ignore::WalkBuilder;
@@ -125,7 +126,12 @@ fn inspect(rules: &[Rule], path: &Path) -> usize {
 		let matcher = &rule.matchers[&lang];
 		for node in root.root().find_all(&matcher.matcher) {
 			let line = node.start_pos().line() + 1;
-			println!("{}:{line}: {} [{}]", path.display(), matcher.message, rule.id);
+			say(&format!(
+				"{}:{line}: {} [{}]",
+				path.display(),
+				matcher.message,
+				rule.id
+			));
 			found += 1;
 		}
 	}
