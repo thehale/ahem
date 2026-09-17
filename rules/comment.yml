@@ -12,6 +12,9 @@ except:
   any:
     - regex: Copyright
     - regex: SPDX-License-Identifier
+    - regex: "Usage:"
+    - regex: "Examples:"
+    - regex: "^\\W+$"
     - regex: "@ts-"
     - regex: "//go:"
     - regex: "biome-ignore"
