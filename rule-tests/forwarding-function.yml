@@ -45,6 +45,9 @@ Python:
       @pytest.fixture
       def deliveries(database):
           return DeliveryStore(database)
+    - |
+      def parse(payload):
+          return json.loads(payload)
 Ruby:
   invalid:
     - |
@@ -83,6 +86,10 @@ Ruby:
           probe(path)
         end
       end
+    - |
+      def reload()
+        load_all()
+      end
 Rust:
   invalid:
     - |
@@ -107,6 +114,10 @@ Rust:
       	fn close(&self, reason: &str) {
       		self.socket.close(reason);
       	}
+      }
+    - |
+      fn parsed(patch: &str) -> Vec<Touched> {
+      	diff::touched(patch)
       }
 Tsx:
   invalid:
