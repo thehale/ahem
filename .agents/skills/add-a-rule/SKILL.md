@@ -8,7 +8,8 @@ license: MPL-2.0
 
 # Add a rule
 
-A rule is `rules/<name>.yml` and `rule-tests/<name>.yml` sharing a basename.
+A rule is `rules/<id>.yml` and `rule-tests/<id>.yml`, both named for the `id`
+the rule declares, which the build enforces.
 Any pair already in those directories shows the shape: an `id`, a `severity`,
 a `message`, the `rule` itself, an optional `except`, and a `languages` block
 carrying whatever a grammar needs said differently. What follows is what
@@ -40,7 +41,7 @@ A `kind:` rule reaches most grammars unchanged, which is why
 `pattern:` rule is written in one language's syntax and holds almost nowhere
 else: `conditions-compose-into-a-value` overrides sixteen of seventeen. A
 pattern that is not a whole file on its own needs `context:` and `selector:`,
-as the C and Java overrides in `rules/returned-condition.yml` do.
+as the C and Java overrides in `rules/condition-is-already-the-value.yml` do.
 
 Compiling is not matching. A matcher naming a field or kind the grammar does
 not have compiles and then flags nothing, which reads as a quiet pass rather

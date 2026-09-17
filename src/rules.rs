@@ -43,13 +43,25 @@ pub fn compile() -> Result<Vec<Rule>, String> {
 	let mut rules = vec![];
 	for file in RULES.files() {
 		let name = file.path().file_name().ok_or("rule file has no name")?;
+		let stem = file.path().file_stem().ok_or("rule file has no name")?;
 		let text = file.contents_utf8().ok_or("rule file is not utf-8")?;
 		let authored: Authored =
 			from_str(text).map_err(|error| format!("{}: {error}", file.path().display()))?;
+		named(&authored.id, stem)?;
 		rules.push(assembled(authored, tests(name)?)?);
 	}
 	rules.sort_by(|a, b| a.id.cmp(&b.id));
 	Ok(rules)
+}
+
+fn named(id: &str, stem: &std::ffi::OsStr) -> Result<(), String> {
+	let stem = stem.to_string_lossy();
+	if id == stem {
+		return Ok(());
+	}
+	Err(format!(
+		"rules/{stem}.yml declares the id {id}, which is the name it has to go by"
+	))
 }
 
 fn tests(name: &std::ffi::OsStr) -> Result<BTreeMap<Lang, Snippets>, String> {
