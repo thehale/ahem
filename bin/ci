@@ -37,7 +37,7 @@ function main() {
 		check "YAML: Format" "bin/yamlformat"
 		check "Markdown: Lint" "bin/markdownlint"
 		check "License" "bin/lawyer"
-		check "Secrets" "gitleaks git --no-banner --redact"
+		check "Secrets" "bin/secrets #--verbose"
 		check "Dependencies" "osv-scanner scan source --recursive --allow-no-lockfiles ."
 
 		check "Rust: Format" "cargo fmt --check"

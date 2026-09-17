@@ -32,12 +32,20 @@ refuse_automation() {
 
 refuse() {
 	red "$1" >&2
+
+	if [[ $# -gt 1 ]]; then
+		echo >&2
+		blue "    $2" >&2
+		echo >&2
+	fi
+
 	exit 1
 }
 
 confirm_checks() {
 	if ! bin/ci; then
-		refuse "bin/ci failed. A release is cut from a checkout that passes."
+		refuse "bin/ci failed. A release is cut from a checkout that passes." \
+			"bin/ci --fix  # NOTE: not every problem is autofixable"
 	fi
 }
 
@@ -46,13 +54,15 @@ confirm_branch() {
 	branch="$(git rev-parse --abbrev-ref HEAD)"
 
 	if [[ "$branch" != "$BRANCH" ]]; then
-		refuse "On $branch. A release is published from $BRANCH."
+		refuse "On $branch. A release is published from $BRANCH." \
+			"git switch $BRANCH"
 	fi
 }
 
 confirm_clean_tree() {
 	if [[ -n "$(git status --porcelain)" ]]; then
-		refuse "The working tree has changes. Commit them or put them aside."
+		refuse "The working tree has changes. Commit them or put them aside." \
+			"git add . && git stash"
 	fi
 }
 
@@ -62,11 +72,13 @@ confirm_release_tag() {
 	version="$(manifest version)"
 
 	if [[ -z "$tag" ]]; then
-		refuse "HEAD carries no vX.Y.Z tag. Tag the commit you mean to release."
+		refuse "HEAD carries no vX.Y.Z tag. Tag the commit you mean to release." \
+			"git tag --annotate v$version --message v$version"
 	fi
 
 	if [[ "$tag" != "v$version" ]]; then
-		refuse "Tag $tag and Cargo.toml version $version name different releases."
+		refuse "Tag $tag and Cargo.toml version $version name different releases." \
+			"git tag --annotate v$version --message v$version"
 	fi
 }
 
@@ -84,7 +96,8 @@ confirm_declared_origin() {
 	declared="$(manifest repository)"
 
 	if [[ "$declared" != "${remote%.git}" ]]; then
-		refuse "Cargo.toml repository $declared is not origin ${remote%.git}."
+		refuse "Cargo.toml repository $declared is not origin ${remote%.git}." \
+			"git remote get-url origin"
 	fi
 }
 
@@ -93,11 +106,13 @@ confirm_pushed_branch() {
 	pushed="$(remote_object "refs/heads/$BRANCH")"
 
 	if [[ -z "$pushed" ]]; then
-		refuse "origin has no $BRANCH. A release nobody can fetch is not a release."
+		refuse "origin has no $BRANCH. A release nobody can fetch is not a release." \
+			"git push origin $BRANCH"
 	fi
 
 	if [[ "$pushed" != "$(git rev-parse "HEAD^{}")" ]]; then
-		refuse "origin/$BRANCH is a different commit. Send $BRANCH there first."
+		refuse "origin/$BRANCH is a different commit. Send $BRANCH there first." \
+			"git push origin $BRANCH"
 	fi
 }
 
@@ -111,11 +126,13 @@ confirm_pushed_tag() {
 	pushed="$(remote_object "refs/tags/$tag")"
 
 	if [[ -z "$pushed" ]]; then
-		refuse "origin has no $tag. Send the tag there first."
+		refuse "origin has no $tag. Send the tag there first." \
+			"git push origin refs/tags/$tag"
 	fi
 
 	if [[ "$pushed" != "$(git rev-parse "refs/tags/$tag")" ]]; then
-		refuse "origin's $tag is a different object than the local $tag."
+		refuse "origin's $tag is a different object than the local $tag." \
+			"git ls-remote origin refs/tags/$tag"
 	fi
 }
 

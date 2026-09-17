@@ -17,6 +17,9 @@ filelike() {
 	bash)
 		"$files" --extension sh --extension bash --shebang bash
 		;;
+	markdown)
+		"$files" --extension md --extension markdown
+		;;
 	*)
 		"$files" --extension "$language"
 		;;

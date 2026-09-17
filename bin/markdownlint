@@ -6,22 +6,20 @@
 
 set -euo pipefail
 
-GLOBS=(
-	"**/*.md"
-	"**/*.markdown"
-	"!vendor/**"
-)
+# shellcheck source=bin/lib/filelike
+source "$(dirname "${BASH_SOURCE[0]}")/lib/filelike"
 
 CONFIG='
 # no-inline-html
 MD033: false
 
-# line-length: terminal output is as wide as it is
-MD013:
-  code_blocks: false
-
 # first-line-heading
 MD041: false
+
+# line-length
+MD013:
+  tables: false
+  code_blocks: false
 '
 
 CONFIG_DIR=""
@@ -29,12 +27,18 @@ CONFIG_DIR=""
 main() {
 	trap cleanup EXIT
 	write_config
-	markdownlint-cli2 --config "$CONFIG_DIR/.markdownlint.yaml" "$@" "${GLOBS[@]}"
+	lint "$@"
 }
 
 write_config() {
 	CONFIG_DIR="$(mktemp --directory)"
 	printf '%s\n' "$CONFIG" >"$CONFIG_DIR/.markdownlint.yaml"
+}
+
+lint() {
+	filelike markdown |
+		xargs --no-run-if-empty \
+			markdownlint-cli2 --config "$CONFIG_DIR/.markdownlint.yaml" "$@"
 }
 
 cleanup() {

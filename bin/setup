@@ -13,3 +13,4 @@ mise trust
 mise install
 
 bin/install-git-hooks
+bin/link-agent-config

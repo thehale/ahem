@@ -67,6 +67,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"CI publishes nothing"* ]]
+	[[ "$output" != *"    "* ]]
 }
 
 @test "refuses to publish a checkout whose checks fail" {
@@ -76,6 +77,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"bin/ci failed"* ]]
+	[[ "$output" == *"    bin/ci --fix"* ]]
 }
 
 @test "catches a file the checks themselves wrote" {
@@ -97,6 +99,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"published from main"* ]]
+	[[ "$output" == *"    git switch main"* ]]
 }
 
 @test "refuses to publish a working tree with changes" {
@@ -106,6 +109,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"working tree has changes"* ]]
+	[[ "$output" == *"    git add . && git stash"* ]]
 }
 
 @test "refuses to publish a commit that carries no release tag" {
@@ -113,6 +117,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"no vX.Y.Z tag"* ]]
+	[[ "$output" == *"    git tag --annotate v$(version)"* ]]
 }
 
 @test "refuses to publish when the tag and the manifest disagree" {
@@ -122,6 +127,7 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"different releases"* ]]
+	[[ "$output" == *"    git tag --annotate v$(version)"* ]]
 }
 
 @test "refuses to publish what origin has never heard of" {

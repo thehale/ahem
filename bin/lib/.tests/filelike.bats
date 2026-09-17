@@ -45,3 +45,14 @@ track() {
 
 	[ "$output" = "$(printf 'a.bash\nb.sh\ntool')" ]
 }
+
+@test "markdown also selects .markdown files" {
+	printf '# hi\n' >a.md
+	printf '# hi\n' >b.markdown
+	printf '# hi\n' >skipped.mdx
+	track a.md b.markdown skipped.mdx
+
+	run filelike markdown
+
+	[ "$output" = "$(printf 'a.md\nb.markdown')" ]
+}

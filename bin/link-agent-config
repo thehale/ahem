@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/link-agent-config
+
+set -euo pipefail
+
+main() {
+	link "CLAUDE.md" "AGENTS.md"
+	link ".claude/skills" "../.agents/skills"
+}
+
+link() {
+	local path="$1"
+	local target="$2"
+
+	if [[ ! -e "$path" && ! -L "$path" ]]; then
+		mkdir --parents "$(dirname "$path")"
+		ln --symbolic "$target" "$path"
+		echo "Linked $path -> $target"
+	elif [[ "$(readlink "$path")" != "$target" ]]; then
+		echo "Leaving $path alone: it is not a link to $target" >&2
+	fi
+}
+
+main "$@"
