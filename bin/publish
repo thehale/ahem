@@ -14,13 +14,13 @@ RELEASE_TAG="^v[0-9]+\.[0-9]+\.[0-9]+$"
 
 main() {
 	refuse_automation
+	confirm_checks
 	confirm_branch
 	confirm_clean_tree
 	confirm_release_tag
+	confirm_declared_origin
 	confirm_pushed_branch
 	confirm_pushed_tag
-	confirm_declared_origin
-	bin/ci
 	publish "$@"
 }
 
@@ -33,6 +33,12 @@ refuse_automation() {
 refuse() {
 	red "$1" >&2
 	exit 1
+}
+
+confirm_checks() {
+	if ! bin/ci; then
+		refuse "bin/ci failed. A release is cut from a checkout that passes."
+	fi
 }
 
 confirm_branch() {
@@ -72,6 +78,16 @@ manifest() {
 	sed --quiet --regexp-extended "/^\[package\]/,/^\[/ s%^$1 = \"(.*)\"%\1%p" Cargo.toml
 }
 
+confirm_declared_origin() {
+	local remote declared
+	remote="$(git remote get-url origin)"
+	declared="$(manifest repository)"
+
+	if [[ "$declared" != "${remote%.git}" ]]; then
+		refuse "Cargo.toml repository $declared is not origin ${remote%.git}."
+	fi
+}
+
 confirm_pushed_branch() {
 	local pushed
 	pushed="$(remote_object "refs/heads/$BRANCH")"
@@ -100,16 +116,6 @@ confirm_pushed_tag() {
 
 	if [[ "$pushed" != "$(git rev-parse "refs/tags/$tag^{}")" ]]; then
 		refuse "origin's $tag names a different commit than the local $tag."
-	fi
-}
-
-confirm_declared_origin() {
-	local remote declared
-	remote="$(git remote get-url origin)"
-	declared="$(manifest repository)"
-
-	if [[ "$declared" != "${remote%.git}" ]]; then
-		refuse "Cargo.toml repository $declared is not origin ${remote%.git}."
 	fi
 }
 

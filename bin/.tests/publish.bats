@@ -10,6 +10,8 @@ setup() {
 	unset "${!GIT_@}"
 	unset CI
 
+	PATH="$BATS_TEST_TMPDIR/stub:$PATH"
+
 	export GIT_CONFIG_GLOBAL=/dev/null
 	export GIT_CONFIG_SYSTEM=/dev/null
 
@@ -17,16 +19,31 @@ setup() {
 
 	mkdir --parents "$BATS_TEST_TMPDIR/work"
 	cd "$BATS_TEST_TMPDIR/work"
+	unpublishable
 	release_history
+}
+
+unpublishable() {
+	mkdir --parents "$BATS_TEST_TMPDIR/stub"
+	printf '#!/usr/bin/env bash\necho "the tests do not publish" >&2\nexit 1\n' >"$BATS_TEST_TMPDIR/stub/cargo"
+	chmod +x "$BATS_TEST_TMPDIR/stub/cargo"
 }
 
 release_history() {
 	git init --quiet --initial-branch main .
-	git remote add origin https://example.invalid/unpublished
+	git remote add origin "$ORIGIN"
 	cp "$REPO/Cargo.toml" Cargo.toml
-	git add Cargo.toml
+	sed --in-place "s%^repository = .*%repository = \"${ORIGIN%.git}\"%" Cargo.toml
+	checks "exit 0"
+	git add -A
 	commit "first"
 	commit "second"
+}
+
+checks() {
+	mkdir --parents bin
+	printf '#!/usr/bin/env bash\n%s\n' "$1" >bin/ci
+	chmod +x bin/ci
 }
 
 commit() {
@@ -39,7 +56,6 @@ version() {
 
 serve() {
 	git clone --quiet --bare . "$ORIGIN"
-	git remote set-url origin "$ORIGIN"
 }
 
 @test "refuses to publish from CI" {
@@ -47,6 +63,27 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"CI publishes nothing"* ]]
+}
+
+@test "refuses to publish a checkout whose checks fail" {
+	checks "exit 1"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"bin/ci failed"* ]]
+}
+
+@test "catches a file the checks themselves wrote" {
+	checks "echo lock >Cargo.lock"
+	git add -A
+	commit "checks that write"
+	git tag "v$(version)"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"working tree has changes"* ]]
 }
 
 @test "refuses to publish from a branch that is not main" {
@@ -86,7 +123,6 @@ serve() {
 @test "refuses to publish what origin has never heard of" {
 	git tag "v$(version)"
 	git init --quiet --bare "$ORIGIN"
-	git remote set-url origin "$ORIGIN"
 
 	run "$RELEASE"
 
@@ -130,6 +166,7 @@ serve() {
 @test "refuses to publish when the manifest points away from origin" {
 	git tag "v$(version)"
 	serve
+	git remote set-url origin https://github.com/someone/else
 
 	run "$RELEASE"
 
