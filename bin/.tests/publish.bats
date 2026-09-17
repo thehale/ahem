@@ -50,6 +50,10 @@ commit() {
 	git -c user.email=a@b -c user.name=a commit --quiet --allow-empty --message "$1"
 }
 
+tag() {
+	git -c user.email=a@b -c user.name=a tag --annotate "$1" --message "release $1"
+}
+
 version() {
 	sed --quiet --regexp-extended 's%^version = "(.*)"%\1%p' Cargo.toml | head --lines 1
 }
@@ -78,7 +82,7 @@ serve() {
 	checks "echo lock >Cargo.lock"
 	git add -A
 	commit "checks that write"
-	git tag "v$(version)"
+	tag "v$(version)"
 
 	run "$RELEASE"
 
@@ -112,7 +116,7 @@ serve() {
 }
 
 @test "refuses to publish when the tag and the manifest disagree" {
-	git tag v9.9.9
+	tag v9.9.9
 
 	run "$RELEASE"
 
@@ -121,7 +125,7 @@ serve() {
 }
 
 @test "refuses to publish what origin has never heard of" {
-	git tag "v$(version)"
+	tag "v$(version)"
 	git init --quiet --bare "$ORIGIN"
 
 	run "$RELEASE"
@@ -131,10 +135,11 @@ serve() {
 }
 
 @test "refuses to publish a commit that never left the workstation" {
-	git tag "v$(version)"
+	tag "v$(version)"
 	serve
 	commit "third"
-	git tag --force "v$(version)"
+	git tag --delete "v$(version)"
+	tag "v$(version)"
 
 	run "$RELEASE"
 
@@ -144,7 +149,7 @@ serve() {
 
 @test "refuses to publish a tag that never left the workstation" {
 	serve
-	git tag "v$(version)"
+	tag "v$(version)"
 
 	run "$RELEASE"
 
@@ -153,18 +158,18 @@ serve() {
 }
 
 @test "refuses to publish when origin's tag names another commit" {
-	git tag "v$(version)"
+	tag "v$(version)"
 	serve
 	git --git-dir "$ORIGIN" update-ref "refs/tags/v$(version)" "$(git rev-parse HEAD~1)"
 
 	run "$RELEASE"
 
 	[ "$status" -eq 1 ]
-	[[ "$output" == *"names a different commit"* ]]
+	[[ "$output" == *"is a different object"* ]]
 }
 
 @test "refuses to publish when the manifest points away from origin" {
-	git tag "v$(version)"
+	tag "v$(version)"
 	serve
 	git remote set-url origin https://github.com/someone/else
 
@@ -172,4 +177,14 @@ serve() {
 
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"is not origin"* ]]
+}
+
+@test "carries a release that satisfies every check as far as the registry" {
+	tag "v$(version)"
+	serve
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"the tests do not publish"* ]]
 }

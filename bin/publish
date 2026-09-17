@@ -114,8 +114,8 @@ confirm_pushed_tag() {
 		refuse "origin has no $tag. Send the tag there first."
 	fi
 
-	if [[ "$pushed" != "$(git rev-parse "refs/tags/$tag^{}")" ]]; then
-		refuse "origin's $tag names a different commit than the local $tag."
+	if [[ "$pushed" != "$(git rev-parse "refs/tags/$tag")" ]]; then
+		refuse "origin's $tag is a different object than the local $tag."
 	fi
 }
 
