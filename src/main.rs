@@ -13,6 +13,8 @@ use lang::Lang;
 use rules::Rule;
 use say::say;
 
+const COMMANDS: &[&str] = &["check", "rules", "languages", "test"];
+
 fn main() {
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	let (command, rest) = split(&args);
@@ -28,8 +30,21 @@ fn asked(args: &[String]) -> bool {
 
 fn split(args: &[String]) -> (&str, &[String]) {
 	match args.split_first() {
-		Some((command, rest)) => (command.as_str(), rest),
+		Some((command, rest)) if command == "check" => checking(command, rest),
+		Some((command, rest)) if spoken(command) => (command.as_str(), rest),
+		Some(_) => ("check", args),
 		None => ("check", &[]),
+	}
+}
+
+fn spoken(command: &str) -> bool {
+	COMMANDS.contains(&command) || command.starts_with('-')
+}
+
+fn checking<'a>(command: &'a str, rest: &'a [String]) -> (&'a str, &'a [String]) {
+	match rest.split_first() {
+		Some((flag, tail)) if flag.starts_with("--") => (flag.as_str(), tail),
+		_ => (command, rest),
 	}
 }
 
@@ -109,12 +124,13 @@ fn manual() -> String {
 		"usage: {} [COMMAND] [PATH...]
 
   check PATH...  report what the rules find under each path, or under .
-  --diff [PATH...]
+  check --diff [PATH...]
                  report on what this repository has not committed, or on each
                  PATH given, narrowed to the lines the diff covers
-  --diff -       read the unified diff on stdin instead
-  --diff=FILE    read the unified diff in FILE instead
-  --hook         answer a coding agent's tool-use payload on stdin
+  check --diff - read the unified diff on stdin instead
+  check --diff=FILE
+                 read the unified diff in FILE instead
+  check --hook   answer a coding agent's tool-use payload on stdin
   rules          list the rules and the languages each one reaches
   languages      list the grammars linked into this binary
   test           run every rule against its own snippets

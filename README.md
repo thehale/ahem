@@ -18,6 +18,7 @@ principle it breaks, and the rule that found it.
 
 ```console
 $ ahem check src/session.js
+
 src/session.js:2: Default to no comments. A well named helper is the comment, and rationale belongs in the commit message where it cannot drift from the code. [comment-earns-nothing]
 src/session.js:3: A condition already is the value these branches return. Returning it directly says the same thing on one line. [condition-is-already-the-value]
 ```
@@ -29,10 +30,10 @@ To read a change rather than a file, hand it a diff. Findings are confined to
 the lines it covers, so work somebody else left behind stays out of the way.
 
 ```bash
-ahem --diff                     # what this repository has not committed
-ahem --diff src/session.js      # the same, narrowed to one path
-git show HEAD | ahem --diff -   # whatever diff git can produce
-ahem --diff=review.patch        # or one saved to a file
+ahem check --diff                     # what this repository has not committed
+ahem check --diff src/session.js      # the same, narrowed to one path
+git show HEAD | ahem check --diff -   # whatever diff git can produce
+ahem check --diff=review.patch        # or one saved to a file
 ```
 
 A file git has never seen is read whole, because all of it is new.
@@ -46,13 +47,15 @@ ahem test            # run every rule against its snippets
 
 ## In a coding agent
 
-Point the agent's post-tool hook at `ahem --hook`, which reads the tool-use
-payload on stdin and answers in the envelope that agent expects.
+Point the agent's post-tool hook at `ahem check --hook`, which reads the
+tool-use payload on stdin and answers in the envelope that agent expects.
 
 ```json
 {
   "hooks": {
-    "PostToolUse": [{ "hooks": [{ "type": "command", "command": "ahem --hook" }] }]
+    "PostToolUse": [
+      { "hooks": [{ "type": "command", "command": "ahem check --hook" }] }
+    ]
   }
 }
 ```
