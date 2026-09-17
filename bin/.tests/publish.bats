@@ -8,6 +8,10 @@ setup() {
 	RELEASE="${RELEASE%.bats}"
 
 	unset "${!GIT_@}"
+	unset CI
+
+	export GIT_CONFIG_GLOBAL=/dev/null
+	export GIT_CONFIG_SYSTEM=/dev/null
 
 	ORIGIN="${BATS_TEST_TMPDIR:?}/origin.git"
 
@@ -18,7 +22,7 @@ setup() {
 
 release_history() {
 	git init --quiet --initial-branch main .
-	git remote add origin "$(git -C "$REPO" remote get-url origin)"
+	git remote add origin https://example.invalid/unpublished
 	cp "$REPO/Cargo.toml" Cargo.toml
 	git add Cargo.toml
 	commit "first"
