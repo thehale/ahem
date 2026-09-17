@@ -9,16 +9,33 @@ setup() {
 
 	unset "${!GIT_@}"
 
-	cd "${BATS_TEST_TMPDIR:?}"
-	clone
+	ORIGIN="${BATS_TEST_TMPDIR:?}/origin.git"
+
+	mkdir --parents "$BATS_TEST_TMPDIR/work"
+	cd "$BATS_TEST_TMPDIR/work"
+	release_history
 }
 
-clone() {
+release_history() {
 	git init --quiet --initial-branch main .
 	git remote add origin "$(git -C "$REPO" remote get-url origin)"
 	cp "$REPO/Cargo.toml" Cargo.toml
 	git add Cargo.toml
-	git -c user.email=a@b -c user.name=a commit --quiet --message "release"
+	commit "first"
+	commit "second"
+}
+
+commit() {
+	git -c user.email=a@b -c user.name=a commit --quiet --allow-empty --message "$1"
+}
+
+version() {
+	sed --quiet --regexp-extended 's%^version = "(.*)"%\1%p' Cargo.toml | head --lines 1
+}
+
+serve() {
+	git clone --quiet --bare . "$ORIGIN"
+	git remote set-url origin "$ORIGIN"
 }
 
 @test "refuses to publish from CI" {
@@ -62,9 +79,53 @@ clone() {
 	[[ "$output" == *"different releases"* ]]
 }
 
+@test "refuses to publish what origin has never heard of" {
+	git tag "v$(version)"
+	git init --quiet --bare "$ORIGIN"
+	git remote set-url origin "$ORIGIN"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"origin has no main"* ]]
+}
+
+@test "refuses to publish a commit that never left the workstation" {
+	git tag "v$(version)"
+	serve
+	commit "third"
+	git tag --force "v$(version)"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"origin/main is a different commit"* ]]
+}
+
+@test "refuses to publish a tag that never left the workstation" {
+	serve
+	git tag "v$(version)"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"origin has no v$(version)"* ]]
+}
+
+@test "refuses to publish when origin's tag names another commit" {
+	git tag "v$(version)"
+	serve
+	git --git-dir "$ORIGIN" update-ref "refs/tags/v$(version)" "$(git rev-parse HEAD~1)"
+
+	run "$RELEASE"
+
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"names a different commit"* ]]
+}
+
 @test "refuses to publish when the manifest points away from origin" {
-	git tag "v$(sed --quiet --regexp-extended 's%^version = "(.*)"%\1%p' Cargo.toml | head --lines 1)"
-	git remote set-url origin https://github.com/someone/else
+	git tag "v$(version)"
+	serve
 
 	run "$RELEASE"
 

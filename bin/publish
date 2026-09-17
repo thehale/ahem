@@ -17,6 +17,8 @@ main() {
 	confirm_branch
 	confirm_clean_tree
 	confirm_release_tag
+	confirm_pushed_branch
+	confirm_pushed_tag
 	confirm_declared_origin
 	bin/ci
 	publish "$@"
@@ -68,6 +70,37 @@ release_tag() {
 
 manifest() {
 	sed --quiet --regexp-extended "/^\[package\]/,/^\[/ s%^$1 = \"(.*)\"%\1%p" Cargo.toml
+}
+
+confirm_pushed_branch() {
+	local pushed
+	pushed="$(remote_object "refs/heads/$BRANCH")"
+
+	if [[ -z "$pushed" ]]; then
+		refuse "origin has no $BRANCH. A release nobody can fetch is not a release."
+	fi
+
+	if [[ "$pushed" != "$(git rev-parse "HEAD^{}")" ]]; then
+		refuse "origin/$BRANCH is a different commit. Send $BRANCH there first."
+	fi
+}
+
+remote_object() {
+	git ls-remote origin "$1" | cut --fields 1 | tail --lines 1
+}
+
+confirm_pushed_tag() {
+	local tag pushed
+	tag="$(release_tag)"
+	pushed="$(remote_object "refs/tags/$tag")"
+
+	if [[ -z "$pushed" ]]; then
+		refuse "origin has no $tag. Send the tag there first."
+	fi
+
+	if [[ "$pushed" != "$(git rev-parse "refs/tags/$tag^{}")" ]]; then
+		refuse "origin's $tag names a different commit than the local $tag."
+	fi
 }
 
 confirm_declared_origin() {
