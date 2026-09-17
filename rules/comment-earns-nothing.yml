@@ -5,6 +5,7 @@ id: comment-earns-nothing
 severity: warning
 message: |-
   Default to no comments. What one carries belongs:
+  - nowhere, when the code beside it already says it
   - in a name, when it says what the code is
   - in a test, when it asserts what the code does
   - in the README, when a reader needs it before any code
