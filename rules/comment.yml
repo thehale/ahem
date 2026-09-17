@@ -14,6 +14,7 @@ except:
     - regex: SPDX-License-Identifier
     - regex: "Usage:"
     - regex: "Examples:"
+    - regex: '^(?:[ \t]*(?:/\*[*!]|\*/|//[/!]|\*)?[ \t]*(?:[@\\]\w+.*|-[ \t]+[A-Za-z]\w*(?:[ \t]+[A-Za-z]\w*)?[ \t]*:.*|</?(?:param|returns|typeparam|exception)[^\w].*)?[ \t]*(?:\r?\n|$))+$'
     - regex: "^\\W+$"
     - regex: "@ts-"
     - regex: "//go:"

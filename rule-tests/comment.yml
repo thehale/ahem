@@ -14,19 +14,54 @@ C:
   invalid:
     - "// a thing"
     - "/* a thing */"
+    - |
+      /**
+       * Writes the whole buffer, retrying on partial writes.
+       * @param fd the descriptor to write to
+       */
+      int write_all(int fd);
   valid:
     - "int x = 1;"
     - "// SPDX-License-Identifier: MPL-2.0"
+    - |
+      /**
+       * @param fd the descriptor to write to
+       * @return the number of bytes written
+       */
+      int write_all(int fd);
 Cpp:
   invalid:
     - "// a thing"
+    - |
+      /**
+       * Writes the whole buffer, retrying on partial writes.
+       * \param fd the descriptor to write to
+       */
+      int write_all(int fd);
   valid:
     - "int x = 1;"
+    - |
+      /**
+       * \param fd the descriptor to write to
+       * \return the number of bytes written
+       */
+      int write_all(int fd);
 CSharp:
   invalid:
     - "// a thing"
+    - |
+      class A {
+          /// <summary>Returns the user's display name.</summary>
+          string Name(int id) => "";
+      }
   valid:
     - "class A {}"
+    - |
+      class A {
+          /// <param name="id">the user to look up</param>
+          /// <returns>the display name</returns>
+          string Name(int id) => "";
+      }
 Css:
   invalid:
     - "/* a thing */"
@@ -75,16 +110,41 @@ Java:
     - |
       /** a thing */
       class A {}
+    - |
+      /**
+       * Returns the user's display name.
+       * @param id the user to look up
+       */
+      class A {}
   valid:
     - "class A {}"
     - "// SPDX-License-Identifier: MPL-2.0"
+    - |
+      /**
+       * @param id the user to look up
+       * @return the display name
+       * @throws NotFound when no such user exists
+       */
+      class A {}
 JavaScript:
   invalid:
     - "// a thing"
+    - |
+      /**
+       * Returns the user's display name.
+       * @param {number} id the user to look up
+       */
+      function name(id) { return ""; }
   valid:
     - "let x = 1;"
     - "// eslint-disable-next-line no-console"
     - "// SPDX-License-Identifier: MPL-2.0"
+    - |
+      /**
+       * @param {number} id the user to look up
+       * @returns {string}
+       */
+      function name(id) { return ""; }
 Json:
   invalid:
     - |
@@ -96,9 +156,21 @@ Kotlin:
   invalid:
     - "// a thing"
     - "/* a thing */"
+    - |
+      /**
+       * Returns the user's display name.
+       * @param id the user to look up
+       */
+      fun name(id: Int) = ""
   valid:
     - "fun f() {}"
     - "// SPDX-License-Identifier: MPL-2.0"
+    - |
+      /**
+       * @param id the user to look up
+       * @return the display name
+       */
+      fun name(id: Int) = ""
 Lua:
   invalid:
     - "-- a thing"
@@ -117,10 +189,24 @@ Php:
     - |
       <?php
       # a thing
+    - |
+      <?php
+      /**
+       * Returns the user's display name.
+       * @param int $id the user to look up
+       */
+      function name($id) { return ""; }
   valid:
     - |
       <?php
       $x = 1;
+    - |
+      <?php
+      /**
+       * @param int $id the user to look up
+       * @return string
+       */
+      function name($id) { return ""; }
 Python:
   invalid:
     - "# a thing"
@@ -138,6 +224,9 @@ Rust:
   invalid:
     - "// a thing"
     - "/* a thing */"
+    - |
+      /// Returns the user's display name.
+      pub fn name(id: u32) -> String { String::new() }
   valid:
     - "fn main() {}"
     - "// SPDX-License-Identifier: MPL-2.0"
@@ -145,19 +234,51 @@ Scala:
   invalid:
     - "// a thing"
     - "/* a thing */"
+    - |
+      /**
+       * Returns the user's display name.
+       * @param id the user to look up
+       */
+      def name(id: Int) = ""
   valid:
     - "object A {}"
+    - |
+      /**
+       * @param id the user to look up
+       * @return the display name
+       */
+      def name(id: Int) = ""
 Solidity:
   invalid:
     - "// a thing"
+    - |
+      contract A {
+          /// Sends the caller their share of the pool.
+          /// @param id the depositor to pay out
+          function withdraw(uint id) public {}
+      }
   valid:
     - "contract A {}"
+    - |
+      contract A {
+          /// @notice Sends the caller their share of the pool
+          /// @param id the depositor to pay out
+          function withdraw(uint id) public {}
+      }
 Swift:
   invalid:
     - "// a thing"
     - "/* a thing */"
+    - |
+      /// Returns the user's display name.
+      /// - Parameter id: the user to look up
+      func name(id: Int) -> String { return "" }
   valid:
     - "let x = 1"
+    - |
+      /// - Parameter id: the user to look up
+      /// - Returns: the display name
+      func name(id: Int) -> String { return "" }
 Toml:
   invalid:
     - "# a thing"
@@ -167,14 +288,38 @@ Toml:
 Tsx:
   invalid:
     - "// a thing"
+    - |
+      /**
+       * Returns the user's display name.
+       * @param id the user to look up
+       */
+      function name(id: number) { return ""; }
   valid:
     - "let x = 1;"
+    - |
+      /**
+       * @param id the user to look up
+       * @returns the display name
+       */
+      function name(id: number) { return ""; }
 TypeScript:
   invalid:
     - "// a thing"
+    - |
+      /**
+       * Returns the user's display name.
+       * @param id the user to look up
+       */
+      function name(id: number) { return ""; }
   valid:
     - "let x = 1;"
     - "// @ts-expect-error the types disagree"
+    - |
+      /**
+       * @param id the user to look up
+       * @returns the display name
+       */
+      function name(id: number) { return ""; }
 Yaml:
   invalid:
     - "# a thing"
