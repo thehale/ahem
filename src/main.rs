@@ -36,6 +36,8 @@ fn dispatch(command: &str, rest: &[String]) -> i32 {
 			}
 			0
 		}
+		"--version" => version(),
+		"--help" | "-h" | "help" => help(),
 		_ => usage(),
 	}
 }
@@ -66,7 +68,34 @@ fn named(langs: &[&Lang]) -> Vec<String> {
 	langs.iter().map(|lang| lang.to_string()).collect()
 }
 
+fn version() -> i32 {
+	println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+	0
+}
+
+fn help() -> i32 {
+	version();
+	println!("{}", env!("CARGO_PKG_DESCRIPTION"));
+	println!();
+	println!("{}", manual());
+	0
+}
+
 fn usage() -> i32 {
-	eprintln!("usage: ahem [check PATH... | rules | languages | test]");
+	eprintln!("{}", manual());
 	1
+}
+
+fn manual() -> String {
+	format!(
+		"usage: {} [COMMAND] [PATH...]
+
+  check PATH...  report what the rules find under each path, or under .
+  rules          list the rules and the languages each one reaches
+  languages      list the grammars linked into this binary
+  test           run every rule against its own snippets
+  --version      print the version
+  --help         print this message",
+		env!("CARGO_PKG_NAME")
+	)
 }
