@@ -69,10 +69,10 @@ every language, including the ones that replace `rule` outright.
 The message is the whole finding. It is prose about why the code reads badly,
 and it never says what to do. An agent takes it as a general preference, so a
 message wider than its matcher causes edits the rule never asked for. Keep it
-inside what the matcher can see. `branches-read-as-one-shape` is the rule here
-that gets this wrong: it argues for an expanded if/else, and that pushed an
-agent into expanding ternaries its matcher never reaches. Read its message as
-the mistake, not the model.
+inside what the matcher can see. `branches-read-as-one-shape` reaches
+statements alone, and its message argued for an expanded if/else without
+saying so, which pushed an agent twice into expanding one-line conditionals it
+never matched. The message now names where it stops.
 
 Choose `warning` when the finding is right nearly every time it fires, `hint`
 when it is a judgement a reader may decline. There is no `error`, because
