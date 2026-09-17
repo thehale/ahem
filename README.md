@@ -25,11 +25,46 @@ src/session.js:3: A condition already is the value these branches return. Return
 A path can be a file or a directory, and several can be given at once. The exit
 status is 1 while anything is reported, so a review step can gate on it.
 
+To read a change rather than a file, hand it a diff. Findings are confined to
+the lines it covers, so work somebody else left behind stays out of the way.
+
+```bash
+ahem --diff                     # what this repository has not committed
+ahem --diff src/session.js      # the same, narrowed to one path
+git show HEAD | ahem --diff -   # whatever diff git can produce
+ahem --diff=review.patch        # or one saved to a file
+```
+
+A file git has never seen is read whole, because all of it is new.
+
 ```bash
 ahem check src lib   # report findings under either path
 ahem rules           # list rules and the languages they reach
+ahem languages       # list the grammars linked into this binary
 ahem test            # run every rule against its snippets
 ```
+
+## In a coding agent
+
+Point the agent's post-tool hook at `ahem --hook`, which reads the tool-use
+payload on stdin and answers in the envelope that agent expects.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{ "hooks": [{ "type": "command", "command": "ahem --hook" }] }]
+  }
+}
+```
+
+Claude Code and Codex are both recognised. What gets read is what the payload
+says was written: a file created whole reads whole, an edit reads the lines it
+placed. No repository is consulted, so a file too new for git to know about is
+no different from any other.
+
+Findings come back as context for the agent to answer for. Nothing is blocked
+and nothing is written, and a payload ahem does not recognise is met with
+silence.
 
 ## Installation
 
