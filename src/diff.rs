@@ -1,7 +1,7 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::check::{Scope, check, reported, root};
+use crate::check::{Scope, check, reported, root, spoken};
 use crate::rules::Rule;
 use std::collections::BTreeSet;
 use std::io::Read;
@@ -15,11 +15,48 @@ struct Touched {
 	added: Vec<(usize, String)>,
 }
 
-pub fn diff(rules: &[Rule], source: &str, paths: &[String]) -> usize {
-	match given(source) {
+pub fn diff(rules: &[Rule], args: &[String]) -> usize {
+	match args.split_first() {
+		Some((source, paths)) if source == "-" => piped(rules, paths),
+		_ => uncommitted(rules, args),
+	}
+}
+
+pub fn patched(rules: &[Rule], named: &str, paths: &[String]) -> usize {
+	let source = named.trim_start_matches("--diff=");
+	match std::fs::read_to_string(source) {
 		Ok(patch) => examined(rules, &touched(&patch), paths),
 		Err(error) => unread(source, error),
 	}
+}
+
+fn piped(rules: &[Rule], paths: &[String]) -> usize {
+	let mut patch = String::new();
+	match std::io::stdin().read_to_string(&mut patch) {
+		Ok(_) => examined(rules, &touched(&patch), paths),
+		Err(error) => unread("-", error),
+	}
+}
+
+fn uncommitted(rules: &[Rule], paths: &[String]) -> usize {
+	let Some(patch) = spoken(&["diff", "--unified=0", "HEAD"]) else {
+		return unrepository();
+	};
+	let files = touched(&patch);
+	match paths.is_empty() {
+		true => examined(rules, &files, &[]) + examined(rules, &files, &untracked()),
+		false => examined(rules, &files, paths),
+	}
+}
+
+fn untracked() -> Vec<String> {
+	let listed = spoken(&["ls-files", "--others", "--exclude-standard"]).unwrap_or_default();
+	listed.lines().map(str::to_string).collect()
+}
+
+fn unrepository() -> usize {
+	eprintln!("ahem: no git repository here to read a diff from");
+	1
 }
 
 fn examined(rules: &[Rule], files: &[Touched], paths: &[String]) -> usize {
@@ -45,14 +82,6 @@ fn covering<'a>(files: &'a [Touched], path: &str) -> Option<&'a Touched> {
 
 fn resolved(named: &Path) -> Option<PathBuf> {
 	std::fs::canonicalize(located(named)?).ok()
-}
-
-fn given(source: &str) -> Result<String, std::io::Error> {
-	let mut patch = String::new();
-	match source {
-		"-" => std::io::stdin().read_to_string(&mut patch).map(|_| patch),
-		named => std::fs::read_to_string(named),
-	}
 }
 
 fn touched(patch: &str) -> Vec<Touched> {

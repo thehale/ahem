@@ -104,7 +104,7 @@ fn repository() -> Option<Repository> {
 	Some(Repository { root, tracked })
 }
 
-fn spoken(args: &[&str]) -> Option<String> {
+pub fn spoken(args: &[&str]) -> Option<String> {
 	let said = Command::new("git").args(args).output().ok()?;
 	match said.status.success() {
 		true => Some(String::from_utf8_lossy(&said.stdout).into_owned()),
