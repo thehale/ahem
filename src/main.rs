@@ -12,7 +12,14 @@ use rules::Rule;
 fn main() {
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	let (command, rest) = split(&args);
-	std::process::exit(dispatch(command, rest));
+	match asked(&args) {
+		true => std::process::exit(help()),
+		false => std::process::exit(dispatch(command, rest)),
+	}
+}
+
+fn asked(args: &[String]) -> bool {
+	args.iter().any(|arg| arg == "--help" || arg == "-h")
 }
 
 fn split(args: &[String]) -> (&str, &[String]) {
