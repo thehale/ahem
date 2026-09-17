@@ -40,6 +40,7 @@ function main() {
 
 		check "Rust: Format" "cargo fmt --check"
 		check "Rust: Lint" "cargo clippy --all-targets -- --deny warnings"
+		check "Rust: Test" "cargo test --release"
 		check "Rust: Build" "cargo build --release"
 		check "Rules: Test" "target/release/ahem test"
 		check "Rules: Self" "target/release/ahem check src"

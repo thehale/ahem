@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 mod check;
+mod diff;
 mod lang;
 mod rules;
 mod say;
@@ -34,6 +35,10 @@ fn split(args: &[String]) -> (&str, &[String]) {
 fn dispatch(command: &str, rest: &[String]) -> i32 {
 	match command {
 		"check" => run(|rules| check::check(rules, rest)),
+		"--diff" => match rest {
+			[source] => run(|rules| diff::diff(rules, source)),
+			_ => usage(),
+		},
 		"test" => run(verify::verify),
 		"rules" => run(|rules| {
 			listed(rules);
@@ -104,6 +109,7 @@ fn manual() -> String {
 		"usage: {} [COMMAND] [PATH...]
 
   check PATH...  report what the rules find under each path, or under .
+  --diff FILE    report only on the lines a unified diff touches, - for stdin
   rules          list the rules and the languages each one reaches
   languages      list the grammars linked into this binary
   test           run every rule against its own snippets

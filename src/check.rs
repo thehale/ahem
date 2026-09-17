@@ -7,7 +7,7 @@ use crate::say::say;
 use ast_grep_config::Severity;
 use ast_grep_core::tree_sitter::LanguageExt;
 use ignore::WalkBuilder;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -88,9 +88,13 @@ fn reviewed(paths: &[String]) -> Reviewed {
 	}
 }
 
+pub fn root() -> Option<PathBuf> {
+	let shown = spoken(&["rev-parse", "--show-toplevel"])?;
+	std::fs::canonicalize(shown.trim()).ok()
+}
+
 fn repository() -> Option<Repository> {
-	let root = spoken(&["rev-parse", "--show-toplevel"])?;
-	let root = std::fs::canonicalize(root.trim()).ok()?;
+	let root = root()?;
 	let listed = spoken(&["-C", root.to_str()?, "ls-files", "-z"])?;
 	let tracked = listed
 		.split('\0')
@@ -117,17 +121,38 @@ fn inspect(rules: &[Rule], path: &Path) -> usize {
 		Ok(source) => source,
 		Err(error) => return skipped(path, error),
 	};
+	reported(rules, path, &source, &Scope::Whole)
+}
+
+pub enum Scope {
+	Whole,
+	Lines(BTreeSet<usize>),
+}
+
+impl Scope {
+	fn covers(&self, first: usize, last: usize) -> bool {
+		match self {
+			Scope::Whole => true,
+			Scope::Lines(lines) => lines.range(first..=last).next().is_some(),
+		}
+	}
+}
+
+pub fn reported(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> usize {
 	let Some(lang) = Lang::of(path, source.lines().next()) else {
 		return 0;
 	};
-	let root = lang.ast_grep(&source);
+	let root = lang.ast_grep(source);
 	let mut found = 0;
 	for rule in applicable(rules, lang) {
 		let matcher = &rule.matchers[&lang];
 		for node in root.root().find_all(&matcher.matcher) {
-			let line = node.start_pos().line() + 1;
+			let first = node.start_pos().line() + 1;
+			if !scope.covers(first, node.end_pos().line() + 1) {
+				continue;
+			}
 			say(&format!(
-				"{}:{line}: {} [{}]",
+				"{}:{first}: {} [{}]",
 				path.display(),
 				matcher.message,
 				rule.id
