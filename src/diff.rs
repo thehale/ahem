@@ -207,13 +207,9 @@ fn unread(source: &str, error: std::io::Error) -> usize {
 mod tests {
 	use super::*;
 
-	fn parsed(patch: &str) -> Vec<Touched> {
-		touched(patch)
-	}
-
 	#[test]
 	fn collects_the_lines_a_hunk_adds() {
-		let files = parsed("+++ b/a.ts\n@@ -1,0 +1,2 @@\n+one\n+two\n");
+		let files = touched("+++ b/a.ts\n@@ -1,0 +1,2 @@\n+one\n+two\n");
 
 		assert_eq!(files.len(), 1);
 		assert_eq!(files[0].path, PathBuf::from("b/a.ts"));
@@ -222,21 +218,21 @@ mod tests {
 
 	#[test]
 	fn counts_context_lines_and_skips_removed_ones() {
-		let files = parsed("+++ b/a.ts\n@@ -4,3 +4,3 @@\n keep\n-gone\n+fresh\n");
+		let files = touched("+++ b/a.ts\n@@ -4,3 +4,3 @@\n keep\n-gone\n+fresh\n");
 
 		assert_eq!(files[0].lines, BTreeSet::from([5]));
 	}
 
 	#[test]
 	fn reads_a_hunk_header_that_names_no_count() {
-		let files = parsed("+++ b/a.ts\n@@ -7 +9 @@\n+only\n");
+		let files = touched("+++ b/a.ts\n@@ -7 +9 @@\n+only\n");
 
 		assert_eq!(files[0].lines, BTreeSet::from([9]));
 	}
 
 	#[test]
 	fn keeps_each_file_in_a_diff_apart() {
-		let files = parsed("+++ b/a.ts\n@@ -1 +1 @@\n+first\n+++ b/b.ts\n@@ -9 +9 @@\n+second\n");
+		let files = touched("+++ b/a.ts\n@@ -1 +1 @@\n+first\n+++ b/b.ts\n@@ -9 +9 @@\n+second\n");
 
 		assert_eq!(files.len(), 2);
 		assert_eq!(files[0].lines, BTreeSet::from([1]));
@@ -245,7 +241,7 @@ mod tests {
 
 	#[test]
 	fn keeps_whatever_prefix_the_diff_used() {
-		let files = parsed("+++ w/a.ts\n@@ -1 +1 @@\n+one\n");
+		let files = touched("+++ w/a.ts\n@@ -1 +1 @@\n+one\n");
 
 		assert_eq!(files[0].path, PathBuf::from("w/a.ts"));
 		assert_eq!(unprefixed(&files[0].path), PathBuf::from("a.ts"));
@@ -258,7 +254,7 @@ mod tests {
 
 	#[test]
 	fn drops_a_deleted_file_without_losing_the_next_one() {
-		let files = parsed("+++ /dev/null\n@@ -1,2 +0,0 @@\n-one\n-two\n+++ b/b.ts\n@@ -3 +3 @@\n+kept\n");
+		let files = touched("+++ /dev/null\n@@ -1,2 +0,0 @@\n-one\n-two\n+++ b/b.ts\n@@ -3 +3 @@\n+kept\n");
 
 		assert_eq!(files.len(), 1);
 		assert_eq!(files[0].path, PathBuf::from("b/b.ts"));
@@ -267,7 +263,7 @@ mod tests {
 
 	#[test]
 	fn remembers_what_each_added_line_said() {
-		let files = parsed("+++ b/a.ts\n@@ -1 +1 @@\n+let count = 1;\n");
+		let files = touched("+++ b/a.ts\n@@ -1 +1 @@\n+let count = 1;\n");
 
 		assert_eq!(files[0].added, vec![(1, "let count = 1;".to_string())]);
 	}
