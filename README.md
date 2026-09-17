@@ -52,8 +52,19 @@ bin/ci --fix  # Fix what can be fixed automatically
 ```
 
 Rules live in `rules/`, one file each, paired with snippets in `rule-tests/`.
-A rule reaches a language only once that language has snippets proving it
-fires and stays quiet, so adding a language means adding its snippets.
+A rule reaches only the languages its snippets name, and each language needs
+one snippet the rule flags and one it leaves alone, so adding a language means
+adding its snippets. Whether those snippets hold is what `deconfuse test`
+answers, so a language whose snippets have stopped holding fails `bin/ci`
+rather than dropping out of the rule.
+
+```bash
+cargo run --example ast -- LANGUAGE PATH  # print the tree a matcher sees
+```
+
+Writing a matcher means knowing what the grammar calls its nodes, which the
+tree printer answers for all 29 languages, vendored grammars included. It
+builds only for development and is not part of the binary.
 
 ## License
 
