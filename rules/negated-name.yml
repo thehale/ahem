@@ -1,0 +1,105 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: name-negates-itself
+severity: hint
+message: >-
+  A name that carries its own negation asks every reader of it to hold a double negative. Naming the positive case and negating at the one place that needs it keeps the inverse out of the way.
+rule:
+  all:
+    - any: &named
+        - kind: identifier
+        - kind: property_identifier
+    - regex: &negated "^@?(no|dont|disable|without)(_|[A-Z])[\\w?!]*$|^@?(NO|DONT|DISABLE|WITHOUT)_[\\w?!]*$"
+    - any:
+        - inside:
+            kind: variable_declarator
+            field: name
+        - inside:
+            kind: formal_parameters
+        - inside:
+            kind: field_definition
+            field: property
+languages:
+  Bash:
+    all:
+      - kind: variable_name
+      - regex: *negated
+      - inside:
+          kind: variable_assignment
+          field: name
+  Python:
+    all:
+      - kind: identifier
+      - regex: *negated
+      - any:
+          - inside:
+              kind: assignment
+              field: left
+          - inside:
+              kind: parameters
+          - inside:
+              kind: typed_parameter
+          - inside:
+              kind: default_parameter
+              field: name
+  Ruby:
+    all:
+      - any:
+          - kind: identifier
+          - kind: instance_variable
+      - regex: *negated
+      - any:
+          - inside:
+              kind: assignment
+              field: left
+          - inside:
+              kind: method_parameters
+          - inside:
+              kind: keyword_parameter
+              field: name
+          - inside:
+              kind: optional_parameter
+              field: name
+  Rust:
+    all:
+      - any:
+          - kind: identifier
+          - kind: field_identifier
+      - regex: *negated
+      - any:
+          - inside:
+              kind: let_declaration
+              field: pattern
+          - inside:
+              kind: parameter
+              field: pattern
+          - inside:
+              kind: field_declaration
+              field: name
+          - inside:
+              kind: const_item
+              field: name
+          - inside:
+              kind: static_item
+              field: name
+  TypeScript:
+    all:
+      - any: *named
+      - regex: *negated
+      - any:
+          - inside:
+              kind: variable_declarator
+              field: name
+          - inside:
+              kind: required_parameter
+              field: pattern
+          - inside:
+              kind: optional_parameter
+              field: pattern
+          - inside:
+              kind: public_field_definition
+              field: name
+          - inside:
+              kind: property_signature
+              field: name

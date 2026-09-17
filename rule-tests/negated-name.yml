@@ -1,0 +1,73 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+Bash:
+  invalid:
+    - "no_cache=1"
+    - "NO_COLOR=1"
+    - "local dont_retry=1"
+  valid:
+    - "cache=1"
+    - "notes=1"
+    - "number=1"
+    - "unset stale"
+JavaScript:
+  invalid:
+    - "const noCache = true;"
+    - "function f(noRetry) {}"
+    - "class A { noColor = true; }"
+  valid:
+    - "const cache = true;"
+    - "const notes = load();"
+    - "function f(notify) {}"
+    - "const found = notFound();"
+Python:
+  invalid:
+    - "no_cache = True"
+    - "NO_COLOR = True"
+    - |
+      def f(no_retry=False):
+          pass
+    - |
+      def f(no_color: bool):
+          pass
+  valid:
+    - "cache = True"
+    - "notes = load()"
+    - "number = 1"
+    - |
+      def f(notify=False):
+          pass
+Ruby:
+  invalid:
+    - "no_cache = true"
+    - "@no_color = true"
+    - "def f(no_retry: false); end"
+  valid:
+    - "cache = true"
+    - "notes = load"
+    - "@notify = true"
+    - "def f(notice: nil); end"
+Rust:
+  invalid:
+    - "fn f() { let no_cache = true; }"
+    - "const NO_COLOR: bool = true;"
+    - "struct S { no_retry: bool }"
+    - "fn f(dont_wait: bool) {}"
+  valid:
+    - "fn f() { let cache = true; }"
+    - "fn f() { let notes = g(); }"
+    - "fn f() { let number = g(); }"
+    - "fn f() { let listener = g().unwrap(); }"
+    - "fn untracked() {}"
+TypeScript:
+  invalid:
+    - "const noCache = true;"
+    - "function f(noRetry: boolean) {}"
+    - "interface Options { noColor: boolean }"
+    - "class A { dontWait = true; }"
+  valid:
+    - "const cache = true;"
+    - "const notes = load();"
+    - "function f(notify: boolean) {}"
+    - "interface Options { notFound: boolean }"
