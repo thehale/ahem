@@ -338,6 +338,12 @@ gotmpl:
 
       @returns {page.Pages}
       */ -}}
+    - |
+      {{- /*
+      @param {page.Page} page The page to sit beside.
+
+      The pages most related to a page, best first.
+      */ -}}
   valid:
     - "<p>{{ .Title }}</p>"
     - "{{/* @param {page.Page} page The page to sit beside. */}}"
@@ -346,4 +352,11 @@ gotmpl:
       @param {page.Page} page The page to sit beside.
 
       @returns {page.Pages} The pages most related to the page, best first.
+      */ -}}
+    - |
+      {{- /*
+      @param {page.Page} page The page to sit beside.
+
+      @returns {page.Pages} The dated candidates, nearest in time first, or none
+      when the page is undated.
       */ -}}
