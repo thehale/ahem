@@ -27,6 +27,7 @@ except:
     - regex: "detekt"
     - regex: "eslint"
     - regex: "ktlint"
+    - regex: "markdownlint"
     - regex: "mypy"
     - regex: "noqa"
     - regex: "nolint"
@@ -55,6 +56,9 @@ languages:
       - kind: line_comment
       - kind: multiline_comment
     except: *tags
+  Markdown:
+    kind: html_block
+    regex: "^<!--"
   Php:
     except: *tags
   Rust:

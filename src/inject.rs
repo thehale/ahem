@@ -6,6 +6,7 @@ use ast_grep_core::Node;
 use ast_grep_core::matcher::KindMatcher;
 use ast_grep_core::tree_sitter::{LanguageExt, StrDoc, TSRange};
 use ast_grep_language::SupportLang;
+use std::iter::once;
 
 struct DocComment {
 	host: Lang,
@@ -55,6 +56,7 @@ pub fn regions<L: LanguageExt>(host: Lang, root: Node<StrDoc<L>>) -> Vec<(String
 	regions.extend(match host {
 		Lang::Builtin(SupportLang::Html) => SupportLang::Html.extract_injections(root),
 		Lang::Added(Added::GoTmpl) => markup(&root),
+		Lang::Builtin(SupportLang::Markdown) => fences(&root),
 		_ => vec![],
 	});
 	regions
@@ -86,4 +88,41 @@ fn markup<L: LanguageExt>(root: &Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)>
 		.map(|node| node.get_inner_node().range())
 		.collect();
 	vec![(SupportLang::Html.to_string(), text)]
+}
+
+fn fences<L: LanguageExt>(root: &Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
+	root.find_all(KindMatcher::new("fenced_code_block", root.lang().clone()))
+		.filter_map(|fence| {
+			let language = fence.find(KindMatcher::new("language", root.lang().clone()))?;
+			let content = fence
+				.children()
+				.find(|child| child.kind() == "code_fence_content")?;
+			Some((language.text().to_string(), unquoted(&content)))
+		})
+		.collect()
+}
+
+fn unquoted<L: LanguageExt>(content: &Node<StrDoc<L>>) -> Vec<TSRange> {
+	let whole = content.get_inner_node().range();
+	let quotes: Vec<TSRange> = content
+		.children()
+		.filter(|child| child.kind() == "block_continuation" && !child.range().is_empty())
+		.map(|child| child.get_inner_node().range())
+		.collect();
+	let starts = once((whole.start_byte, whole.start_point))
+		.chain(quotes.iter().map(|quote| (quote.end_byte, quote.end_point)));
+	let ends = quotes
+		.iter()
+		.map(|quote| (quote.start_byte, quote.start_point))
+		.chain(once((whole.end_byte, whole.end_point)));
+	starts
+		.zip(ends)
+		.filter(|(start, end)| start.0 < end.0)
+		.map(|((start_byte, start_point), (end_byte, end_point))| TSRange {
+			start_byte,
+			end_byte,
+			start_point,
+			end_point,
+		})
+		.collect()
 }

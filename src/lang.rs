@@ -92,7 +92,9 @@ impl Lang {
 	}
 
 	pub fn named(name: &str) -> Option<Lang> {
-		let added = Added::ALL.iter().find(|added| added.name() == name);
+		let added = Added::ALL
+			.iter()
+			.find(|added| added.name().eq_ignore_ascii_case(name));
 		let builtin = || {
 			SupportLang::from_str(name)
 				.ok()
@@ -101,6 +103,7 @@ impl Lang {
 		added
 			.map(|added| Lang::Added(*added))
 			.or_else(|| builtin().map(Lang::Builtin))
+			.or_else(|| Lang::from_path(Path::new("named").with_extension(name)))
 	}
 
 	fn templated(self, source: &str) -> Lang {

@@ -238,6 +238,37 @@ Lua:
     - "-- a thing"
   valid:
     - "local x = 1"
+Markdown:
+  invalid:
+    - "<!-- a thing -->"
+    - line: 4
+      source: |
+        # Setup
+
+        ```bash
+        # a thing
+        bin/setup
+        ```
+    - line: 3
+      source: |
+        > ```js
+        > let x = 1;
+        > // a thing
+        > ```
+  valid:
+    - |
+      # Setup
+    - "<div>a thing</div>"
+    - "<!-- markdownlint-disable MD013 -->"
+    - |
+      ```sh
+      bin/setup
+      ```
+    - |
+      ```
+      # a fence with no language
+      ```
+    - "    # an indented block\n"
 Nix:
   invalid:
     - "# a thing"
