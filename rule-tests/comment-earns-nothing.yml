@@ -330,5 +330,20 @@ Yaml:
 gotmpl:
   invalid:
     - "{{- /* a thing */ -}}"
+    - |
+      {{- /*
+      The pages most related to a page, best first.
+
+      @param {page.Page} page The page to sit beside.
+
+      @returns {page.Pages}
+      */ -}}
   valid:
     - "<p>{{ .Title }}</p>"
+    - "{{/* @param {page.Page} page The page to sit beside. */}}"
+    - |
+      {{- /*
+      @param {page.Page} page The page to sit beside.
+
+      @returns {page.Pages} The pages most related to the page, best first.
+      */ -}}
