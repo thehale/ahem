@@ -144,12 +144,15 @@ Java:
 JavaScript:
   invalid:
     - "// a thing"
-    - |
-      /**
-       * Returns the user's display name.
-       * @param {number} id the user to look up
-       */
-      function name(id) { return ""; }
+    - "/* a thing */"
+    - line: 2
+      source: |
+        /**
+         * Returns the user's display name.
+         *
+         * @param {number} id the user to look up
+         */
+        function name(id) { return ""; }
   valid:
     - "let x = 1;"
     - "// eslint-disable-next-line no-console"
@@ -345,20 +348,27 @@ Yaml:
 gotmpl:
   invalid:
     - "{{- /* a thing */ -}}"
-    - |
-      {{- /*
-      The pages most related to a page, best first.
+    - line: 2
+      source: |
+        {{- /*
+        The pages most related to a page, best first.
 
-      @param {page.Page} page The page to sit beside.
+        @param {page.Page} page The page to sit beside.
 
-      @returns {page.Pages}
-      */ -}}
-    - |
-      {{- /*
-      @param {page.Page} page The page to sit beside.
+        @returns {page.Pages}
+        */ -}}
+    - line: 2
+      source: |
+        {{- /*
+        Blurs an image into a stand-in for it, at the size the picture is shown, so the
+        stand-in is never scaled up and can stand as the page's largest paint.
 
-      The pages most related to a page, best first.
-      */ -}}
+        @param {resource.Resource} image The image to stand in for.
+        @param {int} width How wide the image is shown, defaulting to the width an
+          image spanning an article takes.
+
+        @returns {resource.Resource}
+        */ -}}
   valid:
     - "<p>{{ .Title }}</p>"
     - "{{/* @param {page.Page} page The page to sit beside. */}}"
@@ -375,3 +385,32 @@ gotmpl:
       @returns {page.Pages} The dated candidates, nearest in time first, or none
       when the page is undated.
       */ -}}
+    - |
+      {{- /*
+      @param {page.Page} page The page to sit beside, whose description runs
+      on into a second paragraph.
+
+      The second paragraph belongs to the tag, as a JSDoc tag's description may.
+      */ -}}
+jsdoc:
+  invalid:
+    - "/** a thing */"
+    - line: 2
+      source: |
+        /**
+         * Returns the user's display name.
+         *
+         * @param {number} id the user to look up
+         */
+  valid:
+    - "/** @param {number} id the user to look up */"
+    - |
+      /**
+       * @param {number} id the user to look up
+       * @returns {string} the display name
+       */
+    - "/** eslint-disable-next-line no-console */"
+    - |
+      /**
+       * Copyright (c) Someone, 2026
+       */

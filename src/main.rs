@@ -63,7 +63,7 @@ fn dispatch(command: &str, rest: &[String]) -> i32 {
 		}),
 		"languages" => {
 			for lang in Lang::all() {
-				say(&lang.to_string());
+				say(&listing(lang));
 			}
 			0
 		}
@@ -92,6 +92,17 @@ fn listed(rules: &[Rule]) {
 		let reached = named(&rule.matchers.keys().collect::<Vec<&Lang>>());
 		say(&format!("{}  {:?}", rule.id, rule.severity));
 		say(&format!("  {:2} languages  {}", reached.len(), reached.join(" ")));
+	}
+}
+
+fn listing(lang: Lang) -> String {
+	let hosts = inject::hosts(lang);
+	match hosts.is_empty() {
+		true => lang.to_string(),
+		false => format!(
+			"{lang} (in {})",
+			named(&hosts.iter().collect::<Vec<&Lang>>()).join(", ")
+		),
 	}
 }
 
@@ -134,7 +145,8 @@ fn manual() -> String {
                  read the unified diff in FILE instead
   check --hook   answer a coding agent's tool-use payload on stdin
   rules          list the rules and the languages each one reaches
-  languages      list the grammars linked into this binary
+  languages      list the grammars linked into this binary, and the languages
+                 each nested grammar is read inside
   test           run every rule against its own snippets
   --version      print the version
   --help         print this message",

@@ -32,29 +32,33 @@ const GO_KEYWORDS: &[&str] = &[
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Added {
 	GoTmpl,
+	JsDoc,
 	Toml,
 }
 
 impl Added {
-	const ALL: [Added; 2] = [Added::GoTmpl, Added::Toml];
+	const ALL: [Added; 3] = [Added::GoTmpl, Added::JsDoc, Added::Toml];
 
 	fn name(&self) -> &'static str {
 		match self {
 			Added::GoTmpl => "gotmpl",
+			Added::JsDoc => "jsdoc",
 			Added::Toml => "Toml",
 		}
 	}
 
-	fn extension(&self) -> &'static str {
+	fn extension(&self) -> Option<&'static str> {
 		match self {
-			Added::GoTmpl => "gotmpl",
-			Added::Toml => "toml",
+			Added::GoTmpl => Some("gotmpl"),
+			Added::JsDoc => None,
+			Added::Toml => Some("toml"),
 		}
 	}
 
 	fn parser(&self) -> LanguageFn {
 		match self {
 			Added::GoTmpl => GOTMPL,
+			Added::JsDoc => tree_sitter_jsdoc::LANGUAGE,
 			Added::Toml => TOML,
 		}
 	}
@@ -187,10 +191,10 @@ impl Language for Lang {
 	}
 
 	fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
-		let suffix = path.as_ref().extension();
+		let suffix = path.as_ref().extension().and_then(|ext| ext.to_str());
 		let added = Added::ALL
 			.iter()
-			.find(|added| suffix.is_some_and(|ext| ext == added.extension()));
+			.find(|added| suffix.is_some_and(|ext| added.extension() == Some(ext)));
 		if let Some(added) = added {
 			return Some(Lang::Added(*added));
 		}
