@@ -16,6 +16,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "tree-sitter",
+ "tree-sitter-javadoc",
  "tree-sitter-jsdoc",
  "tree-sitter-language",
 ]
@@ -687,6 +688,16 @@ name = "tree-sitter-java"
 version = "0.23.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0aa6cbcdc8c679b214e616fd3300da67da0e492e066df01bcf5a5921a71e90d6"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-javadoc"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f383b40994c833d8fb85ca2e0b04ed20b6551846cdfbc39a184ef1fd0880b403"
 dependencies = [
  "cc",
  "tree-sitter-language",

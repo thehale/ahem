@@ -125,12 +125,14 @@ Java:
     - |
       /** a thing */
       class A {}
-    - |
-      /**
-       * Returns the user's display name.
-       * @param id the user to look up
-       */
-      class A {}
+    - line: 2
+      source: |
+        /**
+         * Returns the user's display name.
+         *
+         * @param id the user to look up
+         */
+        class A {}
   valid:
     - "class A {}"
     - "// SPDX-License-Identifier: MPL-2.0"
@@ -392,6 +394,24 @@ gotmpl:
 
       The second paragraph belongs to the tag, as a JSDoc tag's description may.
       */ -}}
+javadoc:
+  invalid:
+    - "/** a thing */"
+    - line: 2
+      source: |
+        /**
+         * Returns the user's display name.
+         *
+         * @param id the user to look up
+         */
+  valid:
+    - "/** @param id the user to look up */"
+    - |
+      /**
+       * @param id the user to look up
+       * @return the display name
+       * @throws NotFound when no such user exists
+       */
 jsdoc:
   invalid:
     - "/** a thing */"

@@ -15,6 +15,7 @@ struct DocComment {
 }
 
 const JSDOC: Lang = Lang::Added(Added::JsDoc);
+const JAVADOC: Lang = Lang::Added(Added::JavaDoc);
 
 const DOC_COMMENTS: &[DocComment] = &[
 	DocComment {
@@ -34,6 +35,12 @@ const DOC_COMMENTS: &[DocComment] = &[
 		kind: "comment",
 		opener: "/**",
 		doc: JSDOC,
+	},
+	DocComment {
+		host: Lang::Builtin(SupportLang::Java),
+		kind: "block_comment",
+		opener: "/**",
+		doc: JAVADOC,
 	},
 	DocComment {
 		host: Lang::Added(Added::GoTmpl),

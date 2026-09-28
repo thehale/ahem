@@ -51,6 +51,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.151"
 serde_yaml = "0.9"
 tree-sitter = "0.27"
+tree-sitter-javadoc = "0.3"
 tree-sitter-jsdoc = "0.25"
 tree-sitter-language = "0.1"
 

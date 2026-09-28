@@ -32,16 +32,18 @@ const GO_KEYWORDS: &[&str] = &[
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Added {
 	GoTmpl,
+	JavaDoc,
 	JsDoc,
 	Toml,
 }
 
 impl Added {
-	const ALL: [Added; 3] = [Added::GoTmpl, Added::JsDoc, Added::Toml];
+	const ALL: [Added; 4] = [Added::GoTmpl, Added::JavaDoc, Added::JsDoc, Added::Toml];
 
 	fn name(&self) -> &'static str {
 		match self {
 			Added::GoTmpl => "gotmpl",
+			Added::JavaDoc => "javadoc",
 			Added::JsDoc => "jsdoc",
 			Added::Toml => "Toml",
 		}
@@ -50,6 +52,7 @@ impl Added {
 	fn extension(&self) -> Option<&'static str> {
 		match self {
 			Added::GoTmpl => Some("gotmpl"),
+			Added::JavaDoc => None,
 			Added::JsDoc => None,
 			Added::Toml => Some("toml"),
 		}
@@ -58,6 +61,7 @@ impl Added {
 	fn parser(&self) -> LanguageFn {
 		match self {
 			Added::GoTmpl => GOTMPL,
+			Added::JavaDoc => tree_sitter_javadoc::LANGUAGE,
 			Added::JsDoc => tree_sitter_jsdoc::LANGUAGE,
 			Added::Toml => TOML,
 		}
