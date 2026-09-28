@@ -424,6 +424,19 @@ gotmpl:
     - "{{- /* a thing */ -}}"
     - line: 2
       source: |
+        <p>{{ .Title }}</p>
+        <!-- a thing -->
+    - line: 4
+      source: |
+        {{ if .Params.analytics }}
+        <script src="{{ .Params.analytics }}"></script>
+        <script>
+          // a thing
+          window.dataLayer = [];
+        </script>
+        {{ end }}
+    - line: 2
+      source: |
         {{- /*
         The pages most related to a page, best first.
 

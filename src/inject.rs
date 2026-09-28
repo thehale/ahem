@@ -54,6 +54,7 @@ pub fn regions<L: LanguageExt>(host: Lang, root: Node<StrDoc<L>>) -> Vec<(String
 	let mut regions = documented(host, &root);
 	regions.extend(match host {
 		Lang::Builtin(SupportLang::Html) => SupportLang::Html.extract_injections(root),
+		Lang::Added(Added::GoTmpl) => markup(&root),
 		_ => vec![],
 	});
 	regions
@@ -77,4 +78,12 @@ fn documented<L: LanguageExt>(host: Lang, root: &Node<StrDoc<L>>) -> Vec<(String
 				.map(|node| (comment.doc.to_string(), vec![node.get_inner_node().range()]))
 		})
 		.collect()
+}
+
+fn markup<L: LanguageExt>(root: &Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
+	let text = root
+		.find_all(KindMatcher::new("text", root.lang().clone()))
+		.map(|node| node.get_inner_node().range())
+		.collect();
+	vec![(SupportLang::Html.to_string(), text)]
 }
