@@ -24,6 +24,10 @@ const UNSHIPPED: &[SupportLang] = &[SupportLang::Haskell];
 
 const NAMED_NODE: bool = true;
 
+const GO_KEYWORDS: &[&str] = &[
+	"end", "if", "range", "with", "define", "block", "template", "partial",
+];
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Vendored {
 	GoTmpl,
@@ -73,8 +77,16 @@ impl Lang {
 		langs
 	}
 
-	pub fn of(path: &Path, first_line: Option<&str>) -> Option<Lang> {
-		Lang::from_path(path).or_else(|| first_line.and_then(interpreted))
+	pub fn of(path: &Path, source: &str) -> Option<Lang> {
+		let lang = Lang::from_path(path).or_else(|| source.lines().next().and_then(interpreted));
+		lang.map(|lang| lang.templated(source))
+	}
+
+	fn templated(self, source: &str) -> Lang {
+		match self {
+			Lang::Builtin(SupportLang::Html) if is_go_template(source) => Lang::Vendored(Vendored::GoTmpl),
+			lang => lang,
+		}
 	}
 }
 
@@ -188,6 +200,24 @@ impl LanguageExt for Lang {
 	}
 }
 
+fn is_go_template(source: &str) -> bool {
+	source.split("{{").skip(1).map(action).any(is_go_action)
+}
+
+fn action(text: &str) -> &str {
+	let inside = text.split_once("}}").map_or(text, |(inside, _)| inside);
+	inside.trim_start_matches('-').trim_start()
+}
+
+fn is_go_action(action: &str) -> bool {
+	let mut words = action.split(|c: char| c.is_whitespace() || c == '(');
+	let opens_with_keyword = words
+		.clone()
+		.next()
+		.is_some_and(|word| GO_KEYWORDS.contains(&word));
+	action.starts_with("/*") || opens_with_keyword || words.any(|word| word.starts_with('.'))
+}
+
 fn interpreted(first_line: &str) -> Option<Lang> {
 	let shebang = first_line.strip_prefix("#!")?;
 	let interpreter = shebang.rsplit('/').next()?.split_whitespace().last()?;
@@ -197,5 +227,37 @@ fn interpreted(first_line: &str) -> Option<Lang> {
 		"ruby" => Some(Lang::Builtin(SupportLang::Ruby)),
 		"node" => Some(Lang::Builtin(SupportLang::JavaScript)),
 		_ => None,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn reads_html_with_go_actions_as_a_go_template() {
+		let lang = Lang::of(
+			Path::new("menu.html"),
+			"{{- range .Pages }}<a>{{ .Title }}</a>{{ end -}}",
+		);
+		assert_eq!(lang, Some(Lang::Vendored(Vendored::GoTmpl)));
+	}
+
+	#[test]
+	fn reads_html_calling_a_go_function_as_a_go_template() {
+		let lang = Lang::of(
+			Path::new("comment.html"),
+			r#"{{ print "<!-- " (.Get 0) " -->" | safeHTML }}"#,
+		);
+		assert_eq!(lang, Some(Lang::Vendored(Vendored::GoTmpl)));
+	}
+
+	#[test]
+	fn reads_html_with_other_mustaches_as_html() {
+		let lang = Lang::of(
+			Path::new("index.html"),
+			"<p>{{ $t('greeting') }} {{#if user}}{{ user }}{{/if}}</p>",
+		);
+		assert_eq!(lang, Some(Lang::Builtin(SupportLang::Html)));
 	}
 }

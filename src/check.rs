@@ -146,7 +146,7 @@ impl Scope {
 }
 
 pub fn findings(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> Vec<String> {
-	let Some(lang) = Lang::of(path, source.lines().next()) else {
+	let Some(lang) = Lang::of(path, source) else {
 		return vec![];
 	};
 	let root = lang.ast_grep(source);
