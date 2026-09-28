@@ -110,8 +110,9 @@ cargo run --example ast -- LANGUAGE PATH  # print the tree a matcher sees
 ```
 
 Writing a matcher means knowing what the grammar calls its nodes, which the
-tree printer answers for all 29 languages, vendored grammars included. It
-builds only for development and is not part of the binary.
+tree printer answers for every language `ahem languages` lists, the grammars
+ahem adds included. It builds only for development and is not part of the
+binary.
 
 ## License
 

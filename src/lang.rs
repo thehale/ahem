@@ -29,32 +29,32 @@ const GO_KEYWORDS: &[&str] = &[
 ];
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum Vendored {
+pub enum Added {
 	GoTmpl,
 	Toml,
 }
 
-impl Vendored {
-	const ALL: [Vendored; 2] = [Vendored::GoTmpl, Vendored::Toml];
+impl Added {
+	const ALL: [Added; 2] = [Added::GoTmpl, Added::Toml];
 
 	fn name(&self) -> &'static str {
 		match self {
-			Vendored::GoTmpl => "gotmpl",
-			Vendored::Toml => "Toml",
+			Added::GoTmpl => "gotmpl",
+			Added::Toml => "Toml",
 		}
 	}
 
 	fn extension(&self) -> &'static str {
 		match self {
-			Vendored::GoTmpl => "gotmpl",
-			Vendored::Toml => "toml",
+			Added::GoTmpl => "gotmpl",
+			Added::Toml => "toml",
 		}
 	}
 
 	fn parser(&self) -> LanguageFn {
 		match self {
-			Vendored::GoTmpl => GOTMPL,
-			Vendored::Toml => TOML,
+			Added::GoTmpl => GOTMPL,
+			Added::Toml => TOML,
 		}
 	}
 }
@@ -62,7 +62,7 @@ impl Vendored {
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Lang {
 	Builtin(SupportLang),
-	Vendored(Vendored),
+	Added(Added),
 }
 
 impl Lang {
@@ -73,7 +73,7 @@ impl Lang {
 			.copied()
 			.map(Lang::Builtin)
 			.collect();
-		langs.extend(Vendored::ALL.iter().copied().map(Lang::Vendored));
+		langs.extend(Added::ALL.iter().copied().map(Lang::Added));
 		langs
 	}
 
@@ -84,7 +84,7 @@ impl Lang {
 
 	fn templated(self, source: &str) -> Lang {
 		match self {
-			Lang::Builtin(SupportLang::Html) if is_go_template(source) => Lang::Vendored(Vendored::GoTmpl),
+			Lang::Builtin(SupportLang::Html) if is_go_template(source) => Lang::Added(Added::GoTmpl),
 			lang => lang,
 		}
 	}
@@ -106,7 +106,7 @@ impl fmt::Display for Lang {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Lang::Builtin(lang) => write!(f, "{lang:?}"),
-			Lang::Vendored(vendored) => write!(f, "{}", vendored.name()),
+			Lang::Added(added) => write!(f, "{}", added.name()),
 		}
 	}
 }
@@ -122,8 +122,8 @@ impl FromStr for Lang {
 	type Err = String;
 
 	fn from_str(name: &str) -> Result<Self, Self::Err> {
-		if let Some(vendored) = Vendored::ALL.iter().find(|vendored| vendored.name() == name) {
-			return Ok(Lang::Vendored(*vendored));
+		if let Some(added) = Added::ALL.iter().find(|added| added.name() == name) {
+			return Ok(Lang::Added(*added));
 		}
 		let lang = SupportLang::from_str(name).map_err(|error| error.to_string())?;
 		if UNSHIPPED.contains(&lang) {
@@ -141,45 +141,45 @@ impl Language for Lang {
 	fn kind_to_id(&self, kind: &str) -> u16 {
 		match self {
 			Lang::Builtin(lang) => lang.kind_to_id(kind),
-			Lang::Vendored(_) => self.get_ts_language().id_for_node_kind(kind, NAMED_NODE),
+			Lang::Added(_) => self.get_ts_language().id_for_node_kind(kind, NAMED_NODE),
 		}
 	}
 
 	fn field_to_id(&self, field: &str) -> Option<u16> {
 		match self {
 			Lang::Builtin(lang) => lang.field_to_id(field),
-			Lang::Vendored(_) => self.get_ts_language().field_id_for_name(field).map(|id| id.get()),
+			Lang::Added(_) => self.get_ts_language().field_id_for_name(field).map(|id| id.get()),
 		}
 	}
 
 	fn meta_var_char(&self) -> char {
 		match self {
 			Lang::Builtin(lang) => lang.meta_var_char(),
-			Lang::Vendored(_) => '$',
+			Lang::Added(_) => '$',
 		}
 	}
 
 	fn expando_char(&self) -> char {
 		match self {
 			Lang::Builtin(lang) => lang.expando_char(),
-			Lang::Vendored(_) => '_',
+			Lang::Added(_) => '_',
 		}
 	}
 
 	fn pre_process_pattern<'q>(&self, query: &'q str) -> Cow<'q, str> {
 		match self {
 			Lang::Builtin(lang) => lang.pre_process_pattern(query),
-			Lang::Vendored(_) => Cow::Borrowed(query),
+			Lang::Added(_) => Cow::Borrowed(query),
 		}
 	}
 
 	fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
 		let suffix = path.as_ref().extension();
-		let vendored = Vendored::ALL
+		let added = Added::ALL
 			.iter()
-			.find(|vendored| suffix.is_some_and(|ext| ext == vendored.extension()));
-		if let Some(vendored) = vendored {
-			return Some(Lang::Vendored(*vendored));
+			.find(|added| suffix.is_some_and(|ext| ext == added.extension()));
+		if let Some(added) = added {
+			return Some(Lang::Added(*added));
 		}
 		SupportLang::from_path(path)
 			.filter(|lang| !UNSHIPPED.contains(lang))
@@ -195,7 +195,7 @@ impl LanguageExt for Lang {
 	fn get_ts_language(&self) -> TSLanguage {
 		match self {
 			Lang::Builtin(lang) => lang.get_ts_language(),
-			Lang::Vendored(vendored) => vendored.parser().into(),
+			Lang::Added(added) => added.parser().into(),
 		}
 	}
 }
@@ -240,7 +240,7 @@ mod tests {
 			Path::new("menu.html"),
 			"{{- range .Pages }}<a>{{ .Title }}</a>{{ end -}}",
 		);
-		assert_eq!(lang, Some(Lang::Vendored(Vendored::GoTmpl)));
+		assert_eq!(lang, Some(Lang::Added(Added::GoTmpl)));
 	}
 
 	#[test]
@@ -249,7 +249,7 @@ mod tests {
 			Path::new("comment.html"),
 			r#"{{ print "<!-- " (.Get 0) " -->" | safeHTML }}"#,
 		);
-		assert_eq!(lang, Some(Lang::Vendored(Vendored::GoTmpl)));
+		assert_eq!(lang, Some(Lang::Added(Added::GoTmpl)));
 	}
 
 	#[test]
