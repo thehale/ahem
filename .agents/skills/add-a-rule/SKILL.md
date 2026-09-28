@@ -49,6 +49,16 @@ than an error. Where that is the failure mode, find the boundary by hand:
 `function-holds-more-than-a-story` was confirmed by generating functions of
 five to ten statements in each language and watching it flip at exactly eight.
 
+## Nested code
+
+A file can hold code in a language other than its own, and the engine hands
+each such chunk to the grammar that owns it. Only that grammar's rules see the
+chunk, so a rule reaches nested code through the nested language's snippets and
+nothing else. A snippet written in the outer language tests the handoff, and an
+`invalid:` entry written as a `line` and a `source` pins the line of the outer
+file the finding lands on. Keying a snippet under the outer language reaches
+that language too, so it needs a matcher that compiles against its grammar.
+
 ## Narrowing
 
 Narrow inside the matcher when the false positive is a shape. `Ok(false)` is a

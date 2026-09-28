@@ -29,7 +29,29 @@ pub struct Snippets {
 	#[serde(default)]
 	pub valid: Vec<String>,
 	#[serde(default)]
-	pub invalid: Vec<String>,
+	pub invalid: Vec<Flagged>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum Flagged {
+	Anywhere(String),
+	At { line: usize, source: String },
+}
+
+impl Flagged {
+	pub fn source(&self) -> &str {
+		match self {
+			Flagged::Anywhere(source) | Flagged::At { source, .. } => source,
+		}
+	}
+
+	pub fn line(&self) -> Option<usize> {
+		match self {
+			Flagged::Anywhere(_) => None,
+			Flagged::At { line, .. } => Some(*line),
+		}
+	}
 }
 
 pub struct Rule {

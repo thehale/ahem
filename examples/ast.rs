@@ -5,6 +5,8 @@
 
 #![allow(dead_code)]
 
+#[path = "../src/inject.rs"]
+mod inject;
 #[path = "../src/lang.rs"]
 mod lang;
 

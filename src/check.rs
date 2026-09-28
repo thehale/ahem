@@ -1,6 +1,7 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::chunk::chunks;
 use crate::lang::Lang;
 use crate::rules::Rule;
 use crate::say::say;
@@ -146,24 +147,21 @@ impl Scope {
 }
 
 pub fn findings(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> Vec<String> {
-	let Some(lang) = Lang::of(path, source) else {
-		return vec![];
-	};
-	let root = lang.ast_grep(source);
+	let chunks = Lang::of(path, source).map_or_else(Vec::new, |lang| chunks(lang.ast_grep(source)));
 	let mut found = vec![];
-	for rule in applicable(rules, lang) {
-		let matcher = &rule.matchers[&lang];
-		for node in root.root().find_all(&matcher.matcher) {
-			let first = node.start_pos().line() + 1;
-			if !scope.covers(first, node.end_pos().line() + 1) {
-				continue;
+	for chunk in &chunks {
+		for rule in applicable(rules, chunk.lang()) {
+			for node in chunk.found(rule) {
+				let first = node.start_pos().line() + 1;
+				if scope.covers(first, node.end_pos().line() + 1) {
+					found.push(format!(
+						"{}:{first}: {} [{}]",
+						path.display(),
+						rule.matchers[&chunk.lang()].message,
+						rule.id
+					));
+				}
 			}
-			found.push(format!(
-				"{}:{first}: {} [{}]",
-				path.display(),
-				matcher.message,
-				rule.id
-			));
 		}
 	}
 	found

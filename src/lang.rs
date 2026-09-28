@@ -1,9 +1,10 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
-use ast_grep_core::Language;
+use crate::inject;
 use ast_grep_core::matcher::{Pattern, PatternBuilder, PatternError};
-use ast_grep_core::tree_sitter::{LanguageExt, StrDoc, TSLanguage};
+use ast_grep_core::tree_sitter::{LanguageExt, StrDoc, TSLanguage, TSRange};
+use ast_grep_core::{Language, Node};
 use ast_grep_language::SupportLang;
 use serde::Deserialize;
 use std::borrow::Cow;
@@ -80,6 +81,18 @@ impl Lang {
 	pub fn of(path: &Path, source: &str) -> Option<Lang> {
 		let lang = Lang::from_path(path).or_else(|| source.lines().next().and_then(interpreted));
 		lang.map(|lang| lang.templated(source))
+	}
+
+	pub fn named(name: &str) -> Option<Lang> {
+		let added = Added::ALL.iter().find(|added| added.name() == name);
+		let builtin = || {
+			SupportLang::from_str(name)
+				.ok()
+				.filter(|lang| !UNSHIPPED.contains(lang))
+		};
+		added
+			.map(|added| Lang::Added(*added))
+			.or_else(|| builtin().map(Lang::Builtin))
 	}
 
 	fn templated(self, source: &str) -> Lang {
@@ -197,6 +210,10 @@ impl LanguageExt for Lang {
 			Lang::Builtin(lang) => lang.get_ts_language(),
 			Lang::Added(added) => added.parser().into(),
 		}
+	}
+
+	fn extract_injections<L: LanguageExt>(&self, root: Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
+		inject::regions(*self, root)
 	}
 }
 

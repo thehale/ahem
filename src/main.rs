@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 mod check;
+mod chunk;
 mod diff;
 mod hook;
+mod inject;
 mod lang;
 mod rules;
 mod say;

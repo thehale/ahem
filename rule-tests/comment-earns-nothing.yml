@@ -101,8 +101,23 @@ Hcl:
 Html:
   invalid:
     - "<!-- a thing -->"
+    - line: 3
+      source: |
+        <p>hi</p>
+        <script>
+          // a thing
+          let x = 1;
+        </script>
+    - line: 2
+      source: |
+        <style>
+          /* a thing */
+          p { color: red; }
+        </style>
   valid:
     - "<p>hi</p>"
+    - "<script>let x = 1;</script>"
+    - "<style>p { color: red; }</style>"
 Java:
   invalid:
     - "// a thing"
