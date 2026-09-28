@@ -19,7 +19,6 @@ except:
     - regex: SPDX-License-Identifier
     - regex: "Usage:"
     - regex: "Examples:"
-    - regex: '^(?:[ \t]*(?:/\*[*!]?|\*/|//[/!]|\*)?[ \t]*(?:(?:[@\\]\w+.*|-[ \t]+[A-Za-z]\w*(?:[ \t]+[A-Za-z]\w*)?[ \t]*:.*|</?(?:param|returns|typeparam|exception)[^\w].*)(?:\r?\n[ \t]*(?:/\*[*!]?|\*/|//[/!]|\*)?[ \t]*\S.*)*)?[ \t]*(?:\r?\n|$))+$'
     - regex: "^\\W+$"
     - regex: "@ts-"
     - regex: "//go:"
@@ -40,14 +39,28 @@ except:
     - regex: "swiftlint"
     - regex: "type: ignore"
 languages:
-  Rust:
-    any:
-      - kind: line_comment
-      - kind: block_comment
+  C:
+    except: &tags
+      all:
+        - regex: '^/\*\*[\s*]*[@\\]\w'
+        - not:
+            regex: '\n[ \t]*\*?[ \t]*\n[ \t]*\*?[ \t]*\w'
+  Cpp:
+    except: *tags
+  CSharp:
+    except:
+      regex: '^///\s*</?(param|returns|typeparam|exception)\b'
   Kotlin:
     any:
       - kind: line_comment
       - kind: multiline_comment
+    except: *tags
+  Php:
+    except: *tags
+  Rust:
+    any:
+      - kind: line_comment
+      - kind: block_comment
   Java:
     any:
       - kind: line_comment
@@ -56,10 +69,16 @@ languages:
     any:
       - kind: comment
       - kind: block_comment
+    except: *tags
+  Solidity:
+    except:
+      regex: '^///\s*@\w+'
   Swift:
     any:
       - kind: comment
       - kind: multiline_comment
+    except:
+      regex: '^///\s*- \w+( \w+)?:'
   Bash:
     except:
       regex: "^#!"

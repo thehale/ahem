@@ -12,6 +12,13 @@ Bash:
     - "# SPDX-License-Identifier: MPL-2.0"
 C:
   invalid:
+    - |
+      /**
+       * @param id the user to look up
+       *
+       * Returns the user's display name.
+       */
+      int name(int id);
     - "// a thing"
     - "/* a thing */"
     - |
@@ -21,6 +28,13 @@ C:
        */
       int write_all(int fd);
   valid:
+    - |
+      /**
+       * @param id the user to look up
+       *   whose name is shown
+       * @return the display name
+       */
+      int name(int id);
     - "int x = 1;"
     - "// SPDX-License-Identifier: MPL-2.0"
     - |
@@ -31,6 +45,13 @@ C:
       int write_all(int fd);
 Cpp:
   invalid:
+    - |
+      /**
+       * \param id the user to look up
+       *
+       * Returns the user's display name.
+       */
+      int name(int id);
     - "// a thing"
     - |
       /**
@@ -39,6 +60,13 @@ Cpp:
        */
       int write_all(int fd);
   valid:
+    - |
+      /**
+       * \param id the user to look up
+       *   whose name is shown
+       * \return the display name
+       */
+      int name(int id);
     - "int x = 1;"
     - |
       /**
@@ -174,6 +202,13 @@ Json:
     - "{\"a\": 1}"
 Kotlin:
   invalid:
+    - |
+      /**
+       * @param id the user to look up
+       *
+       * Returns the user's display name.
+       */
+      fun name(id: Int) = ""
     - "// a thing"
     - "/* a thing */"
     - |
@@ -183,6 +218,13 @@ Kotlin:
        */
       fun name(id: Int) = ""
   valid:
+    - |
+      /**
+       * @param id the user to look up
+       *   whose name is shown
+       * @return the display name
+       */
+      fun name(id: Int) = ""
     - "fun f() {}"
     - "// SPDX-License-Identifier: MPL-2.0"
     - |
@@ -205,6 +247,14 @@ Php:
   invalid:
     - |
       <?php
+      /**
+       * @param int $id the user to look up
+       *
+       * Returns the user's display name.
+       */
+      function name($id) { return ""; }
+    - |
+      <?php
       // a thing
     - |
       <?php
@@ -217,6 +267,14 @@ Php:
        */
       function name($id) { return ""; }
   valid:
+    - |
+      <?php
+      /**
+       * @param int $id the user to look up,
+       *   whose name is shown
+       * @return string
+       */
+      function name($id) { return ""; }
     - |
       <?php
       $x = 1;
@@ -252,6 +310,13 @@ Rust:
     - "// SPDX-License-Identifier: MPL-2.0"
 Scala:
   invalid:
+    - |
+      /**
+       * @param id the user to look up
+       *
+       * Returns the user's display name.
+       */
+      def name(id: Int) = ""
     - "// a thing"
     - "/* a thing */"
     - |
@@ -261,6 +326,13 @@ Scala:
        */
       def name(id: Int) = ""
   valid:
+    - |
+      /**
+       * @param id the user to look up
+       *   whose name is shown
+       * @return the display name
+       */
+      def name(id: Int) = ""
     - "object A {}"
     - |
       /**
