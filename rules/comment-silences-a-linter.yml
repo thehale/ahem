@@ -1,0 +1,106 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: comment-silences-a-linter
+severity: hint
+message: >-
+  This comment silences a finding from its tool. Fix the finding as the
+  tool's documentation for it describes. Keep the comment only where that
+  documentation says the finding does not apply.
+rule:
+  all:
+    - kind: comment
+    - any: &directives
+        - regex: '^\W*shellcheck disable='
+        - regex: '^\W*eslint-disable'
+        - regex: '^\W*oxlint-disable'
+        - regex: '^\W*tslint:disable'
+        - regex: '^\W*deno-lint-ignore'
+        - regex: '^\W*biome-ignore'
+        - regex: '^\W*@ts-(ignore|expect-error|nocheck)'
+        - regex: '^\W*\$Flow(FixMe|ExpectedError|Ignore)'
+        - regex: '^\W*noqa\b'
+        - regex: '\s#\s*noqa\b'
+        - regex: '^\W*(flake8|ruff):\s*noqa'
+        - regex: '^\W*type:\s*ignore'
+        - regex: '\s#\s*type:\s*ignore'
+        - regex: '^\W*mypy:\s*ignore-errors'
+        - regex: '^\W*pyright:\s*ignore'
+        - regex: '^\W*pyre-(ignore|fixme)'
+        - regex: '^\W*pyrefly:\s*ignore'
+        - regex: '^\W*pytype:\s*disable'
+        - regex: '^\W*pylint:\s*disable'
+        - regex: '^\W*nosec\b'
+        - regex: '^\W*nolint\b'
+        - regex: '^\W*lint:(file-)?ignore\b'
+        - regex: '^\W*NOLINT'
+        - regex: '^\W*cppcheck-suppress'
+        - regex: '^\W*ReSharper disable'
+        - regex: '^\W*NOPMD'
+        - regex: '^\W*CHECKSTYLE[:.]OFF'
+        - regex: '^\W*noinspection\b'
+        - regex: '^\W*ktlint-disable'
+        - regex: '^\W*credo:disable'
+        - regex: '^\W*rubocop:(disable|todo)'
+        - regex: '^\W*standard:disable'
+        - regex: '^\W*phpcs:(ignore|disable)'
+        - regex: '^\W*@codingStandardsIgnore'
+        - regex: '(?m)^\W*@phpstan-ignore'
+        - regex: '(?m)^\W*@psalm-suppress'
+        - regex: '^\W*luacheck:\s*(push\s+)?ignore'
+        - regex: '^\W*selene:\s*allow'
+        - regex: '^\W*@diagnostic\s+disable'
+        - regex: '^\W*scalastyle:(off|ignore)'
+        - regex: '^\W*scalafix:(off|ok)'
+        - regex: '^\W*solhint-disable'
+        - regex: '^\W*slither-disable'
+        - regex: '^\W*swiftlint:disable'
+        - regex: '^\W*periphery:ignore'
+        - regex: '^\W*tflint-ignore'
+        - regex: '^\W*checkov:skip'
+        - regex: '^\W*(tfsec|trivy):ignore'
+        - regex: '^\W*kics-scan\s+ignore'
+        - regex: '^\W*zizmor:\s*ignore'
+        - regex: '^\W*yamllint disable'
+        - regex: '^\W*markdownlint-disable'
+        - regex: '^\W*stylelint-disable'
+except:
+  regex: '^\W*\s(#|//|--)\s'
+languages:
+  Dart:
+    all:
+      - kind: comment
+      - any:
+          - any: *directives
+          - regex: '^//\s*ignore(_for_file)?:'
+  Java:
+    all:
+      - any:
+          - kind: line_comment
+          - kind: block_comment
+      - any: *directives
+  Kotlin:
+    all:
+      - any:
+          - kind: line_comment
+          - kind: multiline_comment
+      - any: *directives
+  Markdown:
+    all:
+      - kind: html_block
+      - any:
+          - any: *directives
+          - regex: '^<!--\s*vale\s+(off|\S+\s*=\s*NO)\b'
+          - regex: '^<!--\s*textlint-disable'
+  Scala:
+    all:
+      - any:
+          - kind: comment
+          - kind: block_comment
+      - any: *directives
+  Swift:
+    all:
+      - any:
+          - kind: comment
+          - kind: multiline_comment
+      - any: *directives

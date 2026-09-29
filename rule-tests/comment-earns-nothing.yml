@@ -28,6 +28,8 @@ C:
        */
       int write_all(int fd);
   valid:
+    - "// NOLINT(readability-identifier-naming)"
+    - "// cppcheck-suppress nullPointer"
     - |
       /**
        * @param id the user to look up
@@ -83,6 +85,7 @@ CSharp:
           string Name(int id) => "";
       }
   valid:
+    - "// ReSharper disable once UnusedMember.Local"
     - "class A {}"
     - |
       class A {
@@ -101,11 +104,13 @@ Dart:
     - "// a thing"
     - "/// a thing"
   valid:
+    - "// ignore_for_file: avoid_print"
     - "void f() {}"
 Elixir:
   invalid:
     - "# a thing"
   valid:
+    - "# credo:disable-for-next-line"
     - "x = 1"
 Go:
   invalid:
@@ -113,6 +118,12 @@ Go:
       package m
       // a thing
   valid:
+    - |
+      package m
+      //lint:ignore SA4006 read in a test
+    - |
+      package m
+      // #nosec G404
     - "package m"
     - |
       //go:generate stringer -type=Kind
@@ -125,6 +136,10 @@ Hcl:
     - "# a thing"
     - "// a thing"
   valid:
+    - "# tflint-ignore: aws_instance_invalid_type"
+    - "# checkov:skip=CKV_AWS_20: public on purpose"
+    - "# trivy:ignore:AVD-AWS-0086"
+    - "# tfsec:ignore:aws-s3-enable-bucket-logging"
     - "a = 1"
 Html:
   invalid:
@@ -162,6 +177,9 @@ Java:
          */
         class A {}
   valid:
+    - "// NOPMD - read reflectively"
+    - "// CHECKSTYLE:OFF"
+    - "//noinspection unchecked"
     - "class A {}"
     - "// SPDX-License-Identifier: MPL-2.0"
     - |
@@ -184,6 +202,9 @@ JavaScript:
          */
         function name(id) { return ""; }
   valid:
+    - "// $FlowFixMe: the types disagree"
+    - "//oxlint-disable-next-line no-console"
+    - "// deno-lint-ignore no-explicit-any"
     - "let x = 1;"
     - "// eslint-disable-next-line no-console"
     - "// SPDX-License-Identifier: MPL-2.0"
@@ -218,6 +239,7 @@ Kotlin:
        */
       fun name(id: Int) = ""
   valid:
+    - "//noinspection UNCHECKED_CAST"
     - |
       /**
        * @param id the user to look up
@@ -237,11 +259,16 @@ Lua:
   invalid:
     - "-- a thing"
   valid:
+    - "-- luacheck: ignore 211"
+    - "-- selene: allow(unused_variable)"
+    - "---@diagnostic disable-next-line: undefined-global"
     - "local x = 1"
 Markdown:
   invalid:
     - "<!-- a thing -->"
   valid:
+    - "<!-- vale off -->"
+    - "<!-- textlint-disable -->"
     - |
       # Setup
     - |
@@ -308,6 +335,10 @@ Php:
        */
       function name($id) { return ""; }
   valid:
+    - "<?php // phpcs:ignore Generic.Files.LineLength"
+    - "<?php /** @phpstan-ignore-next-line */"
+    - "<?php /** @psalm-suppress InvalidReturnType */"
+    - "<?php // @codingStandardsIgnoreLine"
     - |
       <?php
       /**
@@ -330,6 +361,10 @@ Python:
   invalid:
     - "# a thing"
   valid:
+    - "# pyre-ignore[16]"
+    - "# pyrefly: ignore"
+    - "# pytype: disable=attribute-error"
+    - "# nosec B101"
     - "x = 1"
     - "# noqa: E501"
     - "# Copyright (c) Someone, 2026"
@@ -337,6 +372,7 @@ Ruby:
   invalid:
     - "# a thing"
   valid:
+    - "# standard:disable Style/StringLiterals"
     - "def f; end"
     - "# Copyright (c) Someone, 2026"
 Rust:
@@ -367,6 +403,8 @@ Scala:
        */
       def name(id: Int) = ""
   valid:
+    - "// scalastyle:off magic.number"
+    - "// scalafix:off"
     - |
       /**
        * @param id the user to look up
@@ -391,6 +429,8 @@ Solidity:
           function withdraw(uint id) public {}
       }
   valid:
+    - "// solhint-disable-next-line avoid-low-level-calls"
+    - "// slither-disable-next-line reentrancy-eth"
     - "contract A {}"
     - |
       contract A {
@@ -407,6 +447,7 @@ Swift:
       /// - Parameter id: the user to look up
       func name(id: Int) -> String { return "" }
   valid:
+    - "// periphery:ignore"
     - "let x = 1"
     - |
       /// - Parameter id: the user to look up
@@ -445,6 +486,7 @@ TypeScript:
        */
       function name(id: number) { return ""; }
   valid:
+    - "// tslint:disable-next-line:no-bitwise"
     - "let x = 1;"
     - "// @ts-expect-error the types disagree"
     - |
@@ -457,7 +499,10 @@ Yaml:
   invalid:
     - "# a thing"
   valid:
+    - "# zizmor: ignore[unpinned-uses]"
+    - "# kics-scan ignore-line"
     - "key: value"
+    - "# yamllint disable-line rule:line-length"
     - "# Copyright (c) Someone, 2026"
     - "uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1"
 gotmpl:

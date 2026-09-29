@@ -1,0 +1,218 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+Bash:
+  invalid:
+    - "# shellcheck disable=SC2034"
+    - "# shellcheck disable=SC2016  # $id is a jq variable"
+  valid:
+    - "# shellcheck source=bin/lib/colors"
+    - "# shellcheck shell=bash"
+    - "# # shellcheck disable=SC2034"
+    - "# a thing"
+C:
+  invalid:
+    - "int x; // NOLINT(readability-identifier-naming)"
+    - "/* NOLINTNEXTLINE */"
+    - "// cppcheck-suppress nullPointer"
+  valid:
+    - "// a thing"
+Cpp:
+  invalid:
+    - "#include <foo.h>  // NOLINT(build/include_directory)"
+    - "// NOLINTBEGIN(modernize-use-auto)"
+  valid:
+    - "// a thing"
+CSharp:
+  invalid:
+    - "// ReSharper disable once UnusedMember.Local"
+    - "// ReSharper disable InconsistentNaming"
+  valid:
+    - "// ReSharper restore InconsistentNaming"
+Css:
+  invalid:
+    - "/* stylelint-disable no-descending-specificity */"
+    - |
+      a {
+        /* stylelint-disable-next-line color-no-hex */
+        color: #fff;
+      }
+  valid:
+    - "/* stylelint-enable no-descending-specificity */"
+Dart:
+  invalid:
+    - "// ignore: unused_import"
+    - "// ignore_for_file: avoid_print"
+  valid:
+    - "// ignored: the rest"
+Elixir:
+  invalid:
+    - "# credo:disable-for-next-line Credo.Check.Refactor.Nesting"
+    - "# credo:disable-for-this-file"
+  valid:
+    - "# credo:enable-for-next-line"
+Go:
+  invalid:
+    - |
+      package m
+      //nolint:errcheck
+    - |
+      package m
+      //lint:ignore SA4006 the value is read in a test
+    - |
+      package m
+      // #nosec G404 -- not used for secrets
+  valid:
+    - |
+      //go:generate stringer -type=Kind
+      package m
+    - |
+      package m
+      // lint: the rest of this file
+Hcl:
+  invalid:
+    - "# tflint-ignore: aws_instance_invalid_type"
+    - "# checkov:skip=CKV_AWS_20: the bucket is public on purpose"
+    - "# trivy:ignore:AVD-AWS-0086"
+    - "# tfsec:ignore:aws-s3-enable-bucket-logging"
+  valid:
+    - "# a thing"
+Java:
+  invalid:
+    - "int x = 1; // NOPMD - read reflectively"
+    - "// CHECKSTYLE:OFF"
+    - "//noinspection unchecked"
+  valid:
+    - "// CHECKSTYLE:ON"
+JavaScript:
+  invalid:
+    - "// eslint-disable-next-line no-console"
+    - "/* eslint-disable */"
+    - "// biome-ignore lint/style/useConst: reassigned later"
+    - "//oxlint-disable-next-line no-console"
+    - "// deno-lint-ignore no-explicit-any"
+    - "// $FlowFixMe: the types disagree"
+  valid:
+    - "/* eslint-enable */"
+    - "/* eslint-env node */"
+    - "// run eslint-disable only on generated files"
+    - "// @flow"
+Kotlin:
+  invalid:
+    - "// ktlint-disable no-wildcard-imports"
+    - "//noinspection UNCHECKED_CAST"
+  valid:
+    - "// ktlint-enable no-wildcard-imports"
+Lua:
+  invalid:
+    - "local x = 1 -- luacheck: ignore 211"
+    - "-- luacheck: push ignore"
+    - "-- selene: allow(unused_variable)"
+    - "---@diagnostic disable-next-line: undefined-global"
+  valid:
+    - "-- luacheck: globals vim"
+    - "---@diagnostic enable: undefined-global"
+Markdown:
+  invalid:
+    - "<!-- markdownlint-disable MD013 -->"
+    - "<!-- vale off -->"
+    - "<!-- vale Google.Headings = NO -->"
+    - "<!-- textlint-disable -->"
+  valid:
+    - "<!-- markdownlint-restore -->"
+    - "<!-- markdownlint-configure-file { \"MD013\": false } -->"
+    - "<!-- vale on -->"
+    - "<!-- vale Google.Headings = YES -->"
+Php:
+  invalid:
+    - "<?php // phpcs:ignore Generic.Files.LineLength"
+    - "<?php // phpcs:disable"
+    - "<?php /** @phpstan-ignore-next-line */"
+    - |
+      <?php
+      /**
+       * Returns the user's display name.
+       *
+       * @psalm-suppress InvalidReturnType
+       */
+      function name() {}
+  valid:
+    - "<?php // phpcs:enable"
+    - |
+      <?php
+      /**
+       * Returns the user's display name.
+       */
+      function name() {}
+Python:
+  invalid:
+    - "x = 1  # noqa: E501"
+    - "# noqa"
+    - "# ruff: noqa"
+    - "x = f()  # type: ignore[attr-defined]"
+    - "x = f()  # pyright: ignore[reportCallIssue]"
+    - "x = f()  # pyre-ignore[16]"
+    - "x = f()  # pyrefly: ignore"
+    - "# pytype: disable=attribute-error"
+    - "# mypy: ignore-errors"
+    - "# pylint: disable=too-many-branches"
+    - "assert x  # nosec B101"
+    - "x = f()  # pragma: no cover  # noqa: BLE001"
+    - "x = f()  # type: str  # type: ignore[attr-defined]"
+  valid:
+    - "# pylint: enable=too-many-branches"
+    - "# mypy: disallow-untyped-defs"
+    - "# pytype: enable=attribute-error"
+    - "# a thing"
+Ruby:
+  invalid:
+    - "# rubocop:disable Metrics/MethodLength"
+    - "# rubocop:todo Style/Documentation"
+    - "# standard:disable Style/StringLiterals"
+  valid:
+    - "# rubocop:enable Metrics/MethodLength"
+Scala:
+  invalid:
+    - "// scalastyle:off magic.number"
+    - "val x = 1 // scalastyle:ignore"
+    - "/* scalafix:off */"
+    - "val y = 2 // scalafix:ok DisableSyntax.var"
+  valid:
+    - "// scalastyle:on magic.number"
+    - "// scalafix:on"
+Solidity:
+  invalid:
+    - "// solhint-disable-next-line avoid-low-level-calls"
+    - "/* solhint-disable */"
+    - "// slither-disable-next-line reentrancy-eth"
+  valid:
+    - "// solhint-enable"
+Swift:
+  invalid:
+    - "// swiftlint:disable:next force_cast"
+    - "/* swiftlint:disable line_length */"
+    - "// periphery:ignore"
+  valid:
+    - "// swiftlint:enable line_length"
+Tsx:
+  invalid:
+    - "// @ts-ignore"
+  valid:
+    - "// @ts-check"
+TypeScript:
+  invalid:
+    - "// @ts-expect-error the types disagree"
+    - "// @ts-nocheck"
+    - "// tslint:disable-next-line:no-bitwise"
+  valid:
+    - "// @ts-check"
+Yaml:
+  invalid:
+    - "# yamllint disable-line rule:line-length"
+    - "# yamllint disable rule:truthy"
+    - "uses: actions/checkout@v4 # zizmor: ignore[unpinned-uses]"
+    - "# checkov:skip=CKV_K8S_40: the image runs as root on purpose"
+    - "# kics-scan ignore-line"
+  valid:
+    - "# yamllint enable rule:truthy"
+    - "#   # rubocop:disable Style/Documentation"
