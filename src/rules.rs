@@ -6,6 +6,7 @@ use ast_grep_config::{
 	GlobalRules, RuleConfig, SerializableRule, SerializableRuleConfig, SerializableRuleCore, Severity,
 	from_str,
 };
+use ast_grep_core::replacer::TemplateFix;
 use include_dir::{Dir, include_dir};
 use serde::Deserialize;
 use std::collections::BTreeMap;
@@ -159,7 +160,26 @@ fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> 
 		url: None,
 		metadata: None,
 	};
-	RuleConfig::try_from(config, &GlobalRules::default()).map_err(|error| error.to_string())
+	let matched = RuleConfig::try_from(config, &GlobalRules::default()).map_err(|error| error.to_string())?;
+	captured(&matched)?;
+	Ok(matched)
+}
+
+fn captured(matched: &RuleConfig<Lang>) -> Result<(), String> {
+	let defined = matched.matcher.defined_vars();
+	let message = TemplateFix::with_transform(&matched.message, &matched.language, &[]);
+	let missing: Vec<&str> = message
+		.used_vars()
+		.into_iter()
+		.filter(|name| !defined.contains(name))
+		.collect();
+	match missing.is_empty() {
+		true => Ok(()),
+		false => Err(format!(
+			"the message names ${}, which the matcher does not capture",
+			missing.join(", $")
+		)),
+	}
 }
 
 fn message(authored: &Authored, lang: Lang) -> String {
@@ -254,6 +274,16 @@ languages:
 		assert_eq!(
 			message(&authored(), Lang::Builtin(SupportLang::Rust)),
 			"Rust says it differently."
+		);
+	}
+
+	#[test]
+	fn refuses_a_message_naming_what_the_matcher_does_not_capture() {
+		let authored: Authored =
+			from_str("id: example\nseverity: hint\nmessage: Rename $N.\nrule:\n  kind: comment\n").unwrap();
+		assert_eq!(
+			matcher(&authored, Lang::Builtin(SupportLang::Go)).err(),
+			Some("the message names $N, which the matcher does not capture".to_string())
 		);
 	}
 
