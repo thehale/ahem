@@ -195,4 +195,13 @@ mod tests {
 		assert_eq!(found.len(), 1);
 		assert!(found[0].starts_with("values.yaml.gotmpl:2:"));
 	}
+
+	#[test]
+	fn checks_code_in_a_markdown_fence_by_every_rule_but_the_comment_rules() {
+		let rules = compile().unwrap();
+		let source = "```js\n// a thing\nfunction f(a) {\n  if (a) {\n    return true;\n  } else {\n    return false;\n  }\n}\n```\n";
+		let found = findings(&rules, Path::new("README.md"), source, &Scope::Whole);
+		assert_eq!(found.len(), 1);
+		assert!(found[0].ends_with("[condition-is-already-the-value]"));
+	}
 }

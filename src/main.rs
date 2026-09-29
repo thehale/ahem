@@ -7,6 +7,7 @@ mod diff;
 mod hook;
 mod inject;
 mod lang;
+mod remark;
 mod rules;
 mod say;
 mod verify;

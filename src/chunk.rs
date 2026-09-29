@@ -3,17 +3,22 @@
 
 use crate::inject;
 use crate::lang::{Lang, MARKUP};
+use crate::remark::is_remark;
 use crate::rules::Rule;
 use ast_grep_core::tree_sitter::{LanguageExt, StrDoc};
 use ast_grep_core::{AstGrep, Node, NodeMatch};
+use ast_grep_language::SupportLang;
 use std::ops::Range;
 use tree_sitter::{Parser, Range as Span};
 
 pub type Tree = AstGrep<StrDoc<Lang>>;
 
+const UNFENCED: bool = false;
+
 pub struct Chunk {
 	pub tree: Tree,
 	ceded: Vec<Range<usize>>,
+	fenced: bool,
 }
 
 impl Chunk {
@@ -28,6 +33,7 @@ impl Chunk {
 				.root()
 				.find_all(&matcher.matcher)
 				.filter(|node| self.owns(node))
+				.filter(|node| !(self.fenced && is_remark(node)))
 				.collect(),
 			None => vec![],
 		}
@@ -43,14 +49,22 @@ impl Chunk {
 }
 
 pub fn chunks(tree: Tree, markup: Option<Lang>) -> Vec<Chunk> {
+	nested(tree, markup, UNFENCED)
+}
+
+fn nested(tree: Tree, markup: Option<Lang>, fenced: bool) -> Vec<Chunk> {
 	let inner = injected(&tree, markup);
 	let ceded = inner
 		.iter()
 		.flat_map(seen)
 		.map(|span| span.start_byte..span.end_byte)
 		.collect();
-	let mut all = vec![Chunk { tree, ceded }];
-	all.extend(inner.into_iter().flat_map(|tree| chunks(tree, Some(MARKUP))));
+	let fenced_below = fenced || *tree.lang() == Lang::Builtin(SupportLang::Markdown);
+	let below = inner
+		.into_iter()
+		.flat_map(|tree| nested(tree, Some(MARKUP), fenced_below));
+	let mut all = vec![Chunk { tree, ceded, fenced }];
+	all.extend(below);
 	all
 }
 

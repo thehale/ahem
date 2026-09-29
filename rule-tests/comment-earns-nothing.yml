@@ -241,23 +241,33 @@ Lua:
 Markdown:
   invalid:
     - "<!-- a thing -->"
-    - line: 4
-      source: |
-        # Setup
-
-        ```bash
-        # a thing
-        bin/setup
-        ```
-    - line: 3
-      source: |
-        > ```js
-        > let x = 1;
-        > // a thing
-        > ```
   valid:
     - |
       # Setup
+    - |
+      # Setup
+
+      ```bash
+      # a thing
+      bin/setup
+      ```
+    - |
+      > ```js
+      > let x = 1;
+      > // a thing
+      > ```
+    - |
+      ```js
+      /** a thing */
+      function f() {}
+      ```
+    - |
+      ```html
+      <!-- a thing -->
+      <script>
+        // a thing
+      </script>
+      ```
     - "<div>a thing</div>"
     - "<!-- markdownlint-disable MD013 -->"
     - |
