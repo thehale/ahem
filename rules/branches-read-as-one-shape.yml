@@ -4,9 +4,9 @@
 id: branches-read-as-one-shape
 severity: hint
 message: >-
-  An if that returns early splits the reader's attention between the exit and
-  the body that follows it. Giving each outcome a branch of its own keeps both
-  in view. A conditional that already fits on one line is not this.
+  This if statement returns early, and the code after it is the other outcome.
+  Put that code in an else, so each outcome has a branch of its own. Leave
+  conditional expressions as they are.
 rule:
   kind: if_statement
   not:
