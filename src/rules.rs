@@ -21,7 +21,14 @@ struct Authored {
 	rule: SerializableRule,
 	except: Option<SerializableRule>,
 	#[serde(default)]
-	languages: BTreeMap<Lang, serde_yaml::Value>,
+	languages: BTreeMap<Lang, Tailored>,
+}
+
+#[derive(Deserialize)]
+struct Tailored {
+	except: Option<serde_yaml::Value>,
+	#[serde(flatten)]
+	rule: serde_yaml::Mapping,
 }
 
 #[derive(Deserialize, Default)]
@@ -154,39 +161,24 @@ fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> 
 }
 
 fn body(authored: &Authored, lang: Lang) -> Result<SerializableRule, String> {
-	let (replacement, exception) = tailoring(authored, lang)?;
-	let base = replacement.unwrap_or_else(|| authored.rule.clone());
+	let tailored = authored.languages.get(&lang);
+	let base = match tailored.filter(|tailored| !tailored.rule.is_empty()) {
+		Some(tailored) => reparsed(serde_yaml::Value::Mapping(tailored.rule.clone()))?,
+		None => authored.rule.clone(),
+	};
+	let exception = tailored
+		.and_then(|tailored| tailored.except.clone())
+		.map(reparsed)
+		.transpose()?;
 	let exceptions: Vec<SerializableRule> = [authored.except.clone(), exception]
 		.into_iter()
 		.flatten()
 		.map(negated)
 		.collect();
-	if exceptions.is_empty() {
-		return Ok(base);
+	match exceptions.is_empty() {
+		true => Ok(base),
+		false => Ok(composed(base, exceptions)),
 	}
-	Ok(composed(base, exceptions))
-}
-
-fn tailoring(
-	authored: &Authored,
-	lang: Lang,
-) -> Result<(Option<SerializableRule>, Option<SerializableRule>), String> {
-	let Some(tailored) = authored.languages.get(&lang) else {
-		return Ok((None, None));
-	};
-	let serde_yaml::Value::Mapping(keyed) = tailored else {
-		return Err(format!("{}: languages.{lang} is not a mapping", authored.id));
-	};
-	let mut mapping = keyed.clone();
-	let exception = mapping
-		.remove(serde_yaml::Value::from("except"))
-		.map(reparsed)
-		.transpose()?;
-	let replacement = match mapping.is_empty() {
-		true => None,
-		false => Some(reparsed(serde_yaml::Value::Mapping(mapping))?),
-	};
-	Ok((replacement, exception))
 }
 
 fn reparsed(body: serde_yaml::Value) -> Result<SerializableRule, String> {
