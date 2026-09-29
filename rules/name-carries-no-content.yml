@@ -4,8 +4,8 @@
 id: name-carries-no-content
 severity: warning
 message: >-
-  A name like data, result or value names the shape of the code rather than what
-  it holds, so the reader learns nothing the line did not already say.
+  A name like data, result or value tells the reader nothing the line does not
+  already say. Name it for what it holds, such as user or total.
 rule:
   kind: identifier
   any: &contentless

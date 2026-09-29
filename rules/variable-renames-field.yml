@@ -4,7 +4,8 @@
 id: variable-renames-field
 severity: hint
 message: >-
-  The reader has to trace this variable back to the field it copies.
+  This variable copies a field under the same name, and the reader has to
+  trace it back to the field. Read the field directly where it is used.
 rule:
   all:
     - kind: variable_definition

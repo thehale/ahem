@@ -4,9 +4,8 @@
 id: name-negates-itself
 severity: hint
 message: >-
-  A name that carries its own negation asks every reader of it to hold a double
-  negative. Naming the positive case and negating at the one place that needs it
-  keeps the inverse out of the way.
+  This name starts with a negation, so every test of it reads as a double
+  negative. Name the positive case, and negate it where the opposite is needed.
 rule:
   all:
     - any: &named
