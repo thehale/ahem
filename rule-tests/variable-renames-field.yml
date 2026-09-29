@@ -1,0 +1,29 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+gotmpl:
+  invalid:
+    - |
+      {{- $image := .image -}}
+      {{- $width := math.Min $image.Width .width | int -}}
+    - |
+      {{ define "_partials/inline/walk.html" }}
+        {{- $page := .page }}
+        {{- range .entries }}{{ $page.Title }}{{ end }}
+      {{ end }}
+  valid:
+    - |
+      {{- $width := math.Min $.image.Width .width | int -}}
+    - |
+      {{- $resource := .resource -}}
+      {{- if not $resource -}}
+        {{- $resource = partial "page/image-resource.html" . -}}
+      {{- end -}}
+    - |
+      {{- $widths := .widths | default dict -}}
+    - |
+      {{- $cover := .image -}}
+    - |
+      {{- $title := .page.Title -}}
+    - |
+      {{- range .entries }}{{ $name := .name }}{{ $name }}{{ end }}
