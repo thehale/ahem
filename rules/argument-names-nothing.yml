@@ -4,9 +4,9 @@
 id: argument-names-nothing
 severity: hint
 message: >-
-  A bare true or false at a call site leaves the reader to open the function to
-  learn what it selects. A named value, or two functions, carries the meaning to
-  the call.
+  This call passes a bare true or false, and the reader has to open the
+  function to learn what it means. Pass a named value instead, or split the
+  function in two and name each for its case.
 rule:
   all:
     - any: &literal
@@ -28,6 +28,8 @@ languages:
       - inside:
           kind: argument_list
   CSharp:
+    addendum: >-
+      A named argument also says what it means at the call.
     all:
       - kind: boolean_literal
       - inside:
@@ -66,6 +68,8 @@ languages:
       - inside:
           kind: argument_list
   Kotlin:
+    addendum: >-
+      A named argument also says what it means at the call.
     all:
       - kind: boolean_literal
       - inside:
@@ -86,6 +90,8 @@ languages:
           kind: apply_expression
           field: argument
   Php:
+    addendum: >-
+      A named argument also says what it means at the call.
     all:
       - kind: boolean
       - inside:
@@ -95,6 +101,8 @@ languages:
               field: name
               kind: name
   Python:
+    addendum: >-
+      A keyword argument also says what it means at the call.
     all:
       - any:
           - pattern: "True"
@@ -102,6 +110,8 @@ languages:
       - inside:
           kind: argument_list
   Ruby:
+    addendum: >-
+      A keyword argument also says what it means at the call.
     all:
       - any: *literal
       - inside:
@@ -130,6 +140,8 @@ languages:
           inside:
             kind: call_argument
   Swift:
+    addendum: >-
+      A named argument also says what it means at the call.
     all:
       - kind: boolean_literal
       - inside:
