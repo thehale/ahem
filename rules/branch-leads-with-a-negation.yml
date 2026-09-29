@@ -4,9 +4,8 @@
 id: branch-leads-with-a-negation
 severity: hint
 message: >-
-  Reading a negated condition first asks for the inverse to be held in mind
-  through both branches. Leading with the positive case puts them in the order
-  they read.
+  This if tests a negated condition and has an else. Flip the condition and
+  swap the branches, so the positive case comes first.
 rule:
   all:
     - kind: if_statement

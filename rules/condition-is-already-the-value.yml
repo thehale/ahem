@@ -4,8 +4,9 @@
 id: condition-is-already-the-value
 severity: warning
 message: >-
-  A condition already is the value these branches return. Returning it directly
-  says the same thing on one line.
+  This if returns true on one branch and false on the other, so the condition
+  is already the answer. Return the condition itself, negated if the branches
+  run the other way.
 rule:
   any:
     - pattern: "if ($C) { return true; } else { return false; }"
