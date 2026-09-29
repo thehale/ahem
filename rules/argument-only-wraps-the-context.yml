@@ -1,0 +1,98 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+id: argument-only-wraps-the-context
+severity: hint
+message: >-
+  This call wraps one value in a map or struct, and the code it calls has to
+  take the value back out. Pass the value on its own. If other calls pass more
+  values the same way, give each of those uses its own function or template
+  that takes just the value and sets the others itself.
+rule:
+  all:
+    - kind: function_call
+    - has:
+        field: function
+        regex: ^dict$
+    - has:
+        field: arguments
+        all:
+          - has:
+              nthChild: 2
+              kind: dot
+          - not:
+              has:
+                nthChild: 3
+    - inside:
+        kind: parenthesized_pipeline
+        any:
+          - inside:
+              kind: argument_list
+              inside:
+                kind: function_call
+                has:
+                  field: function
+                  regex: ^(partial|partialCached)$
+          - inside:
+              kind: template_action
+              field: argument
+languages:
+  gotmpl:
+    addendum: >-
+      The partial then reads the value as the dot. A partial with optional
+      entries is usually clearer as one partial per use.
+  Go:
+    addendum: >-
+      The template then reads the value as {{ . }} or ranges over it.
+    all:
+      - kind: composite_literal
+      - has:
+          field: body
+          all:
+            - has:
+                nthChild: 1
+            - not:
+                has:
+                  nthChild: 2
+      - any:
+          - all:
+              - has:
+                  field: type
+                  kind: map_type
+              - has:
+                  field: body
+                  has:
+                    kind: keyed_element
+                    has:
+                      field: key
+                      has:
+                        any:
+                          - kind: interpreted_string_literal
+                          - kind: raw_string_literal
+          - has:
+              field: type
+              kind: struct_type
+              has:
+                kind: field_declaration_list
+                all:
+                  - not:
+                      has:
+                        has:
+                          kind: field_identifier
+                          nthChild: 2
+                  - not:
+                      has:
+                        nthChild: 2
+      - nthChild:
+          position: 1
+          reverse: true
+      - inside:
+          kind: argument_list
+          inside:
+            kind: call_expression
+            has:
+              field: function
+              kind: selector_expression
+              has:
+                field: field
+                regex: ^(Execute|ExecuteTemplate)$

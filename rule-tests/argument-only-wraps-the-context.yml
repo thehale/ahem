@@ -1,0 +1,50 @@
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+
+gotmpl:
+  invalid:
+    - '{{ partial "cover.html" (dict "page" .) }}'
+    - '{{ partialCached "cover.html" (dict "page" .) .Section }}'
+    - '{{ template "cover" (dict "page" .) }}'
+    - line: 2
+      source: |
+        <main>
+          {{ partial "cover.html" (dict "page" .) }}
+        </main>
+  valid:
+    - '{{ partial "cover.html" . }}'
+    - '{{ partial "pick.html" (dict "page" . "count" 3) }}'
+    - '{{ partial "cover.html" (dict "page" $) }}'
+    - '{{ partial "cover.html" (dict "page" .Parent) }}'
+    - '{{ $args := dict "page" . }}'
+    - '{{ querify (dict "q" .) }}'
+Go:
+  invalid:
+    - |
+      package m
+      func g() { t.Execute(w, map[string]any{"Pages": pages}) }
+    - |
+      package m
+      func g() { t.Execute(w, struct{ Index int }{index}) }
+    - |
+      package m
+      func g() { t.ExecuteTemplate(w, "x", struct{ P []P }{P: ps}) }
+  valid:
+    - |
+      package m
+      func g() { t.Execute(w, pages) }
+    - |
+      package m
+      func g() { t.Execute(w, map[string]any{"Pages": pages, "N": 3}) }
+    - |
+      package m
+      func g() { t.Execute(w, map[string]bool{driver: true}) }
+    - |
+      package m
+      func g() { t.Execute(w, struct{ A, B int }{A: 1}) }
+    - |
+      package m
+      func g() { t.Execute(w, Page{Title: title}) }
+    - |
+      package m
+      func g() { cache.Set(map[string]any{"Pages": pages}) }
