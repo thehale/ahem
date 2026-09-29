@@ -4,7 +4,9 @@
 id: function-only-renames-a-call
 severity: hint
 message: >-
-  A function whose body hands its own parameters straight to another call adds a name the reader has to resolve before reaching the work. Calling that function directly says the same thing and leaves one fewer name to learn.
+  A function whose body hands its own parameters straight to another call adds a
+  name the reader has to resolve before reaching the work. Calling that function
+  directly says the same thing and leaves one fewer name to learn.
 rule:
   all:
     - any:

@@ -488,12 +488,13 @@ gotmpl:
     - line: 2
       source: |
         {{- /*
-        Blurs an image into a stand-in for it, at the size the picture is shown, so the
-        stand-in is never scaled up and can stand as the page's largest paint.
+        Blurs an image into a stand-in for it, at the size the picture is shown,
+        so the stand-in is never scaled up and can stand as the page's largest
+        paint.
 
         @param {resource.Resource} image The image to stand in for.
-        @param {int} width How wide the image is shown, defaulting to the width an
-          image spanning an article takes.
+        @param {int} width How wide the image is shown, defaulting to the width
+          an image spanning an article takes.
 
         @returns {resource.Resource}
         */ -}}

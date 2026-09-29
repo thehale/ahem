@@ -4,7 +4,8 @@
 id: conditions-compose-into-a-value
 severity: warning
 message: >-
-  Composing conditions into a single value is usually easier to follow than mutating a flag across branches.
+  Composing conditions into a single value is usually easier to follow than
+  mutating a flag across branches.
 rule:
   pattern: return $V;
   follows:

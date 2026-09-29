@@ -20,6 +20,9 @@ filelike() {
 	markdown)
 		"$files" --extension md --extension markdown
 		;;
+	yaml)
+		"$files" --extension yml --extension yaml
+		;;
 	*)
 		"$files" --extension "$language"
 		;;

@@ -56,3 +56,14 @@ track() {
 
 	[ "$output" = "$(printf 'a.md\nb.markdown')" ]
 }
+
+@test "yaml also selects .yaml files" {
+	printf 'a: 1\n' >a.yml
+	printf 'a: 1\n' >b.yaml
+	printf 'a = 1\n' >skipped.toml
+	track a.yml b.yaml skipped.toml
+
+	run filelike yaml
+
+	[ "$output" = "$(printf 'a.yml\nb.yaml')" ]
+}

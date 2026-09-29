@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: filelike yaml | bin/yamllint
+
+set -euo pipefail
+
+CONFIG='
+rules:
+  line-length:
+    max: 80
+    allow-non-breakable-inline-mappings: true
+'
+
+xargs --no-run-if-empty "$(mise which yamllint)" --config-data "$CONFIG"

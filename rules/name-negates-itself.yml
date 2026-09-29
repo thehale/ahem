@@ -4,13 +4,23 @@
 id: name-negates-itself
 severity: hint
 message: >-
-  A name that carries its own negation asks every reader of it to hold a double negative. Naming the positive case and negating at the one place that needs it keeps the inverse out of the way.
+  A name that carries its own negation asks every reader of it to hold a double
+  negative. Naming the positive case and negating at the one place that needs it
+  keeps the inverse out of the way.
 rule:
   all:
     - any: &named
         - kind: identifier
         - kind: property_identifier
-    - regex: &negated "^@?(no|dont|disable|without)(_|[A-Z])[\\w?!]*$|^@?(NO|DONT|DISABLE|WITHOUT)_[\\w?!]*$"
+    - any: &negated
+        - regex: "^@?no(_|[A-Z])[\\w?!]*$"
+        - regex: "^@?NO_[\\w?!]*$"
+        - regex: "^@?dont(_|[A-Z])[\\w?!]*$"
+        - regex: "^@?DONT_[\\w?!]*$"
+        - regex: "^@?disable(_|[A-Z])[\\w?!]*$"
+        - regex: "^@?DISABLE_[\\w?!]*$"
+        - regex: "^@?without(_|[A-Z])[\\w?!]*$"
+        - regex: "^@?WITHOUT_[\\w?!]*$"
     - any:
         - inside:
             kind: variable_declarator
@@ -24,14 +34,14 @@ languages:
   Bash:
     all:
       - kind: variable_name
-      - regex: *negated
+      - any: *negated
       - inside:
           kind: variable_assignment
           field: name
   Python:
     all:
       - kind: identifier
-      - regex: *negated
+      - any: *negated
       - any:
           - inside:
               kind: assignment
@@ -48,7 +58,7 @@ languages:
       - any:
           - kind: identifier
           - kind: instance_variable
-      - regex: *negated
+      - any: *negated
       - any:
           - inside:
               kind: assignment
@@ -66,7 +76,7 @@ languages:
       - any:
           - kind: identifier
           - kind: field_identifier
-      - regex: *negated
+      - any: *negated
       - any:
           - inside:
               kind: let_declaration
@@ -86,7 +96,7 @@ languages:
   TypeScript:
     all:
       - any: *named
-      - regex: *negated
+      - any: *negated
       - any:
           - inside:
               kind: variable_declarator

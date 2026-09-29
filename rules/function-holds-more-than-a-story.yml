@@ -4,7 +4,9 @@
 id: function-holds-more-than-a-story
 severity: hint
 message: >-
-  A function reads as a story when each statement names a step. Extracting helpers until the steps fit in a handful of lines keeps the details out of the telling.
+  A function reads as a story when each statement names a step. Extracting
+  helpers until the steps fit in a handful of lines keeps the details out of the
+  telling.
 rule:
   kind: statement_block
   inside:

@@ -35,6 +35,7 @@ function main() {
 		check "Actions: Lint" "actionlint"
 		check "Actions: Audit" "zizmor --quiet .github"
 		check "YAML: Format" "bin/yamlformat"
+		check "YAML: Lint" "filelike yaml | bin/yamllint"
 		check "Markdown: Lint" "bin/markdownlint"
 		check "License" "bin/lawyer"
 		check "Secrets" "bin/secrets #--verbose"

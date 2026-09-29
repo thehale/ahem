@@ -4,7 +4,8 @@
 id: condition-is-already-the-value
 severity: warning
 message: >-
-  A condition already is the value these branches return. Returning it directly says the same thing on one line.
+  A condition already is the value these branches return. Returning it directly
+  says the same thing on one line.
 rule:
   any:
     - pattern: "if ($C) { return true; } else { return false; }"
@@ -13,34 +14,62 @@ languages:
   C:
     any:
       - pattern:
-          context: "void f() { if ($C) { return true; } else { return false; } }"
+          context: |-
+            void f() {
+              if ($C) { return true; } else { return false; }
+            }
           selector: if_statement
       - pattern:
-          context: "void f() { if ($C) { return false; } else { return true; } }"
+          context: |-
+            void f() {
+              if ($C) { return false; } else { return true; }
+            }
           selector: if_statement
   Cpp:
     any:
       - pattern:
-          context: "void f() { if ($C) { return true; } else { return false; } }"
+          context: |-
+            void f() {
+              if ($C) { return true; } else { return false; }
+            }
           selector: if_statement
       - pattern:
-          context: "void f() { if ($C) { return false; } else { return true; } }"
+          context: |-
+            void f() {
+              if ($C) { return false; } else { return true; }
+            }
           selector: if_statement
   CSharp:
     any:
       - pattern:
-          context: "class A { bool F() { if ($C) { return true; } else { return false; } } }"
+          context: |-
+            class A {
+              bool F() {
+                if ($C) { return true; } else { return false; }
+              }
+            }
           selector: if_statement
       - pattern:
-          context: "class A { bool F() { if ($C) { return false; } else { return true; } } }"
+          context: |-
+            class A {
+              bool F() {
+                if ($C) { return false; } else { return true; }
+              }
+            }
           selector: if_statement
   Dart:
     any:
       - pattern:
-          context: "bool f() { if ($C) { return true; } else { return false; } }"
+          context: |-
+            bool f() {
+              if ($C) { return true; } else { return false; }
+            }
           selector: if_statement
       - pattern:
-          context: "bool f() { if ($C) { return false; } else { return true; } }"
+          context: |-
+            bool f() {
+              if ($C) { return false; } else { return true; }
+            }
           selector: if_statement
   Elixir:
     any:
@@ -53,10 +82,20 @@ languages:
   Java:
     any:
       - pattern:
-          context: "class A { boolean f() { if ($C) { return true; } else { return false; } } }"
+          context: |-
+            class A {
+              boolean f() {
+                if ($C) { return true; } else { return false; }
+              }
+            }
           selector: if_statement
       - pattern:
-          context: "class A { boolean f() { if ($C) { return false; } else { return true; } } }"
+          context: |-
+            class A {
+              boolean f() {
+                if ($C) { return false; } else { return true; }
+              }
+            }
           selector: if_statement
   Kotlin:
     any:
@@ -73,10 +112,18 @@ languages:
   Php:
     any:
       - pattern:
-          context: "<?php\nfunction f() { if ($C) { return true; } else { return false; } }"
+          context: |-
+            <?php
+            function f() {
+              if ($C) { return true; } else { return false; }
+            }
           selector: if_statement
       - pattern:
-          context: "<?php\nfunction f() { if ($C) { return false; } else { return true; } }"
+          context: |-
+            <?php
+            function f() {
+              if ($C) { return false; } else { return true; }
+            }
           selector: if_statement
   Python:
     any:
@@ -127,16 +174,32 @@ languages:
   Solidity:
     any:
       - pattern:
-          context: "contract A { function f() public { if ($C) { return true; } else { return false; } } }"
+          context: |-
+            contract A {
+              function f() public {
+                if ($C) { return true; } else { return false; }
+              }
+            }
           selector: if_statement
       - pattern:
-          context: "contract A { function f() public { if ($C) { return false; } else { return true; } } }"
+          context: |-
+            contract A {
+              function f() public {
+                if ($C) { return false; } else { return true; }
+              }
+            }
           selector: if_statement
   Swift:
     any:
       - pattern:
-          context: "func f() -> Bool { if $C { return true } else { return false } }"
+          context: |-
+            func f() -> Bool {
+              if $C { return true } else { return false }
+            }
           selector: if_statement
       - pattern:
-          context: "func f() -> Bool { if $C { return false } else { return true } }"
+          context: |-
+            func f() -> Bool {
+              if $C { return false } else { return true }
+            }
           selector: if_statement
