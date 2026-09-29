@@ -5,8 +5,7 @@ id: function-only-renames-a-call
 severity: hint
 message: >-
   This function passes its parameters straight to another function and does
-  nothing else. Call that function directly, so the reader has one fewer name
-  to learn.
+  nothing else. Call `$F` directly, so the reader has one fewer name to learn.
 rule:
   all:
     - any:
