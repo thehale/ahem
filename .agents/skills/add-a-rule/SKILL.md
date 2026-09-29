@@ -2,7 +2,7 @@
 name: add-a-rule
 description: >-
   Add a rule to ahem. Use when a pattern a reviewer keeps pointing at should
-  become a finding the tool reports.
+  become a finding the tool reports, or when deciding whether it should.
 license: MPL-2.0
 ---
 
@@ -19,6 +19,29 @@ Scope a rule to what it can get right. A matcher that reaches a few languages,
 or only the clearest shape of the problem, is finished work; widening it later
 is a small edit, and a rule that fires where it should not is one somebody
 turns off.
+
+## When to recommend no rule
+
+A request for a rule can be declined, and declining it with the evidence is
+finished work. Weigh it before writing a matcher, and bring a recommendation
+rather than a half-built engine change.
+
+Recommend against the rule when any of these holds:
+
+- The judgement needs more than the file in front of it. The engine reads one
+  file at a time. A pattern judged by its callers, its types, or its history
+  needs a resolver for each language, and resolving calls is a type checker's
+  work.
+- The only form a matcher can see leans on convention rather than syntax. A
+  name that signals privacy does not stop a caller elsewhere, so the rule
+  misfires wherever the convention is broken.
+- The pattern turned up in one codebase, and a reviewer already caught it by
+  hand. The rule would guard against a mistake that is rare and cheap to fix.
+- A compiler, a linter, or the language's own tooling already reports it.
+
+The cost is the engine code and the misfires a rule adds, against the reviews
+it spares. When the cost is the larger, say so and name what the rule would
+have caught, so the decision rests on the evidence.
 
 ## Steps
 
