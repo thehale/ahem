@@ -147,7 +147,8 @@ impl Scope {
 }
 
 pub fn findings(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> Vec<String> {
-	let chunks = Lang::of(path, source).map_or_else(Vec::new, |lang| chunks(lang.ast_grep(source)));
+	let markup = Lang::markup(path);
+	let chunks = Lang::of(path, source).map_or_else(Vec::new, |lang| chunks(lang.ast_grep(source), markup));
 	let mut found = vec![];
 	for chunk in &chunks {
 		for rule in applicable(rules, chunk.lang()) {
@@ -179,4 +180,19 @@ fn applicable(rules: &[Rule], lang: Lang) -> impl Iterator<Item = &Rule> {
 		.iter()
 		.filter(move |rule| rule.matchers.contains_key(&lang))
 		.filter(|rule| !matches!(rule.severity, Severity::Off))
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::rules::compile;
+
+	#[test]
+	fn checks_a_go_templates_markup_as_its_inner_extension_names() {
+		let rules = compile().unwrap();
+		let source = "replicas: {{ .Values.replicas }}\n# a thing\n<!-- not a comment in YAML -->\n";
+		let found = findings(&rules, Path::new("values.yaml.gotmpl"), source, &Scope::Whole);
+		assert_eq!(found.len(), 1);
+		assert!(found[0].starts_with("values.yaml.gotmpl:2:"));
+	}
 }

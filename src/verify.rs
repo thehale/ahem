@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::chunk::{Chunk, chunks};
-use crate::lang::Lang;
+use crate::lang::{Lang, MARKUP};
 use crate::rules::Rule;
 use crate::say::say;
 use ast_grep_core::tree_sitter::LanguageExt;
@@ -51,7 +51,7 @@ pub fn verify(rules: &[Rule]) -> usize {
 }
 
 fn reported(rule: &Rule, lang: Lang, source: &str, expectation: Expectation) -> usize {
-	let chunks = chunks(lang.ast_grep(source));
+	let chunks = chunks(lang.ast_grep(source), Some(MARKUP));
 	if let Some(chunk) = chunks.iter().find(|chunk| broken(chunk)) {
 		say(&format!(
 			"FAIL {}.{lang}: snippet is not {} in {source:?}",

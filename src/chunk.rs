@@ -1,7 +1,8 @@
 // Copyright (c) Joseph Hale, 2026
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::lang::Lang;
+use crate::inject;
+use crate::lang::{Lang, MARKUP};
 use crate::rules::Rule;
 use ast_grep_core::tree_sitter::{LanguageExt, StrDoc};
 use ast_grep_core::{AstGrep, Node, NodeMatch};
@@ -41,22 +42,21 @@ impl Chunk {
 	}
 }
 
-pub fn chunks(tree: Tree) -> Vec<Chunk> {
-	let inner = injected(&tree);
+pub fn chunks(tree: Tree, markup: Option<Lang>) -> Vec<Chunk> {
+	let inner = injected(&tree, markup);
 	let ceded = inner
 		.iter()
 		.flat_map(seen)
 		.map(|span| span.start_byte..span.end_byte)
 		.collect();
 	let mut all = vec![Chunk { tree, ceded }];
-	all.extend(inner.into_iter().flat_map(chunks));
+	all.extend(inner.into_iter().flat_map(|tree| chunks(tree, Some(MARKUP))));
 	all
 }
 
-fn injected(tree: &Tree) -> Vec<Tree> {
+fn injected(tree: &Tree, markup: Option<Lang>) -> Vec<Tree> {
 	let visible = seen(tree);
-	tree.lang()
-		.extract_injections(tree.root())
+	inject::regions(*tree.lang(), tree.root(), markup)
 		.into_iter()
 		.filter_map(|(name, spans)| parsed(tree, Lang::named(&name)?, &clipped(&spans, &visible)))
 		.collect()

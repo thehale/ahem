@@ -23,6 +23,8 @@ const TOML: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_toml) };
 
 const UNSHIPPED: &[SupportLang] = &[SupportLang::Haskell];
 
+pub const MARKUP: Lang = Lang::Builtin(SupportLang::Html);
+
 const NAMED_NODE: bool = true;
 
 const GO_KEYWORDS: &[&str] = &[
@@ -89,6 +91,17 @@ impl Lang {
 	pub fn of(path: &Path, source: &str) -> Option<Lang> {
 		let lang = Lang::from_path(path).or_else(|| source.lines().next().and_then(interpreted));
 		lang.map(|lang| lang.templated(source))
+	}
+
+	pub fn markup(path: &Path) -> Option<Lang> {
+		let inner = match Lang::from_path(path) {
+			Some(Lang::Added(Added::GoTmpl)) => path.with_extension(""),
+			_ => path.to_path_buf(),
+		};
+		match inner.extension() {
+			Some(_) => Lang::from_path(inner),
+			None => Some(MARKUP),
+		}
 	}
 
 	pub fn named(name: &str) -> Option<Lang> {
@@ -224,7 +237,7 @@ impl LanguageExt for Lang {
 	}
 
 	fn extract_injections<L: LanguageExt>(&self, root: Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
-		inject::regions(*self, root)
+		inject::regions(*self, root, Some(MARKUP))
 	}
 }
 
@@ -278,6 +291,30 @@ mod tests {
 			r#"{{ print "<!-- " (.Get 0) " -->" | safeHTML }}"#,
 		);
 		assert_eq!(lang, Some(Lang::Added(Added::GoTmpl)));
+	}
+
+	#[test]
+	fn reads_a_go_templates_markup_by_its_inner_extension() {
+		let lang = Lang::markup(Path::new("values.yaml.gotmpl"));
+		assert_eq!(lang, Some(Lang::Builtin(SupportLang::Yaml)));
+	}
+
+	#[test]
+	fn reads_an_html_files_go_template_markup_as_html() {
+		let lang = Lang::markup(Path::new("baseof.html"));
+		assert_eq!(lang, Some(MARKUP));
+	}
+
+	#[test]
+	fn reads_a_go_templates_markup_as_html_when_no_extension_names_one() {
+		let lang = Lang::markup(Path::new("page.gotmpl"));
+		assert_eq!(lang, Some(MARKUP));
+	}
+
+	#[test]
+	fn leaves_a_go_templates_markup_unread_when_ahem_has_no_grammar_for_it() {
+		let lang = Lang::markup(Path::new("nginx.conf.gotmpl"));
+		assert_eq!(lang, None);
 	}
 
 	#[test]

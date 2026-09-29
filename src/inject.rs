@@ -51,11 +51,15 @@ const DOC_COMMENTS: &[DocComment] = &[
 	},
 ];
 
-pub fn regions<L: LanguageExt>(host: Lang, root: Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
+pub fn regions<L: LanguageExt>(
+	host: Lang,
+	root: Node<StrDoc<L>>,
+	markup: Option<Lang>,
+) -> Vec<(String, Vec<TSRange>)> {
 	let mut regions = documented(host, &root);
 	regions.extend(match host {
 		Lang::Builtin(SupportLang::Html) => SupportLang::Html.extract_injections(root),
-		Lang::Added(Added::GoTmpl) => markup(&root),
+		Lang::Added(Added::GoTmpl) => text(&root, markup),
 		Lang::Builtin(SupportLang::Markdown) => fences(&root),
 		_ => vec![],
 	});
@@ -82,12 +86,12 @@ fn documented<L: LanguageExt>(host: Lang, root: &Node<StrDoc<L>>) -> Vec<(String
 		.collect()
 }
 
-fn markup<L: LanguageExt>(root: &Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
-	let text = root
+fn text<L: LanguageExt>(root: &Node<StrDoc<L>>, markup: Option<Lang>) -> Vec<(String, Vec<TSRange>)> {
+	let spans: Vec<TSRange> = root
 		.find_all(KindMatcher::new("text", root.lang().clone()))
 		.map(|node| node.get_inner_node().range())
 		.collect();
-	vec![(SupportLang::Html.to_string(), text)]
+	markup.map(|lang| (lang.to_string(), spans)).into_iter().collect()
 }
 
 fn fences<L: LanguageExt>(root: &Node<StrDoc<L>>) -> Vec<(String, Vec<TSRange>)> {
