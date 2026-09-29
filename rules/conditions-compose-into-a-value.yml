@@ -4,8 +4,8 @@
 id: conditions-compose-into-a-value
 severity: warning
 message: >-
-  This code sets a variable inside an if and then returns it. Build the value
-  from the conditions in one expression and return that.
+  This code sets `$V` inside an if and then returns it. Build the value from
+  the conditions in one expression and return that.
 rule:
   pattern: return $V;
   follows:
