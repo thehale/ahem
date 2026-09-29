@@ -4,9 +4,9 @@
 id: comment-silences-a-linter
 severity: hint
 message: >-
-  This comment silences a finding from its tool. Fix the finding as the
-  tool's documentation for it describes. Keep the comment only where that
-  documentation says the finding does not apply.
+  This comment turns off a warning from a tool that checks the code. Fix the
+  code as the tool's documentation for that warning describes. Keep the
+  comment only where that documentation says the warning does not apply.
 rule:
   all:
     - kind: comment
