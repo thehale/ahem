@@ -158,7 +158,7 @@ pub fn findings(rules: &[Rule], path: &Path, source: &str, scope: &Scope) -> Vec
 					found.push(format!(
 						"{}:{first}: {} [{}]",
 						path.display(),
-						rule.matchers[&chunk.lang()].message,
+						rule.matchers[&chunk.lang()].get_message(&node),
 						rule.id
 					));
 				}
