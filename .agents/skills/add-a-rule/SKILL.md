@@ -109,6 +109,13 @@ statements alone, and its message argued for an expanded if/else without
 saying so, which pushed an agent twice into expanding one-line conditionals it
 never matched. The message now names where it stops.
 
+A person reads the message too, so it has to be obvious on a first reading
+without the matcher beside it. Say what the code does and what to write
+instead, in the words the code's own reader would use. Terms from compilers or
+from the matcher, such as a callee or a node, make the reader translate before
+they can act. Keep it to a few short declarative sentences, since a finding
+that argues its case at length gets skimmed.
+
 Keep the message true in every language the rule reaches, and put advice that
 holds in one language alone under that language in the `languages:` block. An
 `addendum:` there is appended to the message, for a recommendation only that
