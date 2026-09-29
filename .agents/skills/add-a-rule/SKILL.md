@@ -86,6 +86,12 @@ statements alone, and its message argued for an expanded if/else without
 saying so, which pushed an agent twice into expanding one-line conditionals it
 never matched. The message now names where it stops.
 
+Keep the message true in every language the rule reaches, and put advice that
+holds in one language alone under that language in the `languages:` block. An
+`addendum:` there is appended to the message, for a recommendation only that
+language can act on. A `message:` there replaces it, for a language whose
+reason differs. Neither changes the matcher.
+
 Choose `warning` when the finding is right nearly every time it fires, `hint`
 when it is a judgement a reader may decline. There is no `error`, because
 nothing here blocks.

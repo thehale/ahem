@@ -26,6 +26,8 @@ struct Authored {
 
 #[derive(Deserialize)]
 struct Tailored {
+	message: Option<String>,
+	addendum: Option<String>,
 	except: Option<serde_yaml::Value>,
 	#[serde(flatten)]
 	rule: serde_yaml::Mapping,
@@ -148,7 +150,7 @@ fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> 
 		rewriters: None,
 		id: authored.id.clone(),
 		language: lang,
-		message: authored.message.clone(),
+		message: message(authored, lang),
 		note: None,
 		severity: authored.severity.clone(),
 		labels: None,
@@ -158,6 +160,17 @@ fn matcher(authored: &Authored, lang: Lang) -> Result<RuleConfig<Lang>, String> 
 		metadata: None,
 	};
 	RuleConfig::try_from(config, &GlobalRules::default()).map_err(|error| error.to_string())
+}
+
+fn message(authored: &Authored, lang: Lang) -> String {
+	let tailored = authored.languages.get(&lang);
+	let message = tailored
+		.and_then(|tailored| tailored.message.clone())
+		.unwrap_or_else(|| authored.message.clone());
+	match tailored.and_then(|tailored| tailored.addendum.as_ref()) {
+		Some(addendum) => format!("{message} {addendum}"),
+		None => message,
+	}
 }
 
 fn body(authored: &Authored, lang: Lang) -> Result<SerializableRule, String> {
@@ -199,5 +212,52 @@ fn composed(base: SerializableRule, exceptions: Vec<SerializableRule>) -> Serial
 	SerializableRule {
 		all: Some(all).into(),
 		..Default::default()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use ast_grep_language::SupportLang;
+
+	const AUTHORED: &str = "
+id: example
+severity: hint
+message: Say it plainly.
+rule:
+  kind: comment
+languages:
+  Go:
+    addendum: Go says it with a doc comment.
+  Rust:
+    message: Rust says it differently.
+";
+
+	#[test]
+	fn keeps_the_message_for_a_language_that_does_not_tailor_it() {
+		assert_eq!(
+			message(&authored(), Lang::Builtin(SupportLang::Python)),
+			"Say it plainly."
+		);
+	}
+
+	#[test]
+	fn appends_a_languages_addendum_to_the_message() {
+		assert_eq!(
+			message(&authored(), Lang::Builtin(SupportLang::Go)),
+			"Say it plainly. Go says it with a doc comment."
+		);
+	}
+
+	#[test]
+	fn replaces_the_message_with_a_languages_own() {
+		assert_eq!(
+			message(&authored(), Lang::Builtin(SupportLang::Rust)),
+			"Rust says it differently."
+		);
+	}
+
+	fn authored() -> Authored {
+		from_str(AUTHORED).unwrap()
 	}
 }
