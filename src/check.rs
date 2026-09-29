@@ -204,4 +204,13 @@ mod tests {
 		assert_eq!(found.len(), 1);
 		assert!(found[0].ends_with("[condition-is-already-the-value]"));
 	}
+
+	#[test]
+	fn names_the_code_a_finding_matched_in_its_message() {
+		let rules = compile().unwrap();
+		let source = "{{ define \"walk.html\" }}\n  {{- $page := .page }}\n  {{- range .entries }}{{ $page.Title }}{{ end }}\n{{ end }}\n";
+		let found = findings(&rules, Path::new("menu.html"), source, &Scope::Whole);
+		assert_eq!(found.len(), 1);
+		assert!(found[0].contains("Here that is `.page`, or `$.page` inside a `range`"));
+	}
 }

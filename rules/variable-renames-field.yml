@@ -37,4 +37,6 @@ rule:
 languages:
   gotmpl:
     addendum: >-
-      Reach the field through `$` instead, as in `$.image.Width`.
+      Here that is `.$N`, or `$.$N` inside a `range` or `with`, where the dot
+      stands for something else and `$` is still the argument the template was
+      called with.
