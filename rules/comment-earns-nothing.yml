@@ -95,7 +95,6 @@ languages:
     any:
       - kind: line_comment
       - kind: multiline_comment
-    except: *tags
   Markdown:
     kind: html_block
     regex: "^<!--"

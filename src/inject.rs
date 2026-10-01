@@ -44,6 +44,12 @@ const DOC_COMMENTS: &[DocComment] = &[
 		doc: JAVADOC,
 	},
 	DocComment {
+		host: Lang::Builtin(SupportLang::Kotlin),
+		kind: "multiline_comment",
+		opener: "/**",
+		doc: JAVADOC,
+	},
+	DocComment {
 		host: Lang::Added(Added::GoTmpl),
 		kind: "comment",
 		opener: "/*",

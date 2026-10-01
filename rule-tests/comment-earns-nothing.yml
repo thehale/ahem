@@ -238,8 +238,51 @@ Kotlin:
        * @param id the user to look up
        */
       fun name(id: Int) = ""
+    - line: 2
+      source: |
+        /**
+         * A group of *members*.
+         *
+         * This class has no useful logic; it's just a documentation example.
+         *
+         * @param T the type of a member in this group.
+         * @property name the name of this group.
+         * @constructor Creates an empty group.
+         */
+        class Group<T>(val name: String)
+    - line: 3
+      source: |
+        class Group<T>(val name: String) {
+            /**
+             * Adds a [member] to this group.
+             * @return the new size of the group.
+             */
+            fun add(member: T): Int = 0
+        }
   valid:
     - "//noinspection UNCHECKED_CAST"
+    - |
+      /**
+       * @param T the type of a member in this group.
+       * @property name the name of this group.
+       * @constructor Creates an empty group.
+       */
+      class Group<T>(val name: String) {
+          /**
+           * @param member the member to add.
+           *
+           * @return the new size of the group.
+           * @throws IllegalStateException when the group is full.
+           * @exception IllegalStateException when the group is full.
+           * @receiver the group to add to.
+           * @sample com.example.groupSample
+           * @see Group
+           * @author Someone
+           * @since 1.0
+           * @suppress
+           */
+          fun add(member: T): Int = 0
+      }
     - |
       /**
        * @param id the user to look up
