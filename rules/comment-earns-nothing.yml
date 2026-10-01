@@ -126,11 +126,17 @@ languages:
   Bash:
     except:
       regex: "^#!"
-  javadoc: &summary
+  javadoc:
+    any:
+      - kind: description
+        inside:
+          kind: document
+      - kind: description
+        regex: '\n[ \t]*\*?[ \t]*\n[ \t]*\*?[ \t]*\w'
+  jsdoc:
     kind: description
     inside:
       kind: document
-  jsdoc: *summary
   Yaml:
     except:
       regex: '^#[ \t]*v?\d+(\.\d+)*$'

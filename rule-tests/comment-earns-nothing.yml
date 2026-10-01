@@ -576,6 +576,12 @@ javadoc:
          *
          * @param id the user to look up
          */
+    - |
+      /**
+       * @param id the user to look up
+       *
+       * Returns the user's display name.
+       */
   valid:
     - "/** @param id the user to look up */"
     - |
@@ -583,6 +589,13 @@ javadoc:
        * @param id the user to look up
        * @return the display name
        * @throws NotFound when no such user exists
+       */
+    - |
+      /**
+       * @param id the user to look up
+       *   whose name is shown
+       *
+       * @return the display name
        */
 jsdoc:
   invalid:
