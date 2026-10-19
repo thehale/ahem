@@ -23,7 +23,7 @@ function main() {
 		check "Bash: Order" "filelike bash | bashorder check --fix"
 		check "YAML: Format" "bin/yamlformat --fix"
 		check "Markdown: Lint" "bin/markdownlint --fix"
-		check "License" "bin/lawyer --fix"
+		check "License" "bin/copyright --fix"
 		check "Rust: Format" "cargo fmt"
 	else
 		check "Bash: Shebang" "filelike bash | bin/shebang '#!/usr/bin/env bash'"
@@ -38,7 +38,7 @@ function main() {
 		check "YAML: Format" "bin/yamlformat"
 		check "YAML: Lint" "filelike yaml | bin/yamllint"
 		check "Markdown: Lint" "bin/markdownlint"
-		check "License" "bin/lawyer"
+		check "License" "bin/copyright"
 		check "Secrets" "bin/secrets #--verbose"
 		check "Dependencies" "bin/dependencies"
 

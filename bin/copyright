@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Joseph Hale
+# SPDX-License-Identifier: MPL-2.0
+
+# Usage: bin/copyright [--fix]
+
+set -euo pipefail
+
+lawyer check \
+	--copyright-owner "Joseph Hale" \
+	--license MPL-2.0 \
+	--exclude "**/vendor/**" \
+	"$@"

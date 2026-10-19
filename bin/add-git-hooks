@@ -6,7 +6,6 @@
 
 set -euo pipefail
 
-# Relative, so it resolves against the top of the working tree in any clone.
 HOOKS="bin/.hooks"
 
 main() {

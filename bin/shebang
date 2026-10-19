@@ -39,12 +39,13 @@ fix_shebangs() {
 find_wrong_shebangs() {
 	local file first
 	while IFS= read -r file; do
-		[[ -f "$file" ]] || continue
-		first="$(head -n 1 "$file" 2>/dev/null)"
-		case "$first" in
-		"$1") ;;
-		'#!'*) echo "$file" ;;
-		esac
+		if [[ -f "$file" ]]; then
+			first="$(head -n 1 "$file" 2>/dev/null)"
+			case "$first" in
+			"$1") ;;
+			'#!'*) echo "$file" ;;
+			esac
+		fi
 	done
 }
 
