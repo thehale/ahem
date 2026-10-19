@@ -54,9 +54,9 @@ fn checking<'a>(command: &'a str, rest: &'a [String]) -> (&'a str, &'a [String])
 fn dispatch(command: &str, rest: &[String]) -> i32 {
 	match command {
 		"check" => run(|rules| check::check(rules, rest)),
-		"--diff" => run(|rules| diff::diff(rules, rest)),
+		"--diff" => run(|rules| diff::check(rules, rest)),
 		"--hook" => run(hook::hook),
-		named if named.starts_with("--diff=") => run(|rules| diff::patched(rules, named, rest)),
+		named if named.starts_with("--diff=") => run(|rules| diff::check_file(rules, named, rest)),
 		"test" => run(verify::verify),
 		"rules" => run(|rules| {
 			listed(rules);
