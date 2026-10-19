@@ -37,11 +37,28 @@ fix_shebangs() {
 }
 
 find_wrong_shebangs() {
-	xargs --no-run-if-empty sed --separate --quiet "1 { /^#!/ { \%^$1\$% ! F } }"
+	local file first
+	while IFS= read -r file; do
+		[[ -f "$file" ]] || continue
+		first="$(head -n 1 "$file" 2>/dev/null)"
+		case "$first" in
+		"$1") ;;
+		'#!'*) echo "$file" ;;
+		esac
+	done
 }
 
 rewrite_shebangs() {
-	xargs --no-run-if-empty sed --in-place "1 s%.*%$1%"
+	local file
+	while IFS= read -r file; do
+		rewrite_first_line "$file" "$1"
+	done
+}
+
+rewrite_first_line() {
+	local rest
+	rest="$(tail -n +2 "$1")"
+	printf '%s\n' "$2" ${rest:+"$rest"} >"$1"
 }
 
 report_shebangs() {

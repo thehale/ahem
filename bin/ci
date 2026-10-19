@@ -15,7 +15,7 @@ results=""
 
 function main() {
 	local started
-	started="$(timestamp)"
+	started="$(microseconds_since_epoch)"
 
 	if [[ "${1:-}" == "--fix" ]]; then
 		check "Bash: Shebang" "filelike bash | bin/shebang --fix '#!/usr/bin/env bash'"
@@ -31,7 +31,8 @@ function main() {
 		check "Bash: Lint" "filelike bash | xargs shellcheck --external-sources"
 		check "Bash: Format" "filelike bash | xargs shfmt --diff"
 		check "Bash: Order" "filelike bash | bashorder check"
-		check "Bash: Test" "bats --recursive bin"
+		check "Bash: Portability" "filelike bash | bin/portable"
+		check "Bash: Test" "BATS_TEST_TIMEOUT=10 bats --recursive bin"
 		check "Actions: Lint" "actionlint"
 		check "Actions: Audit" "zizmor --quiet .github"
 		check "YAML: Format" "bin/yamlformat"
@@ -58,7 +59,7 @@ function check() {
 	local cmd="$2"
 
 	local started
-	started="$(timestamp)"
+	started="$(microseconds_since_epoch)"
 
 	echo -e "\n$(yellow "==>") $(blue "$name") $(grey "$cmd")\n"
 	set +e

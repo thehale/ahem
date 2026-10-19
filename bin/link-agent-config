@@ -16,8 +16,8 @@ link() {
 	local target="$2"
 
 	if [[ ! -e "$path" && ! -L "$path" ]]; then
-		mkdir --parents "$(dirname "$path")"
-		ln --symbolic "$target" "$path"
+		mkdir -p "$(dirname "$path")"
+		ln -s "$target" "$path"
 		echo "Linked $path -> $target"
 	elif [[ "$(readlink "$path")" != "$target" ]]; then
 		echo "Leaving $path alone: it is not a link to $target" >&2

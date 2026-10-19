@@ -2,7 +2,7 @@
 # Copyright (c) Joseph Hale, 2026
 # SPDX-License-Identifier: MPL-2.0
 #
-# Usage: bin/install-git-hooks
+# Usage: bin/add-git-hooks
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ main() {
 	fi
 
 	git config core.hooksPath "$HOOKS"
-	echo "Hooks installed from $HOOKS"
+	echo "Hooks added from $HOOKS"
 }
 
 main "$@"

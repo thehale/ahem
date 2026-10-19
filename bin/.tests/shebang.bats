@@ -57,11 +57,29 @@ setup() {
 	[ "$(head -1 wrong.sh)" = "$WANTED" ]
 }
 
+@test "--fix keeps the file executable" {
+	chmod +x wrong.sh
+
+	run "$REPO/bin/shebang" --fix "$WANTED" <<<"wrong.sh"
+
+	[ "$status" -eq 0 ]
+	[ -x wrong.sh ]
+}
+
 @test "--fix leaves the rest of the file alone" {
 	"$REPO/bin/shebang" --fix "$WANTED" <<<"wrong.sh"
 
 	[ "$(sed -n '2 p' wrong.sh)" = 'echo wrong' ]
 	[ "$(wc -l <wrong.sh)" -eq 2 ]
+}
+
+@test "--fix adds no blank line to a file that is only a shebang" {
+	printf '#!/bin/sh\n' >only.sh
+
+	"$REPO/bin/shebang" --fix "$WANTED" <<<"only.sh"
+
+	[ "$(cat only.sh)" = "$WANTED" ]
+	[ "$(wc -l <only.sh)" -eq 1 ]
 }
 
 @test "--fix does not add a shebang to a file without one" {

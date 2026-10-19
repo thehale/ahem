@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: filelike bash | bin/portable
+
+set -euo pipefail
+
+POSIX_TOOLS="awk|basename|cat|chmod|chown|cmp|comm|cp|cut|date|df|diff|dirname"
+POSIX_TOOLS="$POSIX_TOOLS|du|expr|find|grep|head|install|join|ln|ls|mkdir|mktemp"
+POSIX_TOOLS="$POSIX_TOOLS|mv|nl|paste|readlink|rm|rmdir|sed|seq|sort|split|stat"
+POSIX_TOOLS="$POSIX_TOOLS|tail|tee|touch|tr|uniq|wc|xargs"
+
+LONG_OPTION="(^|[|;&(]|\\\$\\()[[:space:]]*($POSIX_TOOLS)( +-[^ -][^ ]*)* +--[a-z]"
+
+GNU_ONLY="find .*-printf|find .*-regextype|sed +(-[a-zA-Z]+ +)*-[a-zA-Z]*[si]\\b"
+GNU_ONLY="$GNU_ONLY|grep +(-[a-zA-Z]+ +)*-[a-zA-Z]*P\\b|date +-d\\b|stat +-c\\b"
+GNU_ONLY="$GNU_ONLY|xargs +(-[a-zA-Z]+ +)*-[a-zA-Z]*d\\b|cp +-T\\b|mv +-T\\b"
+
+main() {
+	local found=0
+	local file
+	while IFS= read -r file; do
+		[[ "$file" -ef "${BASH_SOURCE[0]}" ]] && continue
+		report "$file" || found=1
+	done
+
+	((found == 0)) || explain
+	return "$found"
+}
+
+report() {
+	local hits
+	hits="$(grep -nE "$LONG_OPTION|$GNU_ONLY" "$1" 2>/dev/null || true)"
+	[[ -n "$hits" ]] || return 0
+
+	local line
+	while IFS= read -r line; do
+		echo "$1:$line" >&2
+	done <<<"$hits"
+	return 1
+}
+
+explain() {
+	{
+		echo
+		echo "These spellings are GNU's. A BSD userland, which is what macOS has,"
+		echo "rejects them. Use the short option both accept."
+	} >&2
+}
+
+main "$@"

@@ -4,13 +4,24 @@
 #
 # Usage: source bin/lib/timing; elapsed "$started"
 
-# Microseconds since the epoch
-timestamp() {
-	local now="$EPOCHREALTIME"
-	echo "${now//[.,]/}"
+microseconds_since_epoch() {
+	if [[ -n "${EPOCHREALTIME:-}" ]]; then
+		local now="$EPOCHREALTIME"
+		echo "${now//[.,]/}"
+		return
+	fi
+
+	local nanoseconds
+	nanoseconds="$(date +%s%N)"
+
+	if [[ "$nanoseconds" =~ ^[0-9]{19}$ ]]; then
+		echo "$((nanoseconds / 1000))"
+	else
+		echo "$(date +%s)000000"
+	fi
 }
 
 elapsed() {
-	local micros=$(($(timestamp) - $1))
+	local micros=$(($(microseconds_since_epoch) - $1))
 	printf '%d.%02ds\n' "$((micros / 1000000))" "$((micros % 1000000 / 10000))"
 }

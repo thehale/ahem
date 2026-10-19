@@ -13,4 +13,4 @@ rules:
     allow-non-breakable-inline-mappings: true
 '
 
-xargs --no-run-if-empty "$(mise which yamllint)" --config-data "$CONFIG"
+xargs -r "$(mise which yamllint)" --config-data "$CONFIG"

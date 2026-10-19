@@ -13,7 +13,7 @@ setup() {
 @test "points git at the hooks in bin/.hooks" {
 	git init --quiet .
 
-	run "$REPO/bin/install-git-hooks"
+	run "$REPO/bin/add-git-hooks"
 
 	[ "$status" -eq 0 ]
 	[ "$(git config core.hooksPath)" = 'bin/.hooks' ]
@@ -23,7 +23,7 @@ setup() {
 	mkdir plain
 	cd plain
 
-	run "$REPO/bin/install-git-hooks"
+	run "$REPO/bin/add-git-hooks"
 
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Not a git repository"* ]]

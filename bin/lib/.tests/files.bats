@@ -17,6 +17,15 @@ track() {
 	git add --intent-to-add "$@"
 }
 
+track_more_than_a_pipe_holds() {
+	local long_name
+	long_name="$(printf 'padding%.0s' {1..30})"
+
+	mkdir -p "$long_name/$long_name/$long_name/$long_name"
+	touch "$long_name/$long_name/$long_name/$long_name/"{001..100}
+	track "$long_name"
+}
+
 @test "fails when given neither an extension nor a shebang" {
 	run --separate-stderr "$FILES"
 
@@ -134,4 +143,26 @@ track() {
 	run "$FILES" --extension txt
 
 	[ "$output" = 'vendored/c.txt' ]
+}
+
+@test "selects by shebang alone in a repo too big for one pipe write" {
+	printf '#!/usr/bin/env kept\n' >kept
+	track kept
+	track_more_than_a_pipe_holds
+
+	run "$FILES" --shebang kept
+
+	[ "$status" -eq 0 ]
+	[ "$output" = 'kept' ]
+}
+
+@test "selects by extension alone in a repo too big for one pipe write" {
+	printf 'kept\n' >kept.txt
+	track kept.txt
+	track_more_than_a_pipe_holds
+
+	run "$FILES" --extension txt
+
+	[ "$status" -eq 0 ]
+	[ "$output" = 'kept.txt' ]
 }

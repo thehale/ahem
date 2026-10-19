@@ -2,3 +2,8 @@
 /.claude/
 .cache/
 /target/
+
+mise.local.toml
+mise.*.local.toml
+.mise.local.toml
+.mise.*.local.toml

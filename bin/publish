@@ -83,11 +83,11 @@ confirm_release_tag() {
 }
 
 release_tag() {
-	git tag --points-at HEAD | grep --extended-regexp "$RELEASE_TAG" | head --lines 1 || true
+	git tag --points-at HEAD | grep -E "$RELEASE_TAG" | head -n 1 || true
 }
 
 manifest() {
-	sed --quiet --regexp-extended "/^\[package\]/,/^\[/ s%^$1 = \"(.*)\"%\1%p" Cargo.toml
+	sed -n -E "/^\[package\]/,/^\[/ s%^$1 = \"(.*)\"%\1%p" Cargo.toml
 }
 
 confirm_declared_origin() {
@@ -117,7 +117,7 @@ confirm_pushed_branch() {
 }
 
 remote_object() {
-	git ls-remote origin "$1" | cut --fields 1 | tail --lines 1
+	git ls-remote origin "$1" | cut -f 1 | tail -n 1
 }
 
 confirm_pushed_tag() {

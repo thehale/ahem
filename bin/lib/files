@@ -60,8 +60,8 @@ select_matching_files() {
 	[[ -n "$files" ]] || return 0
 
 	{
-		printf '%s\n' "$files" | select_by_extension
-		printf '%s\n' "$files" | select_by_shebang
+		select_by_extension <<<"$files"
+		select_by_shebang <<<"$files"
 	} | sort -u
 }
 
@@ -70,7 +70,7 @@ select_by_extension() {
 
 	local pattern
 	pattern="$(printf '%s|' "${EXTENSIONS[@]}")"
-	sed --regexp-extended --quiet "/\\.(${pattern%|})$/ p"
+	sed -n -E "/\\.(${pattern%|})$/ p"
 }
 
 select_by_shebang() {
@@ -78,15 +78,23 @@ select_by_shebang() {
 
 	local pattern
 	pattern="$(printf '%s|' "${SHEBANGS[@]}")"
-	xargs --no-run-if-empty --delimiter='\n' \
-		sed --separate --quiet --regexp-extended \
-		"1 { /^#!.*[ /](${pattern%|})$/ F }"
+
+	local file
+	while IFS= read -r file; do
+		if first_line "$file" | grep -qE "^#!.*[ /](${pattern%|})$"; then
+			echo "$file"
+		fi
+	done
+}
+
+first_line() {
+	[[ -f "$1" ]] && head -n 1 "$1" 2>/dev/null
 }
 
 omit_excluded_paths() {
 	local pattern
 	pattern="$(printf '(^|/)%s/|' "${EXCLUDED_DIRECTORIES[@]}")"
-	sed --regexp-extended "\%${pattern%|}%d"
+	sed -E "\%${pattern%|}%d"
 }
 
 main "$@"
