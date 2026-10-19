@@ -51,12 +51,12 @@ impl Added {
 		}
 	}
 
-	fn extension(&self) -> Option<&'static str> {
+	fn reads(&self, path: &Path) -> bool {
 		match self {
-			Added::GoTmpl => Some("gotmpl"),
-			Added::JavaDoc => None,
-			Added::JsDoc => None,
-			Added::Toml => Some("toml"),
+			Added::GoTmpl => path.extension().is_some_and(|ext| ext == "gotmpl"),
+			Added::JavaDoc => false,
+			Added::JsDoc => false,
+			Added::Toml => path.extension().is_some_and(|ext| ext == "toml"),
 		}
 	}
 
@@ -211,10 +211,8 @@ impl Language for Lang {
 	}
 
 	fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
-		let suffix = path.as_ref().extension().and_then(|ext| ext.to_str());
-		let added = Added::ALL
-			.iter()
-			.find(|added| suffix.is_some_and(|ext| added.extension() == Some(ext)));
+		let path = path.as_ref();
+		let added = Added::ALL.iter().find(|added| added.reads(path));
 		if let Some(added) = added {
 			return Some(Lang::Added(*added));
 		}
