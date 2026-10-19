@@ -44,8 +44,8 @@ fn uncommitted(rules: &[Rule], paths: &[String]) -> usize {
 	};
 	let files = touched(&patch);
 	match paths.is_empty() {
-		true => examined(rules, &files, &[]) + examined(rules, &files, &untracked()),
-		false => examined(rules, &files, paths),
+		true => inspect_each(rules, &files) + ask_each(rules, &files, &untracked()),
+		false => ask_each(rules, &files, paths),
 	}
 }
 
@@ -61,9 +61,17 @@ fn unrepository() -> usize {
 
 fn examined(rules: &[Rule], files: &[Touched], paths: &[String]) -> usize {
 	match paths.is_empty() {
-		true => files.iter().map(|file| inspect(rules, file)).sum(),
-		false => paths.iter().map(|path| asked(rules, files, path)).sum(),
+		true => inspect_each(rules, files),
+		false => ask_each(rules, files, paths),
 	}
+}
+
+fn inspect_each(rules: &[Rule], files: &[Touched]) -> usize {
+	files.iter().map(|file| inspect(rules, file)).sum()
+}
+
+fn ask_each(rules: &[Rule], files: &[Touched], paths: &[String]) -> usize {
+	paths.iter().map(|path| asked(rules, files, path)).sum()
 }
 
 fn asked(rules: &[Rule], files: &[Touched], path: &str) -> usize {
