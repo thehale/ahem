@@ -161,6 +161,32 @@ Html:
     - "<p>hi</p>"
     - "<script>let x = 1;</script>"
     - "<style>p { color: red; }</style>"
+Ini:
+  invalid:
+    - |
+      [Service]
+      # Skip starting a second server when one is already listening on the
+      # socket, so a server started outside this unit doesn't trigger an
+      # endless restart loop.
+      ExecCondition=/bin/sh -c 'herdr status server --json | jq -e .running'
+    - |
+      ; a thing
+    - |
+      [Service]
+          # waits for the network before starting
+      ExecStart=/usr/bin/app
+  valid:
+    - |
+      [Unit]
+      Description=x
+    - |
+      #DefaultDependencies=no
+    - |
+      # Copyright (c) Someone, 2026
+    - |
+      # SPDX-License-Identifier: MPL-2.0
+    - |
+      ExecStart=/bin/echo #not a comment
 Java:
   invalid:
     - "// a thing"

@@ -139,3 +139,12 @@ languages:
   Yaml:
     except:
       regex: '^#[ \t]*v?\d+(\.\d+)*$'
+  Ini:
+    except:
+      regex: '^[#;]\s*[A-Za-z][\w.-]*='
+    message: |-
+      Default to no comments. What one carries belongs:
+      - nowhere, when the settings beside it already say it
+      - in a section or key name, when it says what a setting is
+      - in the README, when a reader needs it before the file
+      - in the commit message, when it is rationale

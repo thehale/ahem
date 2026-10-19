@@ -31,20 +31,42 @@ const GO_KEYWORDS: &[&str] = &[
 	"end", "if", "range", "with", "define", "block", "template", "partial",
 ];
 
+const SYSTEMD_UNIT_EXTENSIONS: &[&str] = &[
+	"service",
+	"socket",
+	"device",
+	"mount",
+	"automount",
+	"swap",
+	"target",
+	"path",
+	"timer",
+	"slice",
+	"scope",
+];
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Added {
 	GoTmpl,
+	Ini,
 	JavaDoc,
 	JsDoc,
 	Toml,
 }
 
 impl Added {
-	const ALL: [Added; 4] = [Added::GoTmpl, Added::JavaDoc, Added::JsDoc, Added::Toml];
+	const ALL: [Added; 5] = [
+		Added::GoTmpl,
+		Added::Ini,
+		Added::JavaDoc,
+		Added::JsDoc,
+		Added::Toml,
+	];
 
 	fn name(&self) -> &'static str {
 		match self {
 			Added::GoTmpl => "gotmpl",
+			Added::Ini => "Ini",
 			Added::JavaDoc => "javadoc",
 			Added::JsDoc => "jsdoc",
 			Added::Toml => "Toml",
@@ -54,6 +76,7 @@ impl Added {
 	fn reads(&self, path: &Path) -> bool {
 		match self {
 			Added::GoTmpl => path.extension().is_some_and(|ext| ext == "gotmpl"),
+			Added::Ini => is_systemd_unit(path),
 			Added::JavaDoc => false,
 			Added::JsDoc => false,
 			Added::Toml => path.extension().is_some_and(|ext| ext == "toml"),
@@ -63,6 +86,7 @@ impl Added {
 	fn parser(&self) -> LanguageFn {
 		match self {
 			Added::GoTmpl => GOTMPL,
+			Added::Ini => tree_sitter_ini::LANGUAGE,
 			Added::JavaDoc => tree_sitter_javadoc::LANGUAGE,
 			Added::JsDoc => tree_sitter_jsdoc::LANGUAGE,
 			Added::Toml => TOML,
@@ -257,6 +281,23 @@ fn is_go_action(action: &str) -> bool {
 	action.starts_with("/*") || opens_with_keyword || words.any(|word| word.starts_with('.'))
 }
 
+fn is_systemd_unit(path: &Path) -> bool {
+	match path.extension().and_then(|ext| ext.to_str()) {
+		Some("conf") => dropin(path).is_some_and(is_unit_extension),
+		Some(ext) => is_unit_extension(ext),
+		None => false,
+	}
+}
+
+fn dropin(path: &Path) -> Option<&str> {
+	let dir = path.parent()?.file_name()?.to_str()?;
+	Path::new(dir.strip_suffix(".d")?).extension()?.to_str()
+}
+
+fn is_unit_extension(ext: &str) -> bool {
+	SYSTEMD_UNIT_EXTENSIONS.contains(&ext)
+}
+
 fn interpreted(first_line: &str) -> Option<Lang> {
 	let shebang = first_line.strip_prefix("#!")?;
 	let interpreter = shebang.rsplit('/').next()?.split_whitespace().last()?;
@@ -322,5 +363,47 @@ mod tests {
 			"<p>{{ $t('greeting') }} {{#if user}}{{ user }}{{/if}}</p>",
 		);
 		assert_eq!(lang, Some(Lang::Builtin(SupportLang::Html)));
+	}
+
+	#[test]
+	fn reads_a_service_file_as_ini() {
+		let lang = Lang::from_path(Path::new("x.service"));
+		assert_eq!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn reads_a_units_override_conf_as_ini() {
+		let lang = Lang::from_path(Path::new("foo.service.d/override.conf"));
+		assert_eq!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn reads_a_targets_override_conf_as_ini() {
+		let lang = Lang::from_path(Path::new("sockets.target.d/x.conf"));
+		assert_eq!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn leaves_a_bare_conf_file_unread() {
+		let lang = Lang::from_path(Path::new("x.conf"));
+		assert_ne!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn leaves_a_dot_ini_file_unread() {
+		let lang = Lang::from_path(Path::new("x.ini"));
+		assert_ne!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn leaves_a_conf_under_an_unrelated_d_directory_unread() {
+		let lang = Lang::from_path(Path::new("/etc/sudoers.d/x.conf"));
+		assert_ne!(lang, Some(Lang::Added(Added::Ini)));
+	}
+
+	#[test]
+	fn leaves_a_conf_under_a_plain_conf_d_directory_unread() {
+		let lang = Lang::from_path(Path::new("conf.d/x.conf"));
+		assert_ne!(lang, Some(Lang::Added(Added::Ini)));
 	}
 }
