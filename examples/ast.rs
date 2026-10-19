@@ -1,6 +1,6 @@
-// Copyright (c) Joseph Hale, 2026
+// Copyright (c) 2026 Joseph Hale
 // SPDX-License-Identifier: MPL-2.0
-//
+
 // Usage: cargo run --example ast -- LANGUAGE PATH
 
 #![allow(dead_code)]

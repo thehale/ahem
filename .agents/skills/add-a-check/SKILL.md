@@ -5,6 +5,10 @@ description: >-
   scanner should run as part of this repository's CI gate.
 license: MPL-2.0
 ---
+<!--
+Copyright (c) 2026 Joseph Hale
+SPDX-License-Identifier: MPL-2.0
+-->
 
 # Add a check
 

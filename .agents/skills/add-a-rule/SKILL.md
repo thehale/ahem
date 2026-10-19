@@ -5,6 +5,10 @@ description: >-
   become a finding the tool reports, or when deciding whether it should.
 license: MPL-2.0
 ---
+<!--
+Copyright (c) 2026 Joseph Hale
+SPDX-License-Identifier: MPL-2.0
+-->
 
 # Add a rule
 

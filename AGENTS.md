@@ -1,3 +1,8 @@
+<!--
+Copyright (c) 2026 Joseph Hale
+SPDX-License-Identifier: MPL-2.0
+-->
+
 # Agent instructions
 
 `bin/setup` installs everything this repository builds with. Run it on clone,

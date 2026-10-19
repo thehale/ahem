@@ -1,4 +1,4 @@
-// Copyright (c) Joseph Hale, 2026
+// Copyright (c) 2026 Joseph Hale
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::check::{Scope, check, findings, root, spoken, tell};
