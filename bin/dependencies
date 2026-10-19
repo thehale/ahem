@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Copyright (c) Joseph Hale, 2026
+# SPDX-License-Identifier: MPL-2.0
+#
+# Usage: bin/dependencies
+
+set -euo pipefail
+
+main() {
+	osv-scanner scan source --recursive --allow-no-lockfiles \
+		--config <(config) .
+}
+
+config() {
+	cat <<'EOF'
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0449"
+ignoreUntil = 2027-04-19
+reason = "unsafe-libyaml is flagged only as unmaintained (rustsec.org/advisories/RUSTSEC-2024-0449), not as exploitable. It reaches ahem through serde_yaml, pulled in directly and by ast-grep-config 0.45.3. ast-grep has already merged a fix, replacing serde_yaml with serde-saphyr (github.com/ast-grep/ast-grep/pull/2999, closing issue #2998), not yet in a released ast-grep-config."
+EOF
+}
+
+main "$@"
